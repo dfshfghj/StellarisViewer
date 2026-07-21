@@ -1,0 +1,19 @@
+{
+  "name": "stellaris-save-viewer-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "test": "node territory-borders.test.js && node component-gfx-mapping.test.js",
+    "preview": "vite preview",
+    "build:wasm": "cd ../parser && wasm-pack build --target web --out-dir ../web/pkg --release"
+  },
+  "dependencies": {
+    "d3-delaunay": "^6.0.4"
+  },
+  "devDependencies": {
+    "vite": "^7.0.0"
+  }
+}

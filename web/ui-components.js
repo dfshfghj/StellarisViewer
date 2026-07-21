@@ -1,0 +1,242 @@
+// UI Components: Resource Bar, Overview Panel, Status Bar
+
+const ICON_ROOT = `${import.meta.env.BASE_URL}gfx/interface/icons/`;
+const resourceIcon = (name) => `${ICON_ROOT}resources/${name}.png`;
+
+const STRATEGIC_RESOURCES = [
+    { key: 'volatile_motes', label: '易爆微粒' },
+    { key: 'exotic_gases', label: '异星天然气' },
+    { key: 'rare_crystals', label: '稀有水晶' },
+    { key: 'living_metal', label: '活体金属' },
+    { key: 'zro', label: '泽珞' },
+    { key: 'dark_matter', label: '暗物质' },
+    { key: 'nanites', label: '纳米机器人' },
+    { key: 'minor_artifacts', label: '稀有文物' },
+];
+
+const RESEARCH_RESOURCES = [
+    { key: 'society_research', label: '社会学研究' },
+    { key: 'physics_research', label: '物理学研究' },
+    { key: 'engineering_research', label: '工程学研究' },
+];
+
+const HEADER_ITEMS = [
+    { type: 'resource', key: 'energy', label: '能量币', icon: resourceIcon('energy'), group: 0 },
+    { type: 'resource', key: 'minerals', label: '矿物', icon: resourceIcon('minerals'), group: 0 },
+    { type: 'resource', key: 'food', label: '食物', icon: resourceIcon('food'), group: 0 },
+
+    { type: 'resource', key: 'consumer_goods', label: '消费品', icon: resourceIcon('consumer_goods'), group: 1 },
+    { type: 'resource', key: 'alloys', label: '合金', icon: resourceIcon('alloys'), group: 1 },
+    { type: 'resource', key: 'trade', label: '贸易额', icon: resourceIcon('trade'), group: 1 },
+    { type: 'composite', keys: STRATEGIC_RESOURCES, label: '战略资源', icon: resourceIcon('strategic'), group: 1 },
+
+    { type: 'resource', key: 'influence', label: '影响力', icon: resourceIcon('influence'), group: 2 },
+    { type: 'resource', key: 'unity', label: '凝聚力', icon: resourceIcon('unity'), group: 2 },
+    { type: 'composite', keys: RESEARCH_RESOURCES, label: '研究', icon: `${ICON_ROOT}research_icon.png`, group: 2 },
+
+    { type: 'metric', key: 'empire_size', label: '帝国规模', icon: `${ICON_ROOT}empire_sprawl_icon.png`, group: 3 },
+    { type: 'metric', key: 'envoys', label: '使节', icon: resourceIcon('diplomatic_weight'), group: 3 },
+    { type: 'ratio', numerator: 'num_upgraded_starbase', denominator: 'starbase_capacity', label: '升级恒星基地', icon: `${ICON_ROOT}station_icon.png`, group: 3 },
+    { type: 'metric', key: 'used_naval_capacity', label: '已用海军容量', icon: `${ICON_ROOT}fleet_size_icon.png`, group: 3 },
+];
+
+export function renderResourceBar(container, playerInfo) {
+    if (!playerInfo || !playerInfo.resources) {
+        container.innerHTML = '<span style="color:var(--text-secondary)">无资源数据</span>';
+        return;
+    }
+
+    const resources = playerInfo.resources;
+    const monthly = playerInfo.monthly_resources || {};
+    container.innerHTML = HEADER_ITEMS.map((item, index) => {
+        const separator = index > 0 && HEADER_ITEMS[index - 1].group !== item.group
+            ? '<span class="resource-separator" aria-hidden="true"></span>'
+            : '';
+        return separator + renderHeaderItem(item, playerInfo, resources, monthly);
+    }).join('');
+}
+
+function renderHeaderItem(item, playerInfo, resources, monthly) {
+    let value;
+    let delta = null;
+    let details = '';
+
+    if (item.type === 'resource') {
+        value = numberOrZero(resources[item.key]);
+        delta = numberOrZero(monthly[item.key]);
+        details = `${item.label}: ${formatNum(value)} (${formatDelta(delta)})`;
+    } else if (item.type === 'composite') {
+        value = sumKeys(resources, item.keys);
+        delta = sumKeys(monthly, item.keys);
+        details = item.keys.map(entry => {
+            const current = numberOrZero(resources[entry.key]);
+            const change = numberOrZero(monthly[entry.key]);
+            return `${entry.label}: ${formatNum(current)} (${formatDelta(change)})`;
+        }).join('\n');
+    } else if (item.type === 'ratio') {
+        value = `${numberOrZero(playerInfo[item.numerator]).toFixed(0)}/${numberOrZero(playerInfo[item.denominator]).toFixed(0)}`;
+        details = `${item.label}: ${value}`;
+    } else {
+        const rawValue = playerInfo[item.key];
+        value = rawValue == null ? '—' : formatNum(numberOrZero(rawValue));
+        details = `${item.label}: ${value}`;
+    }
+
+    return `
+        <div class="resource-item" title="${escAttr(details)}">
+            <img class="resource-icon" src="${item.icon}" alt="">
+            <span class="resource-value ${deltaClass(delta)}">${typeof value === 'number' ? formatNum(value) : value}${delta == null ? '' : formatDelta(delta)}</span>
+        </div>
+    `;
+}
+
+function sumKeys(values, keys) {
+    return keys.reduce((sum, entry) => sum + numberOrZero(values[entry.key]), 0);
+}
+
+function numberOrZero(value) {
+    return Number.isFinite(value) ? value : 0;
+}
+
+function formatDelta(value) {
+    const sign = value >= 0 ? '+' : '';
+    return sign + formatNum(value);
+}
+
+function deltaClass(value) {
+    if (value > 0) return 'positive';
+    if (value < 0) return 'negative';
+    return 'neutral';
+}
+
+export function renderStatusBar(dateEl, empireEl, playerInfo) {
+    if (!playerInfo) return;
+    dateEl.textContent = playerInfo.date || '';
+    const govLabel = getGovLabel(playerInfo.government_type);
+    empireEl.textContent = `${playerInfo.name} — ${govLabel}`;
+}
+
+export function renderOverviewPanel(container, playerInfo, callbacks) {
+    if (!playerInfo) {
+        container.innerHTML = '<p style="color:var(--text-secondary)">无数据</p>';
+        return;
+    }
+
+    const militaryFleets = playerInfo.fleets.filter(f => !f.civilian && !f.station);
+    const civilianShips = playerInfo.fleets.filter(f => f.civilian);
+    const stations = playerInfo.fleets.filter(f => f.station);
+
+    container.innerHTML = `
+        <div class="panel-section">
+            <div class="panel-section-title">星域 (${playerInfo.planets.length})</div>
+            ${playerInfo.planets.map(p => `
+                <div class="panel-item" data-planet-id="${p.id}">
+                    <span class="item-name">${esc(p.name)}</span>
+                    <span class="item-value">${getPlanetClassShort(p.planet_class)} · ${p.num_pops}👥</span>
+                </div>
+            `).join('')}
+        </div>
+
+        <div class="panel-section">
+            <div class="panel-section-title">军用舰队 (${militaryFleets.length})</div>
+            ${militaryFleets.map(f => `
+                <div class="panel-item" data-fleet-id="${f.id}">
+                    <span class="item-name">${esc(f.name)}</span>
+                    <span class="item-value">${f.ship_count}艘 · ${f.military_power.toFixed(0)}⚔</span>
+                </div>
+            `).join('')}
+        </div>
+
+        <div class="panel-section">
+            <div class="panel-section-title">民用舰船 (${civilianShips.length})</div>
+            ${civilianShips.map(f => `
+                <div class="panel-item" data-fleet-id="${f.id}">
+                    <span class="item-name">${esc(f.name)}</span>
+                    <span class="item-value">${getCivilianType(f.name)}</span>
+                </div>
+            `).join('')}
+        </div>
+
+        ${stations.length > 0 ? `
+        <div class="panel-section">
+            <div class="panel-section-title">船坞 (${stations.length})</div>
+            ${stations.map(f => `
+                <div class="panel-item" data-fleet-id="${f.id}">
+                    <span class="item-name">${esc(f.name)}</span>
+                    <span class="item-value">${f.military_power.toFixed(0)}⚔</span>
+                </div>
+            `).join('')}
+        </div>` : ''}
+
+        <div class="panel-section">
+            <div class="panel-section-title">帝国概况</div>
+            <div class="panel-item"><span class="item-name">军事力量</span><span class="item-value">${playerInfo.military_power.toFixed(0)}</span></div>
+            <div class="panel-item"><span class="item-name">帝国规模</span><span class="item-value">${playerInfo.empire_size}</span></div>
+            <div class="panel-item"><span class="item-name">人口</span><span class="item-value">${playerInfo.num_pops}</span></div>
+        </div>
+    `;
+
+    container.querySelectorAll('[data-fleet-id]').forEach(el => {
+        el.onclick = () => callbacks.onFleetClick(parseInt(el.dataset.fleetId));
+    });
+    container.querySelectorAll('[data-planet-id]').forEach(el => {
+        el.onclick = () => callbacks.onPlanetClick(parseInt(el.dataset.planetId));
+    });
+}
+
+function formatNum(n) {
+    const abs = Math.abs(n);
+    if (abs >= 1000000) return `${trimFixed(n / 1000000, 1)}M`;
+    if (abs >= 10000) return `${trimFixed(n / 1000, 1)}K`;
+    if (abs >= 1000) return `${trimFixed(n / 1000, 2)}K`;
+    if (abs >= 100) return n.toFixed(0);
+    if (abs >= 10) return trimFixed(n, 1);
+    return trimFixed(n, 2);
+}
+
+function trimFixed(value, digits) {
+    return value.toFixed(digits).replace(/\.?0+$/, '');
+}
+
+function getGovLabel(govType) {
+    const map = {
+        gov_moral_democracy: '道德民主制', gov_plutocratic_oligarchy: '财阀寡头制',
+        gov_military_dictatorship: '军事独裁制', gov_theocratic_monarchy: '神权君主制',
+        gov_despotic_empire: '专制帝国', gov_feudal_empire: '封建帝国',
+        gov_military_junta: '军事执政团', gov_citizen_republic: '公民共和制',
+        gov_irenic_monarchy: '和平君主制', gov_despotic_hegemony: '专制霸权',
+        gov_megacorporation: '超大型企业', gov_hive_mind: '蜂巢思维',
+        gov_machine_empire: '机械帝国', gov_fanatic_purifiers: '极端净化者',
+    };
+    return map[govType] || govType || '未知政体';
+}
+
+function getPlanetClassShort(pc) {
+    const map = {
+        pc_continental: '陆地', pc_ocean: '海洋', pc_desert: '沙漠',
+        pc_arid: '干旱', pc_tundra: '冻原', pc_arctic: '极地',
+        pc_tropical: '热带', pc_alpine: '高山', pc_savannah: '草原',
+        pc_city: '城市', pc_machine: '机械', pc_hive: '蜂巢',
+        pc_ringworld_habitable: '环世', pc_habitat: '栖息地',
+    };
+    return map[pc] || pc?.replace('pc_', '') || '?';
+}
+
+function getCivilianType(name) {
+    const n = (name || '').toLowerCase();
+    if (n.includes('explorer') || n.includes('science')) return '科研船';
+    if (n.includes('constructor') || n.includes('builder')) return '工程船';
+    if (n.includes('colon')) return '殖民船';
+    if (n.includes('transport')) return '运输船';
+    return '民用';
+}
+
+function esc(s) {
+    const d = document.createElement('div');
+    d.textContent = s || '';
+    return d.innerHTML;
+}
+
+function escAttr(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+}

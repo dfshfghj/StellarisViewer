@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stellaris 存档查看器</title>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="loading-content">
+            <h1>Stellaris 存档查看器</h1>
+            <p>选择存档文件以开始</p>
+            <label class="file-btn">
+                选择 gamestate 文件
+                <input type="file" id="file-input" accept="*">
+            </label>
+            <div id="loading-progress" class="hidden">
+                <div class="progress-bar"><div class="progress-fill"></div></div>
+                <span id="loading-text">正在解析...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="app" class="hidden">
+        <!-- Top Resource Bar -->
+        <div id="resource-bar"></div>
+
+        <!-- Left Sidebar -->
+        <div id="sidebar">
+            <div class="sidebar-icon" data-action="galaxy" title="银河地图">🌌</div>
+            <div class="sidebar-icon" data-action="overview" title="概览">📋</div>
+            <div class="sidebar-icon" data-action="fleets" title="舰队">🚀</div>
+            <div class="sidebar-icon" data-action="planets" title="行星">🪐</div>
+            <div class="sidebar-icon" data-action="research" title="研究">🔬</div>
+        </div>
+
+        <!-- Main Canvas Area -->
+        <canvas id="main-canvas"></canvas>
+
+        <!-- Right Overview Panel -->
+        <div id="overview-panel" class="hidden">
+            <div class="panel-header">
+                <span>概览</span>
+                <button class="close-btn" id="close-overview">×</button>
+            </div>
+            <div class="panel-content" id="overview-content"></div>
+        </div>
+
+        <!-- Bottom Status Bar -->
+        <div id="status-bar">
+            <div class="status-left">
+                <span id="status-date"></span>
+            </div>
+            <div class="status-center">
+                <span class="pause-indicator">暂停</span>
+                <span id="status-empire"></span>
+            </div>
+            <div class="status-right">
+                <button class="ctrl-btn" id="btn-back" title="返回">←</button>
+            </div>
+        </div>
+
+        <!-- Fleet Window (popup) -->
+        <div id="fleet-window" class="popup-window hidden"></div>
+
+        <!-- Ship Detail Window (popup) -->
+        <div id="ship-window" class="popup-window hidden"></div>
+
+        <!-- Planet Window (full screen) -->
+        <div id="planet-window" class="hidden"></div>
+    </div>
+
+    <script type="module" src="/main.js"></script>
+</body>
+</html>
