@@ -163,12 +163,57 @@ fn main() {
         }
     }
 
+    // Test 6b: Parse only the buildings section
+    println!("\n=== Test: buildings section only ===");
+    if let Some(buildings_section) = extract_section(&cleaned, "buildings") {
+        println!("Buildings section: {} bytes", buildings_section.len());
+        #[derive(jomini::JominiDeserialize, Debug, Default)]
+        struct T {
+            #[jomini(default = "dh")]
+            buildings: std::collections::HashMap<u32, stellaris_parser::models::Building>,
+        }
+        fn dh<K, V>() -> std::collections::HashMap<K, V> { std::collections::HashMap::new() }
+        match jomini::text::de::from_utf8_slice::<T>(buildings_section.as_bytes()) {
+            Ok(t) => {
+                println!("  OK: {} buildings", t.buildings.len());
+                let samples: Vec<_> = t.buildings.iter().take(5).collect();
+                for (id, b) in samples {
+                    println!("    building {} => type={:?} position={:?}", id, b.building_type, b.position);
+                }
+            }
+            Err(e) => println!("  FAILED: {}", e),
+        }
+    }
+
+    // Test 6c: Parse only the zones section
+    println!("\n=== Test: zones section only ===");
+    if let Some(zones_section) = extract_section(&cleaned, "zones") {
+        println!("Zones section: {} bytes", zones_section.len());
+        #[derive(jomini::JominiDeserialize, Debug, Default)]
+        struct T {
+            #[jomini(default = "dh")]
+            zones: std::collections::HashMap<u32, stellaris_parser::models::Zone>,
+        }
+        fn dh<K, V>() -> std::collections::HashMap<K, V> { std::collections::HashMap::new() }
+        match jomini::text::de::from_utf8_slice::<T>(zones_section.as_bytes()) {
+            Ok(t) => {
+                println!("  OK: {} zones", t.zones.len());
+                let samples: Vec<_> = t.zones.iter().take(5).collect();
+                for (id, z) in samples {
+                    println!("    zone {} => type={:?} buildings={:?}", id, z.zone_type, z.buildings);
+                }
+            }
+            Err(e) => println!("  FAILED: {}", e),
+        }
+    }
+
     // Test 7: Full parse with preprocessed data
     println!("\n=== Test: Full Gamestate (preprocessed) ===");
     match jomini::text::de::from_utf8_slice::<Gamestate>(cleaned.as_bytes()) {
-        Ok(gs) => println!("  OK: {} systems, {} countries, {} ships, {} fleets, {} designs, {} leaders, {} districts",
+        Ok(gs) => println!("  OK: {} systems, {} countries, {} ships, {} fleets, {} designs, {} leaders, {} districts, {} buildings, {} zones",
             gs.galactic_object.len(), gs.country.len(), gs.ships.len(),
-            gs.fleet.len(), gs.ship_design.len(), gs.leaders.len(), gs.districts.len()),
+            gs.fleet.len(), gs.ship_design.len(), gs.leaders.len(), gs.districts.len(),
+            gs.buildings.len(), gs.zones.len()),
         Err(e) => println!("  FAILED: {}", e),
     }
 

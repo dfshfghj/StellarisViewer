@@ -5,20 +5,20 @@ export function renderPlanetWindow(container, data, callbacks) {
 
     container.innerHTML = `
         <div class="planet-header">
-            <div class="planet-governor-portrait">👤</div>
+            <div class="planet-governor-portrait"><img src="${import.meta.env.BASE_URL}gfx/interface/fleet_view/unknown_leader.png" alt=""></div>
             <div class="planet-title-block">
                 <div class="planet-name">${esc(data.name)}</div>
                 <div class="planet-class-label">${classLabel} · ${esc(data.designation || '')}</div>
                 <div class="planet-governor-name">${govLabel}</div>
             </div>
-            <button class="planet-close" id="planet-close">×</button>
+            <button class="planet-close" id="planet-close" title="关闭" aria-label="关闭"></button>
         </div>
         <div class="planet-resources">
-            <span class="planet-res-item">👥 ${data.num_pops}</span>
-            <span class="planet-res-item">⚖️ ${data.stability.toFixed(0)}%</span>
-            <span class="planet-res-item">🏠 ${data.total_housing.toFixed(0)}</span>
-            <span class="planet-res-item">🎭 ${data.amenities.toFixed(0)}/${data.amenities_usage.toFixed(0)}</span>
-            <span class="planet-res-item">⚔️ ${data.armies} 陆军</span>
+            ${planetMetric('pop.png', data.num_pops, '人口')}
+            ${planetMetric('stability.png', `${data.stability.toFixed(0)}%`, '稳定度')}
+            ${planetMetric('planet_housing.png', data.total_housing.toFixed(0), '住房')}
+            ${planetMetric('planet_amenities.png', `${data.amenities.toFixed(0)}/${data.amenities_usage.toFixed(0)}`, '舒适度')}
+            ${planetMetric('text_icons/text_icon_defense_army.png', `${data.armies}`, '陆军')}
         </div>
         <div class="planet-tabs">
             <div class="planet-tab active" data-tab="surface">地表</div>
@@ -33,7 +33,7 @@ export function renderPlanetWindow(container, data, callbacks) {
                 <div class="sidebar-section">
                     <div class="sidebar-section-title">行星总览</div>
                     <div class="sidebar-stat"><span class="label">类型</span><span class="value">${classLabel}</span></div>
-                    <div class="sidebar-stat"><span class="label">规模</span><span class="value">◆×${data.size}</span></div>
+                    <div class="sidebar-stat"><span class="label">规模</span><span class="value icon-value"><img src="${import.meta.env.BASE_URL}gfx/interface/icons/planet_size.png" alt="">${data.size}</span></div>
                     <div class="sidebar-stat"><span class="label">殖民时间</span><span class="value">${esc(data.colonize_date || '未殖民')}</span></div>
                     <div class="sidebar-stat"><span class="label">所有者</span><span class="value">${esc(data.owner_name || '无')}</span></div>
                     <div class="sidebar-stat"><span class="label">稳定度</span><span class="value">${data.stability.toFixed(1)}%</span></div>
@@ -62,6 +62,10 @@ export function renderPlanetWindow(container, data, callbacks) {
     renderTabContent(content, 'surface', data);
 }
 
+function planetMetric(icon, value, label) {
+    return `<span class="planet-res-item" title="${label}"><img src="${import.meta.env.BASE_URL}gfx/interface/icons/${icon}" alt="">${value}</span>`;
+}
+
 function renderTabContent(container, tab, data) {
     switch (tab) {
         case 'surface': renderSurfaceTab(container, data); break;
@@ -82,13 +86,13 @@ function renderSurfaceTab(container, data) {
     }
 
     const districtTypes = [
-        { key: 'district_city', label: '城市区划', icon: '🏙' },
-        { key: 'district_generator', label: '发电区划', icon: '⚡' },
-        { key: 'district_mining', label: '采矿区划', icon: '⛏' },
-        { key: 'district_farming', label: '农业区划', icon: '🌾' },
-        { key: 'district_industrial', label: '工业区划', icon: '🏭' },
-        { key: 'district_hive', label: '蜂巢区划', icon: '🐝' },
-        { key: 'district_nexus', label: '节点区划', icon: '🔗' },
+        { key: 'district_city', label: '城市区划', icon: '城' },
+        { key: 'district_generator', label: '发电区划', icon: '能' },
+        { key: 'district_mining', label: '采矿区划', icon: '矿' },
+        { key: 'district_farming', label: '农业区划', icon: '农' },
+        { key: 'district_industrial', label: '工业区划', icon: '工' },
+        { key: 'district_hive', label: '蜂巢区划', icon: '巢' },
+        { key: 'district_nexus', label: '节点区划', icon: '节' },
     ];
 
     let html = '<h3 style="font-size:0.85rem;margin-bottom:12px;color:var(--text-gold);">区划和建筑</h3>';
@@ -121,13 +125,13 @@ function renderSurfaceTab(container, data) {
         html += `
             <div class="district-section">
                 <div class="district-title">
-                    <span>📦 ${esc(type)}</span>
+                    <span><i class="district-glyph">?</i> ${esc(type)}</span>
                     <span class="district-progress">${districts.length} 个</span>
                 </div>
                 <div class="district-grid">
                     ${districts.map(d => `
                         <div class="district-slot filled">
-                            <div class="slot-icon">📦</div>
+                            <div class="slot-icon">?</div>
                             <div class="slot-level">Lv.${d.level}</div>
                         </div>
                     `).join('')}
@@ -149,7 +153,7 @@ function renderManageTab(container, data) {
         <div class="sidebar-section">
             <div class="sidebar-section-title">人口概要</div>
             <div class="pop-group">
-                <div class="pop-icon">👥</div>
+                <div class="pop-icon"><img src="${import.meta.env.BASE_URL}gfx/interface/icons/pop.png" alt=""></div>
                 <div class="pop-info">
                     <div class="pop-name">总人口</div>
                     <div class="pop-count">${data.num_pops}</div>
@@ -167,7 +171,7 @@ function renderManageTab(container, data) {
             <div class="sidebar-section-title">总督</div>
             ${data.governor ? `
             <div class="pop-group">
-                <div class="pop-icon">👤</div>
+                <div class="pop-icon"><img src="${import.meta.env.BASE_URL}gfx/interface/fleet_view/unknown_leader.png" alt=""></div>
                 <div class="pop-info">
                     <div class="pop-name">${esc(data.governor.name)}</div>
                     <div class="pop-count">${getLeaderClassLabel(data.governor.class)} · 等级 ${data.governor.level}</div>

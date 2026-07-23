@@ -106,6 +106,9 @@ pub struct LeaderBrief {
     pub class: String,
     pub level: u32,
     pub portrait: String,
+    pub age: u32,
+    pub experience: f64,
+    pub traits: Vec<String>,
 }
 
 #[derive(Serialize)]
@@ -150,16 +153,43 @@ pub struct PlanetDetail {
     pub governor: Option<LeaderBrief>,
     pub stability: f64,
     pub crime: f64,
+    pub devastation: f64,
     pub amenities: f64,
     pub amenities_usage: f64,
+    pub free_amenities: f64,
     pub free_housing: f64,
     pub total_housing: f64,
+    pub housing_usage: f64,
+    pub employable_pops: f64,
+    pub civilian: f64,
     pub num_pops: u32,
+    pub ascension_tier: u32,
     pub colonize_date: String,
     pub designation: String,
+    pub produces: ResourceInfo,
+    pub upkeep: ResourceInfo,
     pub districts: Vec<DistrictInfo>,
+    pub buildings: Vec<BuildingInfo>,
     pub armies: u32,
     pub deposits_count: u32,
+    /// Per-resource-category deposit counts, used to derive resource district caps.
+    pub resource_deposits: ResourceDepositCounts,
+    /// 行星修正：planet_modifier（永久）+ timed_modifier（限时）
+    pub modifiers: Vec<PlanetModifierInfo>,
+}
+
+#[derive(Serialize, Clone)]
+pub struct PlanetModifierInfo {
+    pub key: String,
+    /// 剩余天数；-1 = 永久
+    pub days: i32,
+}
+
+#[derive(Serialize, Default, Clone, Copy)]
+pub struct ResourceDepositCounts {
+    pub generator: i32,
+    pub mining: i32,
+    pub farming: i32,
 }
 
 #[derive(Serialize)]
@@ -167,6 +197,25 @@ pub struct DistrictInfo {
     pub id: u32,
     pub district_type: String,
     pub level: u32,
+    pub zones: Vec<ZoneInfo>,
+}
+
+#[derive(Serialize)]
+pub struct ZoneInfo {
+    pub id: u32,
+    /// Empty when the slot is locked (zone id == u32::MAX).
+    pub zone_type: String,
+    pub locked: bool,
+    /// Building-slot capacity of the zone (0 while locked).
+    pub slots: u32,
+    pub buildings: Vec<BuildingInfo>,
+}
+
+#[derive(Serialize)]
+pub struct BuildingInfo {
+    pub id: u32,
+    pub building_type: String,
+    pub position: u32,
 }
 
 #[derive(Serialize)]
@@ -557,6 +606,9 @@ pub fn extract_fleet_detail(
                             class: leader.class.clone().unwrap_or_default(),
                             level: leader.level.unwrap_or(1),
                             portrait: leader.portrait.clone().unwrap_or_default(),
+                            age: leader.age.unwrap_or(0),
+                            experience: leader.experience.unwrap_or(0.0),
+                            traits: leader.traits.clone(),
                         });
                     }
                 }
@@ -714,6 +766,12 @@ pub fn extract_ship_detail(
                 template: w.template.clone().unwrap_or_default(),
             });
         }
+        for sc in &sec.strike_craft {
+            weapons.push(ComponentSlot {
+                slot: sc.component_slot.clone().unwrap_or_default(),
+                template: sc.template.clone().unwrap_or_default(),
+            });
+        }
     }
 
     Some(ShipDetail {
@@ -735,6 +793,145 @@ pub fn extract_ship_detail(
     })
 }
 
+/// District-slot contribution (generator, mining, farming) of a deposit type.
+/// Generated from `district_<type>_max_add` in common/deposits/*.txt (Stellaris 4.4).
+/// A deposit may contribute to several categories, and some contributions are negative.
+fn deposit_district_add(deposit_type: &str) -> (i32, i32, i32) {
+    match deposit_type {
+        "d_abandoned_mining_tunnels" => (0, 6, 0),
+        "d_abandoned_primitive_homesteads" => (0, 0, 2),
+        "d_ancient_facilities" => (3, 0, 0),
+        "d_ancient_mining_site" => (0, 5, 0),
+        "d_ancient_reactor_pits" => (6, 0, 0),
+        "d_arid_highlands" => (1, 0, 0),
+        "d_aura_blocker" => (0, 0, 1),
+        "d_betharian_deposit" => (0, 4, 0),
+        "d_black_soil" => (0, 0, 3),
+        "d_boggy_fens" => (0, 0, 1),
+        "d_bogplants" => (0, 0, 1),
+        "d_boswash_metropolitan_axis" => (3, 0, 0),
+        "d_bountiful_plains" => (0, 0, 1),
+        "d_bubbling_swamp" => (0, 0, 3),
+        "d_buzzing_plains" => (1, 0, 0),
+        "d_crater_bluelotus" => (0, 1, 0),
+        "d_crystal_forest" => (0, 3, 0),
+        "d_crystal_kraken_body" => (0, 3, 0),
+        "d_crystal_kraken_body_bombed" => (0, 3, 0),
+        "d_crystal_reef" => (0, 3, 0),
+        "d_crystaline_growths" => (0, 1, 0),
+        "d_crystalline_caverns" => (0, 3, 0),
+        "d_dayside_farm" => (6, 0, 0),
+        "d_delhi_sprawl" => (2, 0, 0),
+        "d_dust_caverns" => (3, 0, 0),
+        "d_dust_desert" => (3, 0, 0),
+        "d_electrified_oceans" => (1, 0, 0),
+        "d_empty_quarry" => (0, -2, 0),
+        "d_explosive_atmosphere" => (1, 0, 0),
+        "d_fallen_orbital_shipyard" => (3, 3, 0),
+        "d_fertile_lands" => (0, 0, 2),
+        "d_forceful_winds" => (5, 0, 0),
+        "d_forgiving_tundra" => (0, 0, 1),
+        "d_frozen_gas_lake" => (2, 0, 0),
+        "d_fuming_bog" => (0, 0, 3),
+        "d_fungal_caves" => (0, 0, 2),
+        "d_fungal_forest" => (0, 0, 3),
+        "d_geothermal_hotspot" => (2, 0, 0),
+        "d_geothermal_vent" => (3, 0, 0),
+        "d_great_albertan_crater" => (0, 3, 0),
+        "d_great_river" => (0, 0, 2),
+        "d_green_hills" => (0, 0, 1),
+        "d_harvester_fields" => (0, 0, 6),
+        "d_hostile_fauna" => (0, 0, 1),
+        "d_hostile_flora" => (0, 0, 1),
+        "d_hot_springs" => (1, 0, 0),
+        "d_hyperfertile_valley" => (0, 0, 5),
+        "d_immense_solar_array" => (3, 0, 0),
+        "d_impact_crater" => (0, 3, 0),
+        "d_industrial_sector" => (0, 0, 6),
+        "d_irradiated_valley" => (3, 0, 0),
+        "d_junk_canals" => (0, 0, 3),
+        "d_junk_hollows" => (3, 0, 0),
+        "d_junk_wastes" => (0, 3, 0),
+        "d_lava_tubes" => (0, 3, 0),
+        "d_lichen_fields" => (0, 0, 1),
+        "d_lithoid_crater" => (0, 6, -6),
+        "d_lush_jungle" => (0, 0, 2),
+        "d_magnetic_storm_1_minerals" => (0, 3, 0),
+        "d_magnetic_storm_3_mix" => (0, 1, 0),
+        "d_marvelous_oasis" => (0, 0, 3),
+        "d_mauritanian_security_zone" => (0, 1, 0),
+        "d_mesopotamian_urban_corridor" => (0, 3, 0),
+        "d_metal_boneyard" => (0, 4, 0),
+        "d_metallic_puddles" => (0, 0, 3),
+        "d_migrating_forests" => (-1, -1, -1),
+        "d_mineral_fields" => (0, 1, 0),
+        "d_mineral_striations" => (0, 1, 0),
+        "d_nano_corpses" => (0, 3, 0),
+        "d_nanosands" => (0, 2, 0),
+        "d_natural_farmland" => (0, 0, 1),
+        "d_numas_breath" => (3, 0, 0),
+        "d_nutritious_mudland" => (0, 0, 1),
+        "d_ore_rich_caverns" => (0, 1, 0),
+        "d_organic_landfill" => (4, 0, 0),
+        "d_pacific_algae_tracts" => (0, 0, 3),
+        "d_pearl_river_agglomerate" => (3, 0, 0),
+        "d_planet_stripmine" => (0, 10, 0),
+        "d_polaris_city" => (0, 3, 0),
+        "d_project_cornucopia" => (0, 4, 0),
+        "d_prospectorium_strip_mine" => (0, 2, 0),
+        "d_prosperous_mesa" => (0, 2, 0),
+        "d_red_desert" => (0, 2, 0),
+        "d_relic_metal_boneyard" => (0, 3, 0),
+        "d_rich_mountain" => (0, 3, 0),
+        "d_rockworm_hive" => (0, 5, 0),
+        "d_rockworm_hive_volcanic" => (0, 5, 0),
+        "d_rugged_woods" => (0, 0, 1),
+        "d_rushing_waterfalls" => (2, 0, 0),
+        "d_saharan_irrigation_project" => (0, 0, 4),
+        "d_scandinavian_reclamation_sector" => (0, 0, 1),
+        "d_searing_desert" => (2, 0, 0),
+        "d_shroud_storm_2_zro" => (0, 0, -1),
+        "d_shroudstone" => (0, 1, 0),
+        "d_sky_mountain" => (0, 2, 0),
+        "d_solar_storm_2_districts" => (3, 0, 0),
+        "d_submerged_ore_veins" => (0, 3, 0),
+        "d_teeming_reef" => (0, 0, 3),
+        "d_tempestous_mountain" => (3, 0, 0),
+        "d_tree_of_life_colony" => (0, 0, 2),
+        "d_tree_of_life_home" => (0, 0, 4),
+        "d_tropical_island" => (0, 0, 3),
+        "d_turtle_corpse" => (0, 3, 3),
+        "d_underground_contact_zone" => (2, 0, 0),
+        "d_underground_farm" => (0, 0, 3),
+        "d_underground_generator" => (3, 0, 0),
+        "d_underground_mine" => (0, 3, 0),
+        "d_underground_vault_2" => (0, 2, 0),
+        "d_underwater_vent" => (3, 0, 0),
+        "d_veiny_cliffs" => (0, 1, 0),
+        "d_volcanic_active_planet" => (0, 3, 0),
+        "d_volcanic_fumarole" => (0, 3, 0),
+        "d_volcanic_lava_river" => (0, 3, 0),
+        "d_volcanic_mineral_fields" => (0, 2, 0),
+        "d_volcanic_mineral_hills" => (0, 1, 0),
+        "d_volcanic_mineral_layers" => (0, 2, 0),
+        "d_volcanic_ore_caverns" => (0, 2, 0),
+        "d_volcanic_ore_veins" => (0, 1, 0),
+        "d_volcanic_rich_mountain" => (0, 2, 0),
+        "d_volcanic_stifling_atmosphere" => (0, 3, 0),
+        "d_volcanic_sulfur_lava" => (0, 2, 0),
+        "d_volcanic_weak_crust" => (0, 2, 0),
+        "d_wilderness_farming" => (0, 0, -1),
+        "d_wilderness_farming_2" => (0, 0, -2),
+        "d_wilderness_generator" => (-1, 0, 0),
+        "d_wilderness_generator_2" => (-2, 0, 0),
+        "d_wilderness_mining" => (0, -1, 0),
+        "d_wilderness_mining_2" => (0, -2, 0),
+        "d_worm_farm" => (0, 0, 4),
+        "d_worm_mine" => (0, 4, 0),
+        _ => (0, 0, 0),
+    }
+}
+
 pub fn extract_planet_detail(gs: &Gamestate, planet_id: u32, name_vars: &HashMap<u32, String>) -> Option<PlanetDetail> {
     let planets_data = gs.planets.as_ref()?;
     let planet = planets_data.planet.get(&planet_id)?;
@@ -745,6 +942,9 @@ pub fn extract_planet_detail(gs: &Gamestate, planet_id: u32, name_vars: &HashMap
             class: l.class.clone().unwrap_or_default(),
             level: l.level.unwrap_or(1),
             portrait: l.portrait.clone().unwrap_or_default(),
+            age: l.age.unwrap_or(0),
+            experience: l.experience.unwrap_or(0.0),
+            traits: l.traits.clone(),
         })
     });
 
@@ -754,14 +954,99 @@ pub fn extract_planet_detail(gs: &Gamestate, planet_id: u32, name_vars: &HashMap
             .map(|c| resolve_name(&c.name))
     }).unwrap_or_default();
 
+    let mut modifiers: Vec<PlanetModifierInfo> = planet
+        .planet_modifier
+        .iter()
+        .map(|pm| PlanetModifierInfo { key: pm.clone(), days: -1 })
+        .collect();
+    if let Some(tm) = &planet.timed_modifier {
+        for item in &tm.items {
+            if let Some(key) = &item.modifier {
+                modifiers.push(PlanetModifierInfo {
+                    key: key.clone(),
+                    days: item.days.unwrap_or(-1),
+                });
+            }
+        }
+    }
+
     let mut districts = Vec::new();
     for &did in &planet.districts {
         if let Some(d) = gs.districts.get(&did) {
+            let mut zones = Vec::new();
+            for &zid in &d.zones {
+                if zid == u32::MAX {
+                    // Locked specialization slot.
+                    zones.push(ZoneInfo {
+                        id: zid,
+                        zone_type: String::new(),
+                        locked: true,
+                        slots: 0,
+                        buildings: Vec::new(),
+                    });
+                } else if let Some(z) = gs.zones.get(&zid) {
+                    let zone_type = z.zone_type.clone().unwrap_or_default();
+                    let slots = if zone_type == "zone_default" { 6 } else { 3 };
+                    let mut zbuildings = Vec::new();
+                    for &bid in &z.buildings {
+                        if let Some(b) = gs.buildings.get(&bid) {
+                            zbuildings.push(BuildingInfo {
+                                id: bid,
+                                building_type: b.building_type.clone().unwrap_or_default(),
+                                position: b.position.unwrap_or(0),
+                            });
+                        }
+                    }
+                    zones.push(ZoneInfo {
+                        id: zid,
+                        zone_type,
+                        locked: false,
+                        slots,
+                        buildings: zbuildings,
+                    });
+                }
+            }
             districts.push(DistrictInfo {
                 id: did,
                 district_type: d.district_type.clone().unwrap_or_default(),
                 level: d.level.unwrap_or(1),
+                zones,
             });
+        }
+    }
+
+    let mut buildings = Vec::new();
+    for &bid in &planet.buildings_cache {
+        if let Some(b) = gs.buildings.get(&bid) {
+            buildings.push(BuildingInfo {
+                id: bid,
+                building_type: b.building_type.clone().unwrap_or_default(),
+                position: b.position.unwrap_or(0),
+            });
+        }
+    }
+
+    let mut produces = ResourceInfo::default();
+    if let Some(p) = &planet.produces {
+        produces.add(p);
+    }
+    let mut upkeep = ResourceInfo::default();
+    if let Some(u) = &planet.upkeep {
+        upkeep.add(u);
+    }
+
+    // Resolve deposit IDs to types and sum their district-slot contributions.
+    // The cap for a resource district type is the sum of district_<type>_max_add
+    // across the planet's deposits (see common/deposits/*.txt), not the deposit count.
+    let mut resource_deposits = ResourceDepositCounts::default();
+    for &dep_id in &planet.deposits {
+        if let Some(dep) = gs.deposit.get(&dep_id) {
+            if let Some(t) = dep.deposit_type.as_deref() {
+                let (g, m, f) = deposit_district_add(t);
+                resource_deposits.generator += g;
+                resource_deposits.mining += m;
+                resource_deposits.farming += f;
+            }
         }
     }
 
@@ -775,16 +1060,27 @@ pub fn extract_planet_detail(gs: &Gamestate, planet_id: u32, name_vars: &HashMap
         governor,
         stability: planet.stability.unwrap_or(0.0),
         crime: planet.crime.unwrap_or(0.0),
+        devastation: planet.bombardment_damage.unwrap_or(0.0),
         amenities: planet.amenities.unwrap_or(0.0),
         amenities_usage: planet.amenities_usage.unwrap_or(0.0),
+        free_amenities: planet.free_amenities.unwrap_or(0.0),
         free_housing: planet.free_housing.unwrap_or(0.0),
         total_housing: planet.total_housing.unwrap_or(0.0),
+        housing_usage: planet.housing_usage.unwrap_or(0.0),
+        employable_pops: planet.employable_pops.unwrap_or(0.0),
+        civilian: planet.civilian.unwrap_or(0.0),
         num_pops: planet.num_sapient_pops.unwrap_or(0),
+        ascension_tier: planet.ascension_tier.unwrap_or(0),
         colonize_date: planet.colonize_date.clone().unwrap_or_default(),
         designation: planet.final_designation.clone().unwrap_or_default(),
+        produces,
+        upkeep,
         districts,
+        buildings,
         armies: planet.army.len() as u32,
         deposits_count: planet.deposits.len() as u32,
+        resource_deposits,
+        modifiers,
     })
 }
 

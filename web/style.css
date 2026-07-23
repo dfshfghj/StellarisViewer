@@ -26,181 +26,56 @@ body {
     width: 100vw;
 }
 
+* {
+    background: transparent;
+}
+
 .hidden { display: none !important; }
 
 /* Loading Screen */
 #loading-screen {
     position: fixed; inset: 0;
     display: flex; align-items: center; justify-content: center;
-    background: radial-gradient(ellipse at center, #0d1520 0%, #050810 100%);
+    background: radial-gradient(ellipse at center, #102925 0%, #03090c 72%);
     z-index: 1000;
 }
-.loading-content { text-align: center; }
-.loading-content h1 { font-size: 2rem; color: var(--text-gold); margin-bottom: 0.5rem; }
+.loading-content {
+    width: min(520px, calc(100vw - 30px));
+    min-height: 250px;
+    padding: 54px 46px 38px;
+    border: 20px solid transparent;
+    border-image: url('/gfx/interface/tiles/main_menu_tile.png') 20 fill / 20px / 0 repeat;
+    text-align: center;
+    box-shadow: 0 18px 65px #000;
+}
+.loading-content h1 { margin-bottom: .5rem; color: #dff8f0; font-size: 1.55rem; font-weight: 400; letter-spacing: .06em; }
 .loading-content p { color: var(--text-secondary); margin-bottom: 1.5rem; }
 .file-btn {
-    display: inline-block; padding: 12px 28px;
-    background: linear-gradient(135deg, #1a3050, #0d2040);
-    border: 1px solid var(--accent-blue); border-radius: 4px;
-    color: var(--text-primary); cursor: pointer; font-size: 1rem;
-    transition: all 0.2s;
+    display: inline-block;
+    width: 240px;
+    height: 34px;
+    padding: 6px 20px;
+    border: 0;
+    color: #e8f7f2;
+    background: url('/gfx/interface/buttons/button_240_34_animated.png') center / 300% 100% no-repeat;
+    cursor: pointer;
+    font-size: .9rem;
+    text-align: center;
+    text-shadow: 0 1px 2px #000;
 }
-.file-btn:hover { background: linear-gradient(135deg, #2a4060, #1a3050); border-color: #66aaff; }
+.file-btn:hover { background-position: left; }
+.file-btn:active { background-position: right; }
 .file-btn input { display: none; }
 .progress-bar {
-    width: 300px; height: 6px; background: #1a2a3a;
-    border-radius: 3px; margin: 1rem auto 0.5rem; overflow: hidden;
+    width: 300px; height: 6px; margin: 1rem auto .5rem; overflow: hidden;
+    border: 1px solid #386f64; background: #071315;
 }
-.progress-fill { height: 100%; width: 0%; background: var(--accent-blue); transition: width 0.3s; }
+.progress-fill { height: 100%; width: 0%; background: #58c7a9; transition: width .3s; }
 #loading-text { color: var(--text-secondary); font-size: 0.85rem; }
 
 /* App Layout */
 #app { position: relative; width: 100vw; height: 100vh; }
 #main-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
-
-/* Resource Bar */
-#resource-bar {
-    position: absolute; top: 0; left: 0; right: 0; height: 42px;
-    background: linear-gradient(180deg, rgba(25, 37, 31, 0.95), rgba(12, 16, 15, 0.8));
-    border-bottom: 1px solid var(--border-color);
-    display: flex; align-items: center; padding: 0 8px; gap: 10px;
-    z-index: 100; font-size: 0.78rem; overflow-x: auto;
-}
-.resource-item {
-    margin: 0 6px; line-height: 1 ; display: flex; flex-direction: column; align-items: center; white-space: nowrap; flex: 0 0 auto;
-}
-.resource-icon { width: 18px; height: 18px; object-fit: contain; filter: drop-shadow(0 0 2px rgba(120, 220, 210, 0.45)); }
-.resource-value { color: var(--text-primary); font-weight: 500; }
-.resource-delta { font-size: 0.72rem; font-weight: 600; }
-.resource-delta.positive { color: var(--accent-green); }
-.resource-delta.negative { color: var(--accent-red); }
-.resource-delta.neutral { color: var(--text-secondary); }
-.resource-separator { width: 1px; height: 22px; margin: 0 2px; background: linear-gradient(transparent, rgba(120, 180, 170, 0.7), transparent); flex: 0 0 auto; }
-
-/* Sidebar */
-#sidebar {
-    position: absolute; left: 0; top: 36px; bottom: 32px;
-    width: 44px; background: rgba(10,14,20,0.9);
-    border-right: 1px solid var(--border-color);
-    display: flex; flex-direction: column; align-items: center;
-    padding-top: 8px; gap: 4px; z-index: 100;
-}
-.sidebar-icon {
-    width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
-    border-radius: 4px; cursor: pointer; font-size: 1.1rem;
-    transition: background 0.2s;
-}
-.sidebar-icon:hover { background: var(--bg-panel-light); }
-.sidebar-icon.active { background: var(--bg-panel-light); border: 1px solid var(--accent-blue); }
-
-/* Overview Panel */
-#overview-panel {
-    position: absolute; right: 0; top: 36px; bottom: 32px; width: 280px;
-    background: rgba(17,24,32,0.95); border-left: 1px solid var(--border-color);
-    z-index: 100; display: flex; flex-direction: column; overflow: hidden;
-}
-.panel-header {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 10px 12px; border-bottom: 1px solid var(--border-color);
-    font-weight: 600; font-size: 0.9rem;
-}
-.close-btn {
-    background: none; border: none; color: var(--text-secondary);
-    font-size: 1.2rem; cursor: pointer; padding: 2px 6px;
-}
-.close-btn:hover { color: var(--accent-red); }
-.panel-content { flex: 1; overflow-y: auto; padding: 8px; }
-.panel-section { margin-bottom: 12px; }
-.panel-section-title {
-    font-size: 0.75rem; color: var(--text-gold); text-transform: uppercase;
-    margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid var(--border-color);
-}
-.panel-item {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 4px 6px; border-radius: 3px; cursor: pointer; font-size: 0.8rem;
-}
-.panel-item:hover { background: var(--bg-panel-light); }
-.panel-item .item-name { color: var(--text-primary); }
-.panel-item .item-value { color: var(--text-secondary); font-size: 0.75rem; }
-
-/* Status Bar */
-#status-bar {
-    position: absolute; bottom: 0; left: 0; right: 0; height: 32px;
-    background: linear-gradient(0deg, rgba(10,14,20,0.95), rgba(10,14,20,0.8));
-    border-top: 1px solid var(--border-color);
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 12px; z-index: 100; font-size: 0.8rem;
-}
-.status-center { display: flex; align-items: center; gap: 12px; }
-.pause-indicator { color: var(--text-gold); font-weight: 600; }
-.ctrl-btn {
-    background: var(--bg-panel-light); border: 1px solid var(--border-color);
-    color: var(--text-primary); padding: 2px 10px; border-radius: 3px;
-    cursor: pointer; font-size: 0.8rem;
-}
-.ctrl-btn:hover { border-color: var(--accent-blue); }
-
-/* Popup Windows (Fleet, Ship) */
-.popup-window {
-    position: absolute; z-index: 200;
-    background: rgba(17,24,32,0.97); border: 1px solid var(--border-color);
-    border-radius: 6px; box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-    min-width: 380px; max-width: 500px;
-}
-.popup-header {
-    display: flex; justify-content: space-between; align-items: flex-start;
-    padding: 12px 14px 8px; border-bottom: 1px solid var(--border-color);
-    cursor: move; user-select: none; touch-action: none;
-}
-.popup-window.dragging { box-shadow: 0 12px 40px rgba(0,0,0,0.78); }
-.popup-title { font-size: 1rem; font-weight: 600; }
-.popup-subtitle { font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px; }
-.popup-close {
-    background: none; border: none; color: var(--accent-red);
-    font-size: 1.1rem; cursor: pointer; padding: 2px 6px;
-}
-.popup-body { padding: 10px 14px; max-height: 400px; overflow-y: auto; }
-
-/* Status Bars */
-.stat-bars { display: flex; gap: 8px; margin: 8px 0; }
-.stat-bar {
-    flex: 1; height: 20px; background: #1a2a3a; border-radius: 3px;
-    position: relative; overflow: hidden;
-}
-.stat-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
-.stat-bar-fill.hull { background: linear-gradient(90deg, #2a6, #3c8); }
-.stat-bar-fill.shield { background: linear-gradient(90deg, #26a, #48c); }
-.stat-bar-fill.armor { background: linear-gradient(90deg, #a62, #c84); }
-.stat-bar-label {
-    position: absolute; inset: 0; display: flex; align-items: center;
-    justify-content: center; font-size: 0.65rem; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.8);
-}
-
-/* Commander Section */
-.commander-section { display: flex; gap: 10px; align-items: center; margin: 10px 0; }
-.commander-portrait {
-    width: 48px; height: 48px; border-radius: 4px;
-    background: linear-gradient(135deg, #2a3a5a, #1a2a4a);
-    border: 1px solid var(--border-color);
-    display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
-}
-.commander-info { flex: 1; }
-.commander-name { font-size: 0.85rem; font-weight: 500; }
-.commander-role { font-size: 0.7rem; color: var(--text-secondary); }
-.commander-level { font-size: 0.7rem; color: var(--text-gold); }
-
-/* Ship Grid */
-.ship-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 10px 0; }
-.ship-grid-item {
-    aspect-ratio: 1; background: var(--bg-panel-light);
-    border: 1px solid var(--border-color); border-radius: 4px;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    cursor: pointer; font-size: 0.6rem; color: var(--text-secondary);
-    transition: border-color 0.2s; padding: 4px;
-}
-.ship-grid-item:hover { border-color: var(--accent-blue); }
-.ship-grid-item .ship-icon { font-size: 1.2rem; margin-bottom: 2px; }
-.ship-grid-item .ship-class { text-align: center; overflow: hidden; text-overflow: ellipsis; }
 
 /* Ship Detail */
 #ship-window {
@@ -208,18 +83,21 @@ body {
     min-width: 0;
     max-width: 650px;
     overflow: hidden;
-    border-color: #315f59;
+    border: 0;
     border-radius: 0;
-    background:
-        linear-gradient(180deg, rgba(19, 45, 39, 0.98) 0, rgba(8, 20, 21, 0.98) 76px),
-        rgba(8, 18, 20, 0.98);
+    background-color: rgba(8, 18, 20, 0.98);
+    background-image: url('/gfx/interface/tiles/outliner_tile.png');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
     box-shadow: 0 12px 36px rgba(0, 0, 0, 0.72), inset 0 0 24px rgba(31, 103, 83, 0.14);
 }
 .ship-popup-header {
     min-height: 64px;
     padding: 10px 18px 8px;
     border-bottom: 1px solid rgba(78, 156, 132, 0.32);
-    background: linear-gradient(110deg, rgba(44, 102, 81, 0.28), transparent 78%);
+    background-color: transparent;
+    background: transparent;
 }
 .ship-heading { min-width: 0; }
 .ship-popup-header .popup-title {
@@ -236,19 +114,7 @@ body {
     font-size: 0.78rem;
     font-weight: 600;
 }
-.ship-popup-header .popup-close {
-    width: 34px;
-    height: 34px;
-    margin: -3px -7px 0 10px;
-    padding: 0;
-    border: 1px solid #397c70;
-    color: #d7fff8;
-    font-size: 1.75rem;
-    font-weight: 200;
-    line-height: 30px;
-    text-shadow: 0 0 8px #65ffe2;
-    background: rgba(15, 55, 49, 0.6);
-}
+.ship-popup-header .popup-close { margin: -3px -7px 0 10px; }
 .ship-popup-body {
     max-height: min(560px, calc(100vh - 190px));
     padding: 0 14px 10px;
@@ -277,7 +143,6 @@ body {
     align-items: center;
     justify-content: center;
 }
-.ship-placeholder { font-size: 3.3rem; opacity: 0.68; filter: drop-shadow(0 0 12px rgba(100, 215, 220, 0.4)); }
 .ship-stats {
     display: flex;
     flex-direction: column;
@@ -309,65 +174,39 @@ body {
 .component-grid {
     min-height: 63px;
     padding: 5px;
-    border: 1px solid rgba(63, 142, 118, 0.72);
+    border: 12px solid transparent;
+    border-image: url('/gfx/interface/tiles/planet_view_glow_tile.png') 12 fill / 12px / 0 stretch;
     display: flex;
     flex-wrap: wrap;
     align-content: flex-start;
     gap: 4px;
     background: rgba(3, 12, 14, 0.38);
-    box-shadow: inset 0 0 14px rgba(19, 86, 69, 0.14);
 }
 .component-slot {
-    --slot-color: #3bb398;
     position: relative;
-    width: 55px;
-    height: 55px;
+    width: 58px;
+    height: 58px;
     overflow: hidden;
-    border: 2px solid var(--slot-color);
-    border-radius: 1px;
-    background: #09191b;
+    border: 0;
+    border-radius: 0;
+    background-color: #09191b;
+    background-image: url('/gfx/interface/ship_designer/ship_designer_slot.png');
+    background-position: var(--slot-position, 0%) center;
+    background-repeat: no-repeat;
+    background-size: 1600% 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: inset 0 0 0 1px #07100f, inset 0 0 8px color-mix(in srgb, var(--slot-color) 35%, transparent);
 }
-.component-slot::after {
-    position: absolute;
-    inset: 3px;
-    border: 1px solid color-mix(in srgb, var(--slot-color) 58%, transparent);
-    content: '';
-    pointer-events: none;
-}
-.component-icon { width: 100%; height: 100%; object-fit: cover; image-rendering: auto; }
-.slot-badge {
-    position: absolute;
-    top: -1px;
-    left: -1px;
-    z-index: 3;
-    width: 25px;
-    height: 22px;
-    background-image: url('/gfx/interface/icons/component_slot_icons.png');
-    background-repeat: no-repeat;
-    transform: scale(0.72);
-    transform-origin: top left;
-    filter: drop-shadow(0 1px 1px #000);
-}
-.slot-badge-p { background-position: 0 0; }
-.slot-badge-s { background-position: -25px 0; }
-.slot-badge-m { background-position: -50px 0; }
-.slot-badge-l { background-position: -75px 0; }
-.slot-badge-g { background-position: -100px 0; }
-.slot-badge-x { background-position: -125px 0; }
-.slot-badge-a { background-position: -200px 0; }
-.slot-badge-h { background-position: -275px 0; }
-.slot-frame-p { --slot-color: #8f3cff; }
-.slot-frame-s { --slot-color: #d99724; }
-.slot-frame-m { --slot-color: #dd6c24; }
-.slot-frame-l { --slot-color: #31c594; }
-.slot-frame-g { --slot-color: #41c176; }
-.slot-frame-x { --slot-color: #7140dc; }
-.slot-frame-a { --slot-color: #3fc46f; }
-.slot-frame-h { --slot-color: #e6cf24; }
+.component-icon { width: 52px; height: 52px; object-fit: cover; image-rendering: auto; }
+.slot-frame-p { --slot-position: 20%; }
+.slot-frame-s { --slot-position: 26.6667%; }
+.slot-frame-m { --slot-position: 33.3333%; }
+.slot-frame-l { --slot-position: 40%; }
+.slot-frame-g { --slot-position: 46.6667%; }
+.slot-frame-x { --slot-position: 53.3333%; }
+.slot-frame-a { --slot-position: 80%; }
+.slot-frame-h { --slot-position: 86.6667%; }
 
 .ship-popup-actions {
     gap: 50px;
@@ -375,114 +214,15 @@ body {
     border-top: 0;
 }
 .ship-popup-actions .action-btn {
-    min-height: 37px;
-    padding: 6px 12px;
-    border: 1px solid #477f76;
-    border-radius: 0;
-    color: #e8f3ef;
+    min-height: 34px;
     font-size: 0.82rem;
-    background: rgba(14, 42, 40, 0.38);
 }
-.action-btn:hover { border-color: var(--accent-blue); }
 
 @media (max-width: 620px) {
     .ship-overview { grid-template-columns: 1fr; }
     .ship-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
     .ship-popup-actions { gap: 10px; padding-inline: 14px; }
 }
-
-/* Planet Window */
-#planet-window {
-    position: absolute; inset: 0; z-index: 300;
-    background: rgba(10,14,20,0.98);
-    display: flex; flex-direction: column;
-}
-.planet-header {
-    display: flex; align-items: center; gap: 12px;
-    padding: 12px 16px; border-bottom: 1px solid var(--border-color);
-    background: var(--bg-panel);
-}
-.planet-governor-portrait {
-    width: 44px; height: 44px; border-radius: 4px;
-    background: linear-gradient(135deg, #2a3a5a, #1a2a4a);
-    border: 1px solid var(--border-color);
-    display: flex; align-items: center; justify-content: center; font-size: 1.3rem;
-}
-.planet-title-block { flex: 1; }
-.planet-name { font-size: 1.1rem; font-weight: 600; }
-.planet-class-label { font-size: 0.75rem; color: var(--text-secondary); }
-.planet-governor-name { font-size: 0.75rem; color: var(--text-gold); }
-.planet-close {
-    background: none; border: none; color: var(--accent-red);
-    font-size: 1.3rem; cursor: pointer; padding: 4px 8px;
-}
-.planet-resources {
-    display: flex; gap: 12px; padding: 8px 16px;
-    border-bottom: 1px solid var(--border-color); font-size: 0.75rem;
-}
-.planet-res-item { display: flex; align-items: center; gap: 4px; }
-
-/* Planet Tabs */
-.planet-tabs {
-    display: flex; border-bottom: 1px solid var(--border-color);
-    background: var(--bg-panel);
-}
-.planet-tab {
-    padding: 8px 20px; cursor: pointer; font-size: 0.8rem;
-    color: var(--text-secondary); border-bottom: 2px solid transparent;
-    transition: all 0.2s;
-}
-.planet-tab:hover { color: var(--text-primary); }
-.planet-tab.active { color: var(--text-primary); border-bottom-color: var(--accent-green); }
-
-/* Planet Content */
-.planet-body { flex: 1; display: flex; overflow: hidden; }
-.planet-main { flex: 1; overflow-y: auto; padding: 16px; }
-.planet-sidebar {
-    width: 240px; border-left: 1px solid var(--border-color);
-    overflow-y: auto; padding: 12px; background: var(--bg-panel);
-}
-
-/* District Grid */
-.district-section { margin-bottom: 16px; }
-.district-title {
-    font-size: 0.8rem; color: var(--text-gold); margin-bottom: 8px;
-    display: flex; justify-content: space-between; align-items: center;
-}
-.district-progress { font-size: 0.7rem; color: var(--text-secondary); }
-.district-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 6px; }
-.district-slot {
-    aspect-ratio: 1; background: var(--bg-panel-light);
-    border: 1px solid var(--border-color); border-radius: 4px;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    font-size: 0.6rem; color: var(--text-secondary);
-}
-.district-slot.filled { border-color: var(--accent-green); }
-.district-slot .slot-icon { font-size: 1.2rem; margin-bottom: 2px; }
-.district-slot .slot-level { color: var(--text-gold); font-size: 0.6rem; }
-
-/* Planet Sidebar */
-.sidebar-section { margin-bottom: 14px; }
-.sidebar-section-title {
-    font-size: 0.75rem; color: var(--text-gold); margin-bottom: 6px;
-    padding-bottom: 4px; border-bottom: 1px solid var(--border-color);
-}
-.sidebar-stat {
-    display: flex; justify-content: space-between; font-size: 0.75rem;
-    padding: 3px 0;
-}
-.sidebar-stat .label { color: var(--text-secondary); }
-.sidebar-stat .value { color: var(--text-primary); }
-
-/* Population Section */
-.pop-group {
-    display: flex; align-items: center; gap: 8px; padding: 6px 8px;
-    background: var(--bg-panel-light); border-radius: 4px; margin-bottom: 6px;
-}
-.pop-icon { font-size: 1.2rem; }
-.pop-info { flex: 1; }
-.pop-name { font-size: 0.8rem; }
-.pop-count { font-size: 0.7rem; color: var(--text-secondary); }
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; }
@@ -496,4 +236,454 @@ body {
     border: 1px solid var(--border-color); border-radius: 4px;
     padding: 6px 10px; font-size: 0.75rem; pointer-events: none;
     max-width: 200px;
+}
+
+/* Stellaris GUI/GFX translation layer. */
+:root {
+    --stellaris-green: #55d3b2;
+    --stellaris-green-dim: #275f55;
+    --stellaris-line: rgba(91, 210, 180, 0.48);
+    --stellaris-panel: rgba(7, 23, 25, 0.965);
+    --stellaris-panel-2: rgba(13, 39, 38, 0.97);
+    --stellaris-gold: #e5ce73;
+    --gfx-topbar-background: url('/gfx/interface/main/topbar_background.png');
+    --gfx-outliner-tile: url('/gfx/interface/tiles/outliner_tile.png');
+    --gfx-fleet-background: url('/gfx/interface/fleet_view/fleet_view_main_warships_bg.png');
+    --gfx-planet-background: url('/gfx/interface/planetview/planet_view_middle.png');
+    --gfx-dialog-background: url('/gfx/interface/tiles/main_menu_tile.png');
+}
+
+button { font: inherit; }
+
+.gfx-frame {
+    --frames: 1;
+    --frame-position: 0%;
+    display: inline-block;
+    flex: 0 0 auto;
+    background-image: var(--sprite);
+    background-position: var(--frame-position) center;
+    background-repeat: no-repeat;
+    background-size: calc(var(--frames) * 100%) 100%;
+}
+
+#resource-bar {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    height: 47px;
+    gap: 3px;
+    justify-content: center;
+    padding: 3px 58px 6px 54px;
+    overflow: visible;
+    border: 0;
+    background: transparent;
+    box-shadow: 0 2px 13px #000, inset 0 -1px rgba(90, 235, 196, 0.38);
+    font-size: .78rem;
+}
+#resource-bar::before {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border: 8px solid transparent;
+    border-image: var(--gfx-topbar-background) 8 fill / 8px / 0 repeat;
+    content: '';
+    pointer-events: none;
+}
+.resource-item, .resource-separator { z-index: 1; }
+
+.resource-item {
+    position: relative;
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    line-height: 1;
+    white-space: nowrap;
+    min-width: 49px;
+    height: 36px;
+    margin: 0;
+    flex-direction: row;
+    justify-content: center;
+    gap: 2px;
+    padding: 4px 5px 3px 4px;
+    border-left: 1px solid rgba(94, 185, 161, 0.18);
+    background: linear-gradient(180deg, rgba(37, 88, 74, 0.22), rgba(2, 12, 14, 0.04));
+}
+.resource-item:hover { background: rgba(72, 166, 141, 0.2); }
+.resource-icon { width: 21px; height: 21px; object-fit: contain; filter: drop-shadow(0 0 2px rgba(120, 220, 210, .45)); }
+.resource-value { color: var(--text-primary); font-size: 0.73rem; font-weight: 500; text-shadow: 0 1px 2px #000; }
+.resource-value.positive { color: #8ce19d; }
+.resource-value.negative { color: #ef766d; }
+.resource-separator { width: 1px; height: 30px; margin: 0 3px; flex: 0 0 auto; background: linear-gradient(transparent, #64ad96, transparent); }
+
+#sidebar {
+    position: absolute;
+    left: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    top: 47px;
+    bottom: 35px;
+    width: 50px;
+    gap: 2px;
+    padding: 8px 5px;
+    border: 0;
+    background-color: rgba(4, 15, 17, 0.98);
+    background-image: url('/gfx/interface/main/navbar_bg.png');
+    background-position: left top;
+    background-size: auto 100%;
+    box-shadow: 2px 0 9px #000, inset -1px 0 var(--stellaris-line);
+}
+.sidebar-icon {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    padding: 2px;
+    border: 1px solid transparent;
+    border-radius: 0;
+    color: inherit;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+.sidebar-icon img { width: 34px; height: 34px; object-fit: contain; filter: drop-shadow(0 1px 2px #000); }
+.nav-sprite { width: 40px; height: 24px; filter: drop-shadow(0 1px 2px #000); }
+.sidebar-icon:hover .nav-sprite { --frame-position: 50%; }
+.sidebar-icon.active .nav-sprite,
+.sidebar-icon:active .nav-sprite { --frame-position: 100%; }
+.sidebar-icon:hover { border-color: #397e70; background: rgba(51, 121, 104, 0.28); }
+.sidebar-icon.active { border-color: #72d4bd; background: radial-gradient(circle, rgba(80, 207, 174, 0.28), transparent 72%); box-shadow: inset 0 0 7px rgba(90, 240, 201, 0.28); }
+.sidebar-divider { width: 34px; height: 1px; margin: 5px 0; background: linear-gradient(90deg, transparent, #448c7b, transparent); }
+
+#overview-panel {
+    position: absolute;
+    right: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    top: 47px;
+    bottom: 35px;
+    width: 300px;
+    border: 80px solid transparent;
+    border-width: 30px 0 30px 80px;
+    border-image: var(--gfx-outliner-tile) 30 0 30 80 fill / 30px 0 30px 80px / 0 stretch;
+    background: rgba(5, 17, 19, .92);
+    box-shadow: -5px 0 15px rgba(0,0,0,.72), inset 9px 0 18px rgba(38, 105, 86, 0.08);
+}
+.popup-close, .planet-close, .gfx-icon-button {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    color: transparent;
+    background: transparent;
+    background-position: left center;
+    background-repeat: no-repeat;
+    background-size: 300% 100%;
+    cursor: pointer;
+}
+.popup-close, .planet-close { background-image: url('/gfx/interface/buttons/close_button_square.png'); }
+.popup-close:hover, .planet-close:hover, .gfx-icon-button:hover { background-position: center; }
+.popup-close:active, .planet-close:active, .gfx-icon-button:active { background-position: right; }
+
+#status-bar {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 35px;
+    padding: 0 12px;
+    border-top-color: #346f63;
+    background: linear-gradient(0deg, rgba(4, 14, 16, .99), rgba(20, 52, 47, .96));
+    box-shadow: 0 -3px 10px #000;
+    font-size: .8rem;
+}
+.status-center { display: flex; align-items: center; gap: 12px; }
+.pause-indicator { color: #f0db7d; letter-spacing: .05em; }
+.pause-glyph { display: inline-block; margin-right: 3px; color: #8ff1d3; }
+.ctrl-btn {
+    width: 38px;
+    height: 38px;
+    overflow: hidden;
+    border: 0;
+    color: transparent;
+    background: url('/gfx/interface/buttons/button_back.png') left center / 300% 100% no-repeat;
+    cursor: pointer;
+}
+.ctrl-btn:hover { background-position: center; }
+.ctrl-btn:active { background-position: right; }
+
+.popup-window {
+    position: absolute;
+    z-index: 200;
+    min-width: 380px;
+    border: 1px solid #397f70;
+    border-radius: 0;
+    background-color: var(--stellaris-panel);
+    box-shadow: 0 12px 35px rgba(0,0,0,.8), inset 0 0 24px rgba(55, 150, 124, .1);
+}
+.popup-window.dragging { box-shadow: 0 16px 44px rgba(0,0,0,.88); }
+.popup-header { display: flex; align-items: flex-start; justify-content: space-between; padding: 12px 14px 8px; cursor: move; user-select: none; touch-action: none; }
+.popup-title { font-size: 1rem; font-weight: 600; }
+.popup-subtitle { margin-top: 2px; color: var(--text-secondary); font-size: .75rem; }
+.popup-close { padding: 2px 6px; font-size: 1.1rem; }
+.popup-body { max-height: 400px; padding: 10px 14px; overflow-y: auto; }
+#fleet-window {
+    width: min(510px, calc(100vw - 24px));
+    min-width: 0;
+    max-width: 510px;
+    border-color: transparent;
+    background-image: var(--gfx-fleet-background);
+    background-position: left 47px;
+    background-repeat: no-repeat;
+    background-size: 100% 250px;
+    background-color: transparent;
+    box-shadow: none;
+}
+#fleet-window[data-fleet-theme="science"] { --gfx-fleet-background: url('/gfx/interface/fleet_view/fleet_view_main_science_bg.png'); }
+#fleet-window[data-fleet-theme="transport"] { --gfx-fleet-background: url('/gfx/interface/fleet_view/fleet_view_main_transport_bg.png'); }
+#fleet-window[data-fleet-theme="civilian"] { --gfx-fleet-background: url('/gfx/interface/fleet_view/fleet_view_main_civilian_bg.png'); }
+#fleet-window[data-fleet-theme="station"] { --gfx-fleet-background: url('/gfx/interface/fleet_view/fleet_view_main_shipyard_padding_bg.png'); }
+.fleet-popup-header {
+    min-height: 47px;
+    align-items: center;
+    padding: 4px 10px 4px 7px;
+    border: 0;
+    background-color: transparent;
+    background-image: url('/gfx/interface/fleet_view/fleet_view_top_panel.png');
+    background-size: 100% 100%;
+}
+.fleet-emblem { width: 38px; height: 38px; margin-right: 8px; overflow: hidden; border: 0; background: transparent; }
+.fleet-type-sprite { width: 32px; height: 32px; }
+.fleet-popup-header > div:nth-child(2) { flex: 1; min-width: 0; }
+.fleet-header-actions { display: flex; align-items: center; gap: 0; margin-left: auto; }
+.fleet-manager-button { background-image: url('/gfx/interface/fleet_view/fleet_manager_button.png'); }
+.fleet-disband-button { background-image: url('/gfx/interface/fleet_view/fleet_action_button_destroy_fleet.png'); }
+.fleet-strength-row { display: flex; align-items: center; justify-content: space-between; margin: 3px 0 8px; color: #a6c9bf; font-size: .77rem; }
+.fleet-stat-strip { display: flex; align-items: center; gap: 8px; min-height: 26px; margin: 0 5px 6px; color: #6dff54; }
+.fleet-stat { display: inline-flex; align-items: center; gap: 2px; min-width: 48px; white-space: nowrap; font-size: .75rem; text-shadow: 0 1px 2px #000; }
+.fleet-stat:nth-child(5) { margin-left: auto; }
+.fleet-stat:nth-last-child(-n+2) { color: #f2e83f; }
+.fleet-stat img { width: 19px; height: 19px; object-fit: contain; }
+.commander-section {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    width: 283px;
+    min-height: 105px;
+    margin: 4px 0 8px 7px;
+    padding: 8px;
+    border: 0;
+    background: url('/gfx/interface/tiles/dark_area_cut_8.png') center / 100% 100% no-repeat;
+}
+.commander-info { flex: 1; }
+.commander-name { color: #efff39; font-size: .88rem; font-weight: 500; }
+.commander-role { color: var(--text-secondary); font-size: .7rem; }
+.commander-experience { margin-top: 3px; color: var(--stellaris-gold); font-size: .67rem; }
+.commander-traits { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 5px; }
+.commander-traits span { max-width: 88px; padding: 1px 4px; overflow: hidden; border: 1px solid #2c7466; color: #8debd1; background: #092b28; font-size: .58rem; text-overflow: ellipsis; white-space: nowrap; }
+.commander-empty { color: #7da398; }
+.commander-empty .commander-name { color: #b7d0c8; }
+.leader-assign-icon { width: 42px; height: 42px; object-fit: contain; }
+.commander-portrait, .planet-governor-portrait { border-radius: 0; border-color: #4c8e7f; background: radial-gradient(circle, #285a53, #0b2425); color: #8edbc7; }
+.commander-portrait { width: 52px; height: 62px; overflow: hidden; }
+.commander-portrait img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+.ship-grid { display: grid; grid-template-columns: 1fr; gap: 0; margin: 10px 0; }
+.ship-grid-item {
+    min-height: 42px;
+    aspect-ratio: auto;
+    flex-direction: row;
+    justify-content: flex-start;
+    padding: 0 12px 0 3px;
+    border: 0;
+    border-radius: 0;
+    background: url('/gfx/interface/fleet_view/ship_entry_bg.png') center / 100% 42px no-repeat;
+    display: flex;
+    align-items: center;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+.ship-grid-item:hover { border: 0; filter: brightness(1.28); box-shadow: inset 0 0 10px rgba(68, 212, 174, .16); }
+.ship-grid-item .ship-icon { width: 38px; height: 35px; margin: 0 7px 0 4px; }
+.ship-grid-item .ship-icon img { width: 34px; height: 31px; object-fit: contain; }
+.ship-size-sprite { width: 30px; height: 30px; }
+.ship-entry-copy { min-width: 0; flex: 1; text-align: left; }
+.ship-grid-item .ship-class { max-width: 100%; color: #dbece7; font-size: .73rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ship-size { color: #6fa796; font-size: .6rem; }
+.ship-entry-power { color: #ebdf72; font-size: .7rem; }
+.ship-condition { width: 18px; height: 38px; display: flex; align-items: flex-end; gap: 2px; }
+.mini-condition { width: 4px; height: 32px; display: flex; align-items: flex-end; border: 1px solid rgba(2, 8, 9, .8); background: rgba(3, 9, 10, .75); }
+.mini-condition i { display: block; width: 100%; }
+.mini-hull i { background: #49bd73; }
+.mini-armor i { background: #d4893f; }
+.mini-shield i { background: #55a5d9; }
+.popup-actions { display: flex; justify-content: center; gap: 16px; padding: 10px; border-top: 1px solid rgba(60, 132, 113, .32); }
+.action-btn {
+    width: 240px;
+    height: 34px;
+    padding: 5px 14px;
+    border: 0;
+    border-radius: 0;
+    color: #e8f7f2;
+    background: url('/gfx/interface/buttons/button_240_34_animated.png') center / 300% 100% no-repeat;
+    cursor: pointer;
+    text-shadow: 0 1px 2px #000;
+}
+.action-btn:hover { background-position: left; }
+.action-btn:active { background-position: right; }
+.game-button {
+    width: 172px;
+    height: 34px;
+    padding: 5px 12px;
+    border: 0;
+    color: #e8f7f2;
+    background: url('/gfx/interface/buttons/button_172_animated.png') center / 300% 100% no-repeat;
+    cursor: pointer;
+    text-shadow: 0 1px 2px #000;
+}
+.game-button:hover { background-position: left; }
+.game-button:active { background-position: right; }
+
+#planet-window {
+    position: absolute;
+    z-index: 300;
+    display: flex;
+    flex-direction: column;
+    inset: 52px max(12px, calc((100vw - 1120px) / 2)) 42px;
+    border: 1px solid #3d7f70;
+    background-color: #071718;
+    background-image: var(--gfx-planet-background);
+    background-repeat: repeat-y;
+    background-size: 100% 4px;
+    box-shadow: 0 14px 55px #000, inset 0 0 35px rgba(46, 139, 115, .1);
+}
+#planet-window::after {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 0;
+    height: min(296px, 44%);
+    background: url('/gfx/interface/planetview/planet_view_bottom.png') center bottom / 100% 100% no-repeat;
+    content: '';
+    pointer-events: none;
+}
+#planet-window > * { position: relative; z-index: 1; }
+.planet-header {
+    position: relative;
+    min-height: 88px;
+    border: 0;
+    background: url('/gfx/interface/planetview/planet_view_top.png') center top / 100% 272px no-repeat;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+}
+.planet-governor-portrait { width: 52px; height: 52px; }
+.planet-governor-portrait { overflow: hidden; }
+.planet-governor-portrait img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+.planet-name { color: #effff9; font-size: 1.25rem; font-weight: 400; }
+.planet-title-block { flex: 1; }
+.planet-class-label { color: #73d5bb; }
+.planet-governor-name { color: var(--stellaris-gold); font-size: .75rem; }
+.planet-close { flex: 0 0 38px; }
+.planet-resources {
+    min-height: 52px;
+    justify-content: center;
+    gap: 24px;
+    border: 0;
+    background: url('/gfx/interface/planetview/planet_info_background.png') center / 100% 40px no-repeat;
+    display: flex;
+    padding: 8px 16px;
+}
+.planet-res-item { display: flex; align-items: center; gap: 4px; color: #d9eee8; font-size: .8rem; }
+.planet-res-item img { width: 23px; height: 23px; object-fit: contain; }
+.planet-tabs {
+    display: flex;
+    padding-left: 15px;
+    border: 0;
+    background-color: rgba(7, 25, 25, .95);
+    background-image: url('/gfx/interface/planetview/planet_view_center_hex_bg.png');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: min(547px, 65%) 68px;
+}
+.planet-tab { min-width: 105px; padding: 9px 18px; border-right: 1px solid rgba(66, 135, 117, .26); border-bottom: 2px solid transparent; color: var(--text-secondary); font-size: .8rem; text-align: center; cursor: pointer; }
+.planet-tab:hover { color: var(--text-primary); }
+.planet-tab.active { color: #ebfff8; border-bottom-color: #74dbbf; background: rgba(56, 130, 109, .32); }
+.planet-body { display: flex; flex: 1; overflow: hidden; }
+.planet-main { padding: 16px 19px; flex: 1; overflow-y: auto; }
+.planet-sidebar { width: 255px; padding: 12px; overflow-y: auto; border-left: 1px solid #39776a; background: rgba(6, 24, 25, .82); }
+.district-section, .sidebar-section { margin-bottom: 14px; }
+.district-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: .8rem; }
+.district-title, .sidebar-section-title { color: #cdece3; border-bottom: 1px solid rgba(70, 145, 126, .42); }
+.district-progress, .pop-count { color: var(--text-secondary); font-size: .7rem; }
+.district-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 6px; }
+.district-slot { display: flex; align-items: center; justify-content: center; flex-direction: column; aspect-ratio: 1; border: 1px solid #315d55; border-radius: 0; color: var(--text-secondary); font-size: .6rem; background: linear-gradient(145deg, rgba(38, 89, 75, .42), rgba(7, 22, 23, .72)); }
+.district-slot.filled { border-color: #4d9b87; }
+.district-slot .slot-level { color: var(--stellaris-gold); font-size: .6rem; }
+.sidebar-section-title { margin-bottom: 6px; padding-bottom: 4px; font-size: .75rem; }
+.sidebar-stat { display: flex; justify-content: space-between; padding: 3px 0; font-size: .75rem; }
+.sidebar-stat .label { color: var(--text-secondary); }
+.sidebar-stat .value { color: var(--text-primary); }
+.sidebar-stat .icon-value { display: inline-flex; align-items: center; gap: 3px; }
+.sidebar-stat .icon-value img { width: 18px; height: 18px; object-fit: contain; }
+.pop-group { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; padding: 6px 8px; border: 1px solid rgba(77, 155, 135, .3); background: rgba(10, 40, 37, .65); }
+.pop-info { flex: 1; }
+.pop-name { font-size: .8rem; }
+.district-glyph,
+.district-slot .slot-icon {
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border: 1px solid #4d9b87;
+    color: #9fe5d0;
+    font-style: normal;
+    font-size: .72rem;
+    background: rgba(13, 54, 48, .76);
+}
+.pop-icon img { width: 24px; height: 24px; object-fit: contain; }
+.ship-visual-class { width: 55px; height: 55px; filter: drop-shadow(0 0 10px rgba(100, 215, 220, .5)); }
+
+.modal-layer { position: fixed; inset: 0; z-index: 900; display: grid; place-items: center; background: rgba(0, 5, 8, .67); backdrop-filter: blur(2px); }
+.stellaris-dialog {
+    position: relative;
+    width: min(480px, calc(100vw - 30px));
+    min-height: 212px;
+    padding: 45px 34px 22px;
+    overflow: hidden;
+    border: 20px solid transparent;
+    border-image: var(--gfx-dialog-background) 20 fill / 20px / 0 repeat;
+    color: #e6f3ef;
+    background-color: rgba(5, 21, 23, .99);
+    box-shadow: 0 18px 55px #000, inset 0 0 30px rgba(55, 159, 130, .12);
+}
+.dialog-hex { position: absolute; top: -7px; left: -82px; width: 274px; height: 68px; opacity: .42; background: url('/gfx/interface/planetview/planet_view_center_hex_bg.png') center / 100% 100% no-repeat; }
+.dialog-header-line { position: absolute; top: 39px; left: 20px; right: 20px; height: 17px; background: url('/gfx/interface/planetview/line_center.png') center / 100% 17px no-repeat; }
+.stellaris-dialog h2 { position: absolute; top: 15px; left: 40px; right: 30px; color: #e7fff8; font-size: 1rem; font-weight: 500; }
+.dialog-description { min-height: 82px; display: grid; place-items: center; padding: 12px; color: #bcd3cd; line-height: 1.55; text-align: center; }
+.dialog-actions { display: flex; justify-content: center; gap: 18px; }
+.stellaris-dialog-danger .dialog-confirm { border-color: #9d6658; color: #ffdcd4; }
+
+@media (max-width: 760px) {
+    #resource-bar { justify-content: flex-start; overflow-x: auto; padding-right: 8px; }
+    #overview-panel { width: min(300px, calc(100vw - 50px)); }
+    #planet-window { inset: 49px 4px 38px 51px; }
+    .planet-body { flex-direction: column; overflow-y: auto; }
+    .planet-main { overflow: visible; }
+    .planet-sidebar { width: 100%; border-top: 1px solid #39776a; border-left: 0; overflow: visible; }
+    .planet-resources { justify-content: flex-start; overflow-x: auto; }
 }

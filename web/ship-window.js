@@ -1,4 +1,5 @@
 import componentIcons from 'virtual:stellaris-component-icons';
+import { SHIP_SIZE_FRAME_COUNT, shipSizeFrame, spriteFrame } from './gfx-sprites.js';
 
 const IMAGE_ROOT = '/gfx/interface/icons';
 const PART_ROOT = `${IMAGE_ROOT}/ship_parts`;
@@ -7,6 +8,7 @@ const STAT_ROWS = [
     ['hit_points', '船体值', 'max_hitpoints'],
     ['armor', '装甲', 'max_armor'],
     ['shield', '护盾', 'max_shield'],
+    ['cloaking_strength', '隐身强度', 'cloaking_strength'],
     ['speed', '速度', 'speed'],
     ['evasion', '闪避', 'evasion'],
     ['damage', '伤害', 'damage'],
@@ -22,12 +24,12 @@ export function renderShipWindow(container, data, callbacks) {
                 <div class="popup-title">${esc(data.name)}</div>
                 <div class="popup-subtitle">${esc(data.design_name || sizeLabel)}${data.design_name && sizeLabel ? ` · ${esc(sizeLabel)}` : ''}</div>
             </div>
-            <button class="popup-close" id="ship-close" aria-label="关闭">×</button>
+            <button class="popup-close" id="ship-close" title="关闭" aria-label="关闭"></button>
         </div>
         <div class="popup-body ship-popup-body">
             <div class="ship-overview">
-                <div class="ship-visual" aria-label="舰船渲染图占位">
-                    <div class="ship-placeholder">${getShipIcon(data.ship_size)}</div>
+                <div class="ship-visual" aria-label="舰船类型">
+                    ${renderShipClass(data.ship_size)}
                 </div>
                 <div class="ship-stats">
                     ${STAT_ROWS.map(([icon, label, field]) => renderStat(data, icon, label, field)).join('')}
@@ -39,12 +41,14 @@ export function renderShipWindow(container, data, callbacks) {
             ${renderComponentSection('通用', data.utilities, 'utility')}
         </div>
         <div class="popup-actions ship-popup-actions">
-            <button class="action-btn" type="button">打开设计器</button>
-            <button class="action-btn" type="button">舰队管理</button>
+            <button class="action-btn" id="ship-designer" type="button">打开设计器</button>
+            <button class="action-btn" id="ship-fleet" type="button">舰队管理</button>
         </div>
     `;
 
     container.querySelector('#ship-close').onclick = callbacks.onClose;
+    container.querySelector('#ship-designer').onclick = callbacks.onOpenDesigner;
+    container.querySelector('#ship-fleet').onclick = callbacks.onOpenFleetManager;
     installImageFallbacks(container);
 }
 
@@ -80,7 +84,6 @@ function renderComponent(component, kind) {
     const icon = getComponentIconPath(template);
     return `
         <div class="component-slot ${kind} slot-frame-${slotType.toLowerCase()}" title="${esc(template)}${component.slot ? ` (${esc(component.slot)})` : ''}">
-            ${slotType ? `<span class="slot-badge slot-badge-${slotType.toLowerCase()}" aria-label="${slotType} 槽"></span>` : ''}
             <img class="component-icon" src="${icon}" data-fallback-src="${PART_ROOT}/ship_part_placeholder.png" alt="${esc(template)}">
         </div>`;
 }
@@ -106,16 +109,8 @@ function getShipSizeLabel(size) {
     return map[size] || size || '';
 }
 
-function getShipIcon(size) {
-    if (size === 'corvette') return '🔹';
-    if (size === 'destroyer') return '🔷';
-    if (size === 'cruiser') return '⬡';
-    if (size === 'battleship') return '⬢';
-    if (size === 'titan') return '💠';
-    if (size === 'science') return '🔬';
-    if (size === 'constructor') return '🔧';
-    if (size === 'colonizer') return '🌍';
-    return '🚀';
+function renderShipClass(size) {
+    return spriteFrame(`${IMAGE_ROOT}/ship_parts/ship_sizes.png`, SHIP_SIZE_FRAME_COUNT, shipSizeFrame(size), 'ship-visual-class');
 }
 
 function getSlotType(slot, template) {

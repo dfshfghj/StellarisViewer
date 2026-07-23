@@ -25,6 +25,12 @@ pub struct Gamestate {
     pub leaders: HashMap<u32, Leader>,
     #[jomini(default = "default_hashmap")]
     pub districts: HashMap<u32, District>,
+    #[jomini(default = "default_hashmap")]
+    pub buildings: HashMap<u32, Building>,
+    #[jomini(default = "default_hashmap")]
+    pub zones: HashMap<u32, Zone>,
+    #[jomini(default = "default_hashmap")]
+    pub deposit: HashMap<u32, Deposit>,
 }
 
 fn default_hashmap<K, V>() -> HashMap<K, V> {
@@ -114,12 +120,22 @@ pub struct Planet {
     pub governor: Option<u32>,
     pub stability: Option<f64>,
     pub crime: Option<f64>,
+    pub bombardment_damage: Option<f64>,
     pub amenities: Option<f64>,
     pub amenities_usage: Option<f64>,
+    pub free_amenities: Option<f64>,
     pub free_housing: Option<f64>,
     pub total_housing: Option<f64>,
+    pub housing_usage: Option<f64>,
+    pub employable_pops: Option<f64>,
+    pub civilian: Option<f64>,
     pub num_sapient_pops: Option<u32>,
+    pub ascension_tier: Option<u32>,
     pub colonize_date: Option<String>,
+    // 星球级收支（与 Resources 结构一致的命名块）
+    pub upkeep: Option<Resources>,
+    pub produces: Option<Resources>,
+    pub profits: Option<Resources>,
     // Block format: districts={ 0 33 34 }
     #[jomini(default)]
     pub districts: Vec<u32>,
@@ -132,8 +148,34 @@ pub struct Planet {
     // Block format: deposits={ 17 }
     #[jomini(default)]
     pub deposits: Vec<u32>,
+    // Block format: buildings_cache={ 0 2 3 }
+    #[jomini(default)]
+    pub buildings_cache: Vec<u32>,
+    // Block format: pop_groups={ 29 588 ... }
+    #[jomini(default)]
+    pub pop_groups: Vec<u32>,
+    // Block format: pop_jobs={ 421 422 ... }
+    #[jomini(default)]
+    pub pop_jobs: Vec<u32>,
     pub final_designation: Option<String>,
     pub entity_name: Option<String>,
+    // timed_modifier={ items={ { modifier="X" days=N } ... } }（匿名对象序列，jomini 直接反序列化）
+    pub timed_modifier: Option<TimedModifier>,
+    // 重复键：planet_modifier="pm_X" planet_modifier="pm_Y"
+    #[jomini(duplicated, default)]
+    pub planet_modifier: Vec<String>,
+}
+
+#[derive(JominiDeserialize, Debug, Default, Clone, Serialize)]
+pub struct TimedModifier {
+    #[jomini(default)]
+    pub items: Vec<ModifierItem>,
+}
+
+#[derive(JominiDeserialize, Debug, Default, Clone, Serialize)]
+pub struct ModifierItem {
+    pub modifier: Option<String>,
+    pub days: Option<i32>,
 }
 
 // ============ Country ============
@@ -338,6 +380,9 @@ pub struct ShipSection {
     // Repeated keys: weapon={ ... } weapon={ ... }
     #[jomini(duplicated)]
     pub weapon: Vec<WeaponSlot>,
+    // Hangar components live in repeated strike_craft={ ... } blocks, not weapon={ ... }.
+    #[jomini(duplicated)]
+    pub strike_craft: Vec<WeaponSlot>,
 }
 
 #[derive(JominiDeserialize, Debug, Default, Clone, Serialize)]
@@ -429,6 +474,8 @@ pub struct Leader {
     pub experience: Option<f64>,
     pub level: Option<u32>,
     pub age: Option<u32>,
+    #[jomini(duplicated)]
+    pub traits: Vec<String>,
     pub planet: Option<u32>,
     pub location: Option<LeaderLocation>,
 }
@@ -446,6 +493,21 @@ pub struct LeaderLocation {
     pub id: Option<u32>,
 }
 
+#[cfg(test)]
+mod leader_tests {
+    use super::Leader;
+
+    #[test]
+    fn parses_repeated_leader_traits() {
+        let input = br#"class="commander" traits="leader_trait_cautious" traits="leader_trait_trickster" level=2 age=12 experience=757.125"#;
+        let leader: Leader = jomini::text::de::from_utf8_slice(input).expect("parse leader");
+
+        assert_eq!(leader.traits, ["leader_trait_cautious", "leader_trait_trickster"]);
+        assert_eq!(leader.level, Some(2));
+        assert_eq!(leader.age, Some(12));
+    }
+}
+
 // ============ District ============
 
 #[derive(JominiDeserialize, Debug, Default, Clone, Serialize)]
@@ -453,6 +515,37 @@ pub struct District {
     #[jomini(alias = "type")]
     pub district_type: Option<String>,
     pub level: Option<u32>,
+    // Block format: zones={ 0 33 34 }
+    #[jomini(default)]
+    pub zones: Vec<u32>,
+}
+
+// ============ Building ============
+
+#[derive(JominiDeserialize, Debug, Default, Clone, Serialize)]
+pub struct Building {
+    #[jomini(alias = "type")]
+    pub building_type: Option<String>,
+    pub position: Option<u32>,
+}
+
+// ============ Zone ============
+
+#[derive(JominiDeserialize, Debug, Default, Clone, Serialize)]
+pub struct Zone {
+    #[jomini(alias = "type")]
+    pub zone_type: Option<String>,
+    // Block format: buildings={ 0 2 3 4 }
+    #[jomini(default)]
+    pub buildings: Vec<u32>,
+}
+
+// ============ Deposit ============
+
+#[derive(JominiDeserialize, Debug, Default, Clone, Serialize)]
+pub struct Deposit {
+    #[jomini(alias = "type")]
+    pub deposit_type: Option<String>,
 }
 
 // ============ Extracted Data (from text scan) ============

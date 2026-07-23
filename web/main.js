@@ -2,10 +2,13 @@ import './style.css';
 import loadLocalization from 'virtual:stellaris-localization';
 import { GalaxyMap } from './galaxy-map.js';
 import { SystemView } from './system-view.js';
-import { renderFleetWindow } from './fleet-window.js';
-import { renderShipWindow } from './ship-window.js';
-import { renderPlanetWindow } from './planet-window.js';
-import { renderResourceBar, renderOverviewPanel, renderStatusBar } from './ui-components.js';
+import { renderFleetWindow } from './fleet-window-generated.js';
+import { renderShipWindow } from './ship-window-generated.js';
+import { renderPlanetWindow } from './planet-window-generated.js';
+import { renderOverviewPanel } from './overview-panel-generated.js';
+import { renderResourceBar } from './resource-bar-v2.js'; // 旧实现仍在 ui-components.js，可回滚
+import { renderStatusBar } from './ui-components.js';
+import { showDialog } from './ui-dialogs.js';
 
 import init, {
     parse_save,
@@ -37,7 +40,6 @@ const els = {
     canvas: document.getElementById('main-canvas'),
     resourceBar: document.getElementById('resource-bar'),
     overviewPanel: document.getElementById('overview-panel'),
-    overviewContent: document.getElementById('overview-content'),
     statusBar: document.getElementById('status-bar'),
     statusDate: document.getElementById('status-date'),
     statusEmpire: document.getElementById('status-empire'),
@@ -45,7 +47,7 @@ const els = {
     shipWindow: document.getElementById('ship-window'),
     planetWindow: document.getElementById('planet-window'),
     btnBack: document.getElementById('btn-back'),
-    closeOverview: document.getElementById('close-overview'),
+    modalLayer: document.getElementById('modal-layer'),
 };
 
 // ============ Renderers ============
@@ -63,9 +65,9 @@ async function main() {
 function setupEventListeners() {
     els.fileInput.addEventListener('change', handleFileSelect);
     els.btnBack.addEventListener('click', handleBack);
-    els.closeOverview.addEventListener('click', () => els.overviewPanel.classList.add('hidden'));
     enablePopupDragging(els.fleetWindow);
     enablePopupDragging(els.shipWindow);
+    enablePopupDragging(els.planetWindow);
 
     // Keyboard shortcuts (M = galaxy map, Escape = close popups)
     window.addEventListener('keydown', (e) => {
@@ -84,6 +86,12 @@ function setupEventListeners() {
             const action = icon.dataset.action;
             if (action === 'galaxy') switchToGalaxy();
             if (action === 'overview') toggleOverview();
+            if (!['galaxy', 'overview'].includes(action)) {
+                showDialog(els.modalLayer, {
+                    title: icon.title,
+                    description: '该视图的 GUI/GFX 外壳已接入导航，存档数据页将在后续批次开放。',
+                });
+            }
         });
     });
 
@@ -130,9 +138,13 @@ function startApp() {
 
     renderResourceBar(els.resourceBar, state.playerInfo);
     renderStatusBar(els.statusDate, els.statusEmpire, state.playerInfo);
-    renderOverviewPanel(els.overviewContent, state.playerInfo, {
+    renderOverviewPanel(els.overviewPanel, state.playerInfo, {
         onFleetClick: openFleetWindow,
         onPlanetClick: openPlanetWindow,
+        onClose: () => {
+            els.overviewPanel.classList.add('hidden');
+            updateSidebar(state.view);
+        },
     });
     els.overviewPanel.classList.remove('hidden');
 
@@ -198,6 +210,17 @@ function openFleetWindow(fleetId) {
     renderFleetWindow(els.fleetWindow, data, {
         onShipClick: (shipId) => openShipWindow(shipId),
         onClose: () => els.fleetWindow.classList.add('hidden'),
+        onManage: () => showDialog(els.modalLayer, {
+            title: '舰队管理',
+            description: '这是只读存档查看器；舰队管理操作不会写回存档。',
+        }),
+        onDisband: () => showDialog(els.modalLayer, {
+            title: '解散舰队？',
+            description: `将要解散“${data.name}”。只读模式下确认不会修改存档。`,
+            confirmText: '确认',
+            cancelText: '取消',
+            tone: 'danger',
+        }),
     });
     els.fleetWindow.classList.remove('hidden');
     positionPopup(els.fleetWindow);
@@ -207,6 +230,8 @@ function openShipWindow(shipId) {
     const data = get_ship_detail(shipId);
     renderShipWindow(els.shipWindow, data, {
         onClose: () => els.shipWindow.classList.add('hidden'),
+        onOpenDesigner: () => showDialog(els.modalLayer, { title: '舰船设计器', description: '设计器入口将在对应视图实现后开放。' }),
+        onOpenFleetManager: () => showDialog(els.modalLayer, { title: '舰队管理', description: '舰船数据来自存档，当前为只读显示。' }),
     });
     els.shipWindow.classList.remove('hidden');
     positionPopup(els.shipWindow, 650);
@@ -218,6 +243,12 @@ function openPlanetWindow(planetId) {
         onClose: () => els.planetWindow.classList.add('hidden'),
     });
     els.planetWindow.classList.remove('hidden');
+    positionPopup(els.planetWindow);
+    // 1162x680 大窗口：保证不超出左/上边缘
+    const left = parseInt(els.planetWindow.style.left, 10);
+    const top = parseInt(els.planetWindow.style.top, 10);
+    if (Number.isFinite(left) && left < 0) els.planetWindow.style.left = '0px';
+    if (Number.isFinite(top) && top < 0) els.planetWindow.style.top = '0px';
 }
 
 function closePopups() {
@@ -266,6 +297,7 @@ function enablePopupDragging(popup) {
 
 function toggleOverview() {
     els.overviewPanel.classList.toggle('hidden');
+    updateSidebar(els.overviewPanel.classList.contains('hidden') ? state.view : 'overview');
 }
 
 function handleResize() {

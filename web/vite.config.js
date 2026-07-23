@@ -2,11 +2,35 @@ import { cpSync, readFileSync, readdirSync } from 'node:fs';
 import { extname, join, resolve } from 'node:path';
 import { defineConfig } from 'vite';
 import { buildComponentIconMap } from './component-gfx-mapping.js';
+import { compileGfxRegistry, compileGuiView } from './gui-compiler.js';
 
 const LOCALIZATION_MODULE_ID = 'virtual:stellaris-localization';
 const RESOLVED_LOCALIZATION_MODULE_ID = `\0${LOCALIZATION_MODULE_ID}`;
 const COMPONENT_ICONS_MODULE_ID = 'virtual:stellaris-component-icons';
 const RESOLVED_COMPONENT_ICONS_MODULE_ID = `\0${COMPONENT_ICONS_MODULE_ID}`;
+
+const GUI_VIEWS = [
+    {
+        id: 'virtual:stellaris-outliner-ui',
+        gui: 'outliner.gui',
+        rootName: 'outliner_tab_window',
+    },
+    {
+        id: 'virtual:stellaris-fleet-view-ui',
+        gui: 'fleet_view.gui',
+        rootName: 'fleet_view',
+    },
+    {
+        id: 'virtual:stellaris-ship-view-ui',
+        gui: 'ship_view.gui',
+        rootName: 'ship_view',
+    },
+    {
+        id: 'virtual:stellaris-planet-view-ui',
+        gui: 'planet_view.gui',
+        rootName: 'planet_view',
+    },
+];
 
 function collectFiles(directory) {
     const files = [];
@@ -118,9 +142,39 @@ function componentIconsPlugin() {
     };
 }
 
+function guiViewsPlugin(viewConfigs) {
+    let root;
+    let gfxRegistry;
+    const definitions = new Map();
+    const configs = new Map(viewConfigs.map(config => [config.id, config]));
+    const resolvedIds = new Map(viewConfigs.map(config => [`\0${config.id}`, config]));
+    return {
+        name: 'stellaris-gui-views',
+        configResolved(config) {
+            root = config.root;
+        },
+        resolveId(id) {
+            return configs.has(id) ? `\0${id}` : null;
+        },
+        load(id) {
+            const config = resolvedIds.get(id);
+            if (!config) return null;
+            gfxRegistry ??= compileGfxRegistry(resolve(root, 'assets'));
+            if (!definitions.has(config.id)) definitions.set(config.id, compileGuiView({
+                guiPath: resolve(root, 'assets/interface', config.gui),
+                assetsDirectory: resolve(root, 'assets'),
+                rootName: config.rootName,
+                gfxRegistry,
+            }));
+            const definition = definitions.get(config.id);
+            return `export default ${JSON.stringify(definition)};`;
+        },
+    };
+}
+
 export default defineConfig({
     publicDir: 'assets',
-    plugins: [localizationPlugin(), componentIconsPlugin(), copyImagesPlugin()],
+    plugins: [localizationPlugin(), componentIconsPlugin(), guiViewsPlugin(GUI_VIEWS), copyImagesPlugin()],
     build: {
         outDir: 'dist',
         emptyOutDir: true,

@@ -25,28 +25,24 @@
     <!-- Main App -->
     <div id="app" class="hidden">
         <!-- Top Resource Bar -->
-        <div id="resource-bar"></div>
+        <header id="resource-bar" aria-label="帝国资源栏"></header>
 
         <!-- Left Sidebar -->
         <div id="sidebar">
-            <div class="sidebar-icon" data-action="galaxy" title="银河地图">🌌</div>
-            <div class="sidebar-icon" data-action="overview" title="概览">📋</div>
-            <div class="sidebar-icon" data-action="fleets" title="舰队">🚀</div>
-            <div class="sidebar-icon" data-action="planets" title="行星">🪐</div>
-            <div class="sidebar-icon" data-action="research" title="研究">🔬</div>
+            <button class="sidebar-icon" data-action="galaxy" title="银河地图" aria-label="银河地图"><span class="gfx-frame nav-sprite" style="--sprite:url('/gfx/interface/icons/navbar_icons_galaxy.png');--frames:3"></span></button>
+            <button class="sidebar-icon" data-action="overview" title="大纲" aria-label="大纲"><span class="gfx-frame nav-sprite" style="--sprite:url('/gfx/interface/icons/navbar_icons_planets_and_sectors.png');--frames:3"></span></button>
+            <button class="sidebar-icon" data-action="fleets" title="舰队管理" aria-label="舰队管理"><span class="gfx-frame nav-sprite" style="--sprite:url('/gfx/interface/icons/navbar_icons_fleet_manager.png');--frames:3"></span></button>
+            <button class="sidebar-icon" data-action="planets" title="行星与星域" aria-label="行星与星域"><img src="/gfx/interface/icons/menu_icon_planets_and_sectors.png" alt=""></button>
+            <button class="sidebar-icon" data-action="research" title="科技" aria-label="科技"><span class="gfx-frame nav-sprite" style="--sprite:url('/gfx/interface/icons/navbar_icons_technology.png');--frames:3"></span></button>
+            <span class="sidebar-divider" aria-hidden="true"></span>
+            <button class="sidebar-icon" data-action="ship-designer" title="舰船设计器" aria-label="舰船设计器"><span class="gfx-frame nav-sprite" style="--sprite:url('/gfx/interface/icons/navbar_icons_ship_designer.png');--frames:3"></span></button>
         </div>
 
         <!-- Main Canvas Area -->
         <canvas id="main-canvas"></canvas>
 
         <!-- Right Overview Panel -->
-        <div id="overview-panel" class="hidden">
-            <div class="panel-header">
-                <span>概览</span>
-                <button class="close-btn" id="close-overview">×</button>
-            </div>
-            <div class="panel-content" id="overview-content"></div>
-        </div>
+        <div id="overview-panel" class="hidden"></div>
 
         <!-- Bottom Status Bar -->
         <div id="status-bar">
@@ -54,11 +50,11 @@
                 <span id="status-date"></span>
             </div>
             <div class="status-center">
-                <span class="pause-indicator">暂停</span>
+                <span class="pause-indicator"><span class="pause-glyph">Ⅱ</span> 暂停</span>
                 <span id="status-empire"></span>
             </div>
             <div class="status-right">
-                <button class="ctrl-btn" id="btn-back" title="返回">←</button>
+                <button class="ctrl-btn" id="btn-back" title="返回" aria-label="返回"></button>
             </div>
         </div>
 
@@ -70,6 +66,9 @@
 
         <!-- Planet Window (full screen) -->
         <div id="planet-window" class="hidden"></div>
+
+        <!-- Standard popup.gui / standard_dialog.gui inspired modal host -->
+        <div id="modal-layer" class="modal-layer hidden" aria-hidden="true"></div>
     </div>
 
     <script type="module" src="/main.js"></script>

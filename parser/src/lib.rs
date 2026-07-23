@@ -1,4 +1,4 @@
-mod extract;
+pub mod extract;
 mod localization;
 pub mod models;
 

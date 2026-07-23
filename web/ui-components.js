@@ -1,4 +1,4 @@
-// UI Components: Resource Bar, Overview Panel, Status Bar
+// UI Components: Resource Bar and Status Bar
 
 const ICON_ROOT = `${import.meta.env.BASE_URL}gfx/interface/icons/`;
 const resourceIcon = (name) => `${ICON_ROOT}resources/${name}.png`;
@@ -116,74 +116,6 @@ export function renderStatusBar(dateEl, empireEl, playerInfo) {
     empireEl.textContent = `${playerInfo.name} — ${govLabel}`;
 }
 
-export function renderOverviewPanel(container, playerInfo, callbacks) {
-    if (!playerInfo) {
-        container.innerHTML = '<p style="color:var(--text-secondary)">无数据</p>';
-        return;
-    }
-
-    const militaryFleets = playerInfo.fleets.filter(f => !f.civilian && !f.station);
-    const civilianShips = playerInfo.fleets.filter(f => f.civilian);
-    const stations = playerInfo.fleets.filter(f => f.station);
-
-    container.innerHTML = `
-        <div class="panel-section">
-            <div class="panel-section-title">星域 (${playerInfo.planets.length})</div>
-            ${playerInfo.planets.map(p => `
-                <div class="panel-item" data-planet-id="${p.id}">
-                    <span class="item-name">${esc(p.name)}</span>
-                    <span class="item-value">${getPlanetClassShort(p.planet_class)} · ${p.num_pops}👥</span>
-                </div>
-            `).join('')}
-        </div>
-
-        <div class="panel-section">
-            <div class="panel-section-title">军用舰队 (${militaryFleets.length})</div>
-            ${militaryFleets.map(f => `
-                <div class="panel-item" data-fleet-id="${f.id}">
-                    <span class="item-name">${esc(f.name)}</span>
-                    <span class="item-value">${f.ship_count}艘 · ${f.military_power.toFixed(0)}⚔</span>
-                </div>
-            `).join('')}
-        </div>
-
-        <div class="panel-section">
-            <div class="panel-section-title">民用舰船 (${civilianShips.length})</div>
-            ${civilianShips.map(f => `
-                <div class="panel-item" data-fleet-id="${f.id}">
-                    <span class="item-name">${esc(f.name)}</span>
-                    <span class="item-value">${getCivilianType(f.name)}</span>
-                </div>
-            `).join('')}
-        </div>
-
-        ${stations.length > 0 ? `
-        <div class="panel-section">
-            <div class="panel-section-title">船坞 (${stations.length})</div>
-            ${stations.map(f => `
-                <div class="panel-item" data-fleet-id="${f.id}">
-                    <span class="item-name">${esc(f.name)}</span>
-                    <span class="item-value">${f.military_power.toFixed(0)}⚔</span>
-                </div>
-            `).join('')}
-        </div>` : ''}
-
-        <div class="panel-section">
-            <div class="panel-section-title">帝国概况</div>
-            <div class="panel-item"><span class="item-name">军事力量</span><span class="item-value">${playerInfo.military_power.toFixed(0)}</span></div>
-            <div class="panel-item"><span class="item-name">帝国规模</span><span class="item-value">${playerInfo.empire_size}</span></div>
-            <div class="panel-item"><span class="item-name">人口</span><span class="item-value">${playerInfo.num_pops}</span></div>
-        </div>
-    `;
-
-    container.querySelectorAll('[data-fleet-id]').forEach(el => {
-        el.onclick = () => callbacks.onFleetClick(parseInt(el.dataset.fleetId));
-    });
-    container.querySelectorAll('[data-planet-id]').forEach(el => {
-        el.onclick = () => callbacks.onPlanetClick(parseInt(el.dataset.planetId));
-    });
-}
-
 function formatNum(n) {
     const abs = Math.abs(n);
     if (abs >= 1000000) return `${trimFixed(n / 1000000, 1)}M`;
@@ -209,32 +141,6 @@ function getGovLabel(govType) {
         gov_machine_empire: '机械帝国', gov_fanatic_purifiers: '极端净化者',
     };
     return map[govType] || govType || '未知政体';
-}
-
-function getPlanetClassShort(pc) {
-    const map = {
-        pc_continental: '陆地', pc_ocean: '海洋', pc_desert: '沙漠',
-        pc_arid: '干旱', pc_tundra: '冻原', pc_arctic: '极地',
-        pc_tropical: '热带', pc_alpine: '高山', pc_savannah: '草原',
-        pc_city: '城市', pc_machine: '机械', pc_hive: '蜂巢',
-        pc_ringworld_habitable: '环世', pc_habitat: '栖息地',
-    };
-    return map[pc] || pc?.replace('pc_', '') || '?';
-}
-
-function getCivilianType(name) {
-    const n = (name || '').toLowerCase();
-    if (n.includes('explorer') || n.includes('science')) return '科研船';
-    if (n.includes('constructor') || n.includes('builder')) return '工程船';
-    if (n.includes('colon')) return '殖民船';
-    if (n.includes('transport')) return '运输船';
-    return '民用';
-}
-
-function esc(s) {
-    const d = document.createElement('div');
-    d.textContent = s || '';
-    return d.innerHTML;
 }
 
 function escAttr(s) {
