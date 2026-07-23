@@ -29,6 +29,7 @@ const GALAXY_TEX_HALF = 1.15;
 // quad size (entity scale) is not recoverable, so tune these by eye:
 const CORE_GLOW_SPAN = 0.5;   // glow diameter, × galaxyRadius
 const CORE_GLOW_ALPHA = 1;  // additive strength
+const FLEET_MIN_ZOOM = 1.5;   // hide fleet markers below this zoom level
 
 function makeCanvas(size) {
     const c = document.createElement('canvas');
@@ -322,11 +323,13 @@ export class GalaxyMap {
         const sx = clientX - rect.left;
         const sy = clientY - rect.top;
 
-        for (const marker of this.fleetMarkers) {
-            const pos = this.fleetMarkerPosition(marker);
-            const dist = Math.hypot(pos.x - sx, pos.y - sy);
-            if (dist < 18) {
-                return { type: 'fleet', id: marker.representativeId, markerKey: marker.key };
+        if (this.cam.zoom >= FLEET_MIN_ZOOM) {
+            for (const marker of this.fleetMarkers) {
+                const pos = this.fleetMarkerPosition(marker);
+                const dist = Math.hypot(pos.x - sx, pos.y - sy);
+                if (dist < 18) {
+                    return { type: 'fleet', id: marker.representativeId, markerKey: marker.key };
+                }
             }
         }
 
@@ -582,7 +585,7 @@ export class GalaxyMap {
             }
         }
 
-        this.drawFleetMarkers(ctx, w, h);
+        if (this.cam.zoom >= FLEET_MIN_ZOOM) this.drawFleetMarkers(ctx, w, h);
     }
 
     drawFleetMarkers(ctx, w, h) {
