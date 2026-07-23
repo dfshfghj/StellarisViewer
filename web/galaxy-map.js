@@ -19,9 +19,22 @@ const STAR_TEXTURES = {
 const BINARY_TEXTURES = ['a_binary_star.png', 'b_binary_star.png', 'c_binary_star.png', 'd_binary_star.png', 'e_binary_star.png'];
 const TRINARY_TEXTURE = 'a_trinary_star.png';
 const STAR_TEX_PATH = `${import.meta.env.BASE_URL}gfx/map/star_classes/`;
+const MAP_TEX_PATH = `${import.meta.env.BASE_URL}gfx/map/`;
 const ICON_TEX_PATH = `${import.meta.env.BASE_URL}gfx/interface/icons/`;
 const RELATION_FRAME = { own: 0, neutral: 1, friendly: 2, hostile: 3 };
 const FLEET_POWER_THRESHOLDS = [1, 2_000, 10_000, 20_000, 50_000, 100_000, 250_000];
+// Backdrop dust/nebula fields cover [-HALF, +HALF] × galaxyRadius in world space
+const GALAXY_TEX_HALF = 1.15;
+// Core glow tuning — shader reference is ×0.5 brightness, but the in-engine
+// quad size (entity scale) is not recoverable, so tune these by eye:
+const CORE_GLOW_SPAN = 0.5;   // glow diameter, × galaxyRadius
+const CORE_GLOW_ALPHA = 1;  // additive strength
+
+function makeCanvas(size) {
+    const c = document.createElement('canvas');
+    c.width = c.height = size;
+    return c;
+}
 
 export class GalaxyMap {
     constructor(canvas, data, callbacks) {
@@ -35,6 +48,8 @@ export class GalaxyMap {
         this.loadStarTextures();
         this.fleetImages = new Map();
         this.loadFleetTextures();
+        this.galaxyImages = new Map();
+        this.loadGalaxyTextures();
 
         // Camera
         this.cam = { x: 0, y: 0, zoom: 1 };
@@ -57,6 +72,11 @@ export class GalaxyMap {
         for (const t of data.territory) {
             for (const sid of t.systems) this.systemOwner.set(sid, t.country_id);
         }
+
+        // Galaxy radial extent (for backdrop texture sizing)
+        let maxR = 0;
+        for (const s of data.systems) maxR = Math.max(maxR, Math.hypot(s.x, s.y));
+        this.galaxyRadius = maxR || 500;
 
         this.fleetMarkers = this.buildFleetMarkers();
 
@@ -86,6 +106,30 @@ export class GalaxyMap {
             img.src = ICON_TEX_PATH + file;
             this.fleetImages.set(file, img);
         }
+    }
+
+    loadGalaxyTextures() {
+        // center.dds      → galaxy_center.shader CenterTexture: the ONE texture the
+        //                   engine really draws as a quad (additive ONE/ONE, ×0.5).
+        // galaxycolor.dds → galaxy_dust.shader ColorTexture: a map-space color LOOKUP
+        //                   sampled at each dust quad's world position — never drawn
+        //                   as a quad itself (its dark background would show as a square).
+        // dust.dds        → DustTexture: per-quad soft shape, carried by the ALPHA channel.
+        // nebula/nebulacolor.dds → galaxy_nebula.shader: same pattern, shape alpha ×6,
+        //                   color sampled per-quad (stretched), not map-space.
+        for (const file of ['center.png', 'galaxycolor.png', 'dust.png', 'nebula.png', 'nebulacolor.png']) {
+            const img = new Image();
+            img.onload = () => this.onGalaxyTextureLoad();
+            img.src = MAP_TEX_PATH + file;
+            this.galaxyImages.set(file, img);
+        }
+    }
+
+    onGalaxyTextureLoad() {
+        this.buildDustField();
+        this.buildNebulaField();
+        this.buildCenterFlat();
+        this.active && this.render();
     }
 
     buildFleetMarkers() {
@@ -296,6 +340,178 @@ export class GalaxyMap {
 
     // ============ Rendering ============
 
+    buildDustField() {
+        if (this.dustField) return;
+        const color = this.galaxyImages.get('galaxycolor.png');
+        const dust = this.galaxyImages.get('dust.png');
+        if (!color?.complete || !dust?.complete) return;
+
+        // galaxy_dust.shader, per quad:
+        //   rgb   = DustTexture.rgb × ColorTexture.rgb(world pos)   ← vDiffuse * vColor
+        //   alpha = DustTexture.a
+        //   blend = SRC_ALPHA / INV_SRC_ALPHA
+        // The rgb modulation matters: dust is gray (~0.45), without it the field
+        // comes out ~2× too bright. The game scatters the quads along the
+        // generated spiral arms; the save doesn't store arm params, but systems
+        // are placed on the arms, so we seed blobs at system positions + along
+        // hyperlanes.
+        const S = 1024, B = 128;                     // field / per-quad resolution
+        const half = this.galaxyRadius * GALAXY_TEX_HALF;
+        const w2p = v => (v + half) / (2 * half) * S;
+        const T = color.width;                       // galaxycolor resolution
+
+        // dust rgb with alpha removed, for a pure 'multiply' (canvas 'multiply'
+        // lerps by source alpha; the real alpha is applied via destination-in)
+        const dustFlat = makeCanvas(dust.width);
+        const df = dustFlat.getContext('2d');
+        df.drawImage(dust, 0, 0);
+        const id = df.getImageData(0, 0, dust.width, dust.width);
+        for (let i = 3; i < id.data.length; i += 4) id.data[i] = 255;
+        df.putImageData(id, 0, 0);
+
+        let seed = 987654321;
+        const rng = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; };
+
+        const field = makeCanvas(S);
+        const f = field.getContext('2d');
+        const quad = makeCanvas(B);
+        const q = quad.getContext('2d');
+
+        const blob = (wx, wy, wsize, alpha) => {
+            // 1) ColorTexture sampled in map space across the quad's world
+            //    extent (clamp source rect ≈ the sampler's Clamp addressing)
+            const sx = Math.max(0, (wx - wsize / 2 + half) / (2 * half) * T);
+            const sy = Math.max(0, (wy - wsize / 2 + half) / (2 * half) * T);
+            const sx1 = Math.min(T, (wx + wsize / 2 + half) / (2 * half) * T);
+            const sy1 = Math.min(T, (wy + wsize / 2 + half) / (2 * half) * T);
+            q.globalCompositeOperation = 'source-over';
+            q.clearRect(0, 0, B, B);
+            q.drawImage(color, sx, sy, sx1 - sx, sy1 - sy, 0, 0, B, B);
+            // 2) × DustTexture.rgb
+            q.globalCompositeOperation = 'multiply';
+            q.drawImage(dustFlat, 0, 0, B, B);
+            // 3) alpha = DustTexture.a
+            q.globalCompositeOperation = 'destination-in';
+            q.drawImage(dust, 0, 0, B, B);
+            // 4) blend the quad into the field — rotation turns the dust
+            //    pattern while the color sampling stays in map space, exactly
+            //    like the shader (quad UVs rotate, vUVColor doesn't)
+            const ps = wsize / (2 * half) * S;
+            f.save();
+            f.translate(w2p(wx), w2p(wy));
+            f.rotate(rng() * Math.PI * 2);
+            f.globalAlpha = alpha;
+            f.drawImage(quad, -ps / 2, -ps / 2, ps, ps);
+            f.restore();
+        };
+
+        const R = this.galaxyRadius;
+        for (const s of this.data.systems) {
+            for (let i = 0; i < 3; i++) {
+                const a = rng() * Math.PI * 2, d = rng() * R * 0.05;
+                blob(s.x + Math.cos(a) * d, s.y + Math.sin(a) * d,
+                    R * (0.06 + rng() * 0.07), 0.5 + rng() * 0.4);
+            }
+        }
+        for (const [a, b] of this.data.hyperlanes) {
+            const sa = this.systemMap.get(a), sb = this.systemMap.get(b);
+            if (!sa || !sb) continue;
+            const t = 0.25 + rng() * 0.5;
+            blob(sa.x + (sb.x - sa.x) * t + (rng() - 0.5) * R * 0.04,
+                sa.y + (sb.y - sa.y) * t + (rng() - 0.5) * R * 0.04,
+                R * (0.05 + rng() * 0.05), 0.4 + rng() * 0.3);
+        }
+        this.dustField = field;
+    }
+
+    buildNebulaField() {
+        if (this.nebulaField) return;
+        const shape = this.galaxyImages.get('nebula.png');
+        const colorTex = this.galaxyImages.get('nebulacolor.png');
+        if (!shape?.complete || !colorTex?.complete || !this.data.systems.length) return;
+
+        // galaxy_nebula.shader: vDiffuse.a = saturate(a * 6) — boost the very low
+        // source alpha once up front.
+        const boosted = makeCanvas(shape.width);
+        const b = boosted.getContext('2d');
+        b.drawImage(shape, 0, 0);
+        const id = b.getImageData(0, 0, shape.width, shape.height);
+        for (let i = 3; i < id.data.length; i += 4) id.data[i] = Math.min(255, id.data[i] * 6);
+        b.putImageData(id, 0, 0);
+
+        const S = 1024;
+        const half = this.galaxyRadius * GALAXY_TEX_HALF;
+        const w2p = v => (v + half) / (2 * half) * S;
+        const field = makeCanvas(S);
+        const f = field.getContext('2d');
+        const tmp = makeCanvas(256);
+        const t = tmp.getContext('2d');
+
+        let seed = 424242424;
+        const rng = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; };
+
+        const R = this.galaxyRadius;
+        const systems = this.data.systems;
+        for (let i = 0; i < 7; i++) {
+            const s = systems[Math.floor(rng() * systems.length)];
+            // per-quad color: nebulacolor stretched across the whole quad
+            t.globalCompositeOperation = 'source-over';
+            t.clearRect(0, 0, 256, 256);
+            t.drawImage(colorTex, 0, 0, 256, 256);
+            t.globalCompositeOperation = 'destination-in';
+            t.drawImage(boosted, 0, 0, 256, 256);
+
+            const size = R * (0.15 + rng() * 0.2);
+            const ps = size / (2 * half) * S;
+            f.save();
+            f.globalAlpha = 0.4; // peripheral nebulae stay subtler than the core
+            f.translate(w2p(s.x + (rng() - 0.5) * R * 0.08), w2p(s.y + (rng() - 0.5) * R * 0.08));
+            f.rotate(rng() * Math.PI * 2);
+            f.drawImage(tmp, -ps / 2, -ps / 2, ps, ps);
+            f.restore();
+        }
+        this.nebulaField = field;
+    }
+
+    buildCenterFlat() {
+        if (this.centerFlat) return;
+        const core = this.galaxyImages.get('center.png');
+        if (!core?.complete) return;
+        // galaxy_center.shader blends ONE/ONE: the alpha channel is IGNORED and
+        // the edge fade is carried by RGB going to black. Canvas 'lighter'
+        // premultiplies by source alpha, so flatten alpha to 1 — otherwise the
+        // baked-in radial alpha double-darkens the glow.
+        const c = makeCanvas(core.width);
+        const ctx = c.getContext('2d');
+        ctx.drawImage(core, 0, 0);
+        const id = ctx.getImageData(0, 0, c.width, c.height);
+        for (let i = 3; i < id.data.length; i += 4) id.data[i] = 255;
+        ctx.putImageData(id, 0, 0);
+        this.centerFlat = c;
+    }
+
+    drawGalaxyBackdrop(ctx) {
+        const c = this.worldToScreen(0, 0);
+        const span = this.galaxyRadius * GALAXY_TEX_HALF * 2 * this.cam.zoom;
+        const x = c.x - span / 2, y = c.y - span / 2;
+
+        // Both fields are ordinary alpha-blended layers (the shaders use
+        // SRC_ALPHA / INV_SRC_ALPHA = canvas 'source-over'), nebulae below dust.
+        if (this.nebulaField) ctx.drawImage(this.nebulaField, x, y, span, span);
+        if (this.dustField) ctx.drawImage(this.dustField, x, y, span, span);
+
+        // Galactic core glow — galaxy_center.shader blends CenterTexture
+        // additively (ONE/ONE, alpha ignored); size/strength tuned by eye.
+        if (this.centerFlat) {
+            const cs = this.galaxyRadius * CORE_GLOW_SPAN * this.cam.zoom;
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.globalAlpha = CORE_GLOW_ALPHA;
+            ctx.drawImage(this.centerFlat, c.x - cs / 2, c.y - cs / 2, cs, cs);
+            ctx.globalAlpha = 1;
+            ctx.globalCompositeOperation = 'source-over';
+        }
+    }
+
     render() {
         const ctx = this.ctx;
         const w = this.canvas.width, h = this.canvas.height;
@@ -303,13 +519,14 @@ export class GalaxyMap {
         ctx.fillStyle = '#050810';
         ctx.fillRect(0, 0, w, h);
         this.drawStars(ctx, w, h);
+        this.drawGalaxyBackdrop(ctx);
 
         // Territory (Voronoi borders)
         this.drawTerritory(ctx);
 
         // Hyperlanes
-        ctx.strokeStyle = 'rgba(100, 160, 220, 0.25)';
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = 'rgba(84, 252, 182, 0.25)';
+        ctx.lineWidth = 2;
         ctx.beginPath();
         for (const [a, b] of this.data.hyperlanes) {
             const sa = this.systemMap.get(a);

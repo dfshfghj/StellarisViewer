@@ -200,6 +200,8 @@ background: url('...png') <pos> 0 / <N*100>% 100% no-repeat;
 8. 无 size 的 containerWindowType 是 0×0 锚点组，别当布局容器。
 9. 嵌套绝对定位元素要显式 `position:absolute`，直接子代选择器覆盖不到孙辈。
 10. 机库组件在存档 `strike_craft={}` 块而非 `weapon={}`，漏解析会导致 H 槽整排消失。
+11. shader 的 `ColorTexture`（galaxycolor/nebulacolor）是颜色查找表，直接当 quad 铺会露出暗背景的正方形边界；要当作"按位置采样的调色板"，用形状纹理的 alpha 裁出来。
+12. PDX shader `SourceBlend=ONE/DestBlend=ONE`（纯加色）**忽略 alpha 通道**，淡出靠 RGB 趋黑；canvas `'lighter'` 会预乘源 alpha → 需先拍平 alpha=255 再画，否则双重压暗。
 
 ## 十一、行星视图（planet_view）专项映射
 
@@ -224,3 +226,23 @@ background: url('...png') <pos> 0 / <N*100>% 100% no-repeat;
 - 图标/边框贴图均 60×60，Web 缩到 34×34，逐项 `margin-left:-10px` 重叠。
 
 **jomini 匿名对象序列可反序列化（修正此前结论）**：`items={ { modifier="X" days=306 } }` 这类"块内匿名对象列表"jomini 0.35 能直接解析为 `Vec<Struct>`（见 `parser/tests/timed_modifier.rs`）。此前 hyperlane 的问题另有所因；遇到同形态先写单测验证，不必直接上文本扫描。
+
+## 十二、银河地图背景贴图（gfx/map/）
+
+`gfx/map/` 下贴图**全部由引擎按固定路径加载**，游戏脚本中零引用（唯一例外：`sky_*.dds` 经 `gfx/worldgfx/*.txt` 的 `galaxy_background` 引用）。Web 接入依据是消费它们的 shader：
+
+**关键认知：只有 center 是真正"画一整块"的贴图，galaxycolor/nebulacolor 是颜色查找表，绝不能直接当 quad 绘制**（其暗色背景会以正方形边界暴露）。尘埃/星云的真实管线是：引擎沿生成的旋臂散布大量软边四边形实例，每个 quad 用形状纹理的 **alpha 通道**做形状，按混合模式 `SRC_ALPHA / INV_SRC_ALPHA`（= canvas `source-over`）alpha 混合，颜色来自 ColorTexture 采样。
+
+- `center.dds`（1024×1024）→ `galaxy_center.shader` `CenterTexture`（Effect `GalaxyCenter`）：银河中心对齐屏幕的四边形，**加色混合（ONE/ONE）且亮度 ×0.5**。**坑：ONE/ONE 混合忽略 alpha 通道，淡出全靠 RGB 趋黑**，而 canvas `'lighter'` 会预乘源 alpha——若直接画（alpha 是径向渐变、均值仅 38）会双重压暗。Web：`buildCenterFlat()` 先把 alpha 拍平为 255，再 `'lighter'` 加色；大小/强度是文件顶部命名常量 `CORE_GLOW_SPAN=0.6`（直径，×galaxyRadius）与 `CORE_GLOW_ALPHA=0.8`——引擎内 quad 尺寸（entity scale）不可考，按观感调。
+- `galaxycolor.dds`（2048×2048，不透明）→ `galaxy_dust.shader` `ColorTexture`，按 **尘埃 quad 的世界坐标**采样（`vUVColor = (vPos.xz + DustCloudUV.xy) / DustCloudUV.zw`），即地图空间颜色查找。
+- `dust.dds`（1024×1024）→ `DustTexture`：形状在 **alpha 通道**（0..121，均值≈24），RGB 只是灰色。
+- `nebula.dds` / `nebulacolor.dds` → `galaxy_nebula.shader`：形状 alpha 更低（均值≈9.5），shader 里 `saturate(a × 6)` 增强；颜色按 **quad 自身 UV 拉伸**采样（非地图空间）。
+
+**Web 实现**（`galaxy-map.js`，纹理 onload 后一次性构建离屏场，逐帧只 drawImage）：
+
+- `buildDustField()`：存档不存旋臂参数，但恒星系就生成在旋臂上——以每个恒星系为种子散 3 个尘埃块（jitter 0.05R、尺寸 0.06–0.13R、alpha 0.5–0.9），再沿每条超空间航道补 1 块；用 LCG 保证确定性。**每块按像素着色器逐 quad 合成**（128² 临时画布）：①按 quad 世界范围从 galaxycolor 地图空间采样（srcRect 越界时裁剪≈Clamp 寻址）；②`'multiply'` 乘 dust.png 的 RGB——注意必须先把 dust 的 alpha 拍平（canvas multiply 会按源 alpha 插值），灰度均值≈0.45，**漏掉这步尘埃会亮约一倍（看着像过亮的星云）**；③`destination-in` 上 dust 真实 alpha；④带旋转 `source-over` 盖入场（旋转只转尘埃纹理，颜色采样保持地图空间——与 shader 一致：quad UV 旋转而 vUVColor 不转）。
+- `buildNebulaField()`：先把 nebula.png 的 alpha ×6（getImageData 一次性处理），再对 7 个随机恒星系位置（globalAlpha 0.4 保持外围克制）：nebulacolor 拉伸到临时画布 → `destination-in` 形状 → 带旋转盖到 field 上（尺寸 0.15–0.35R）。
+- 场覆盖范围 `GALAXY_TEX_HALF = 1.15`（×galaxyRadius 的半边长，1024² 分辨率），逐帧按 `worldToScreen(0,0)` ± half×zoom 绘制，星云层在尘埃层之下（游戏里 nebula y=-9 位于尘埃平面下方）。
+- `galaxyRadius` = 所有恒星系距原点最大距离（构造时算一次）。
+- 绘制次序：背景填充 → 程序化星点 → **星云场 → 尘埃场 → 核心辉光** → 领土 → 超空间航道 → 恒星 → 舰队。
+- 调参入口：块数/alpha/尺寸在 `buildDustField` 内，`GALAXY_TEX_HALF` 与核心辉光跨度在 `drawGalaxyBackdrop`。同目录 `hexgrid.png`/`edge.png`/`trail.png` 已转换待用，接入方式同理（查对应 shader 的混合参数）。
