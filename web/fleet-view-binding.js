@@ -6,11 +6,11 @@ const ENTRY_BASE_HEIGHT = 259;
 const FLEETS_TOP = 23;
 
 const FLEET_METRIC_ICONS = {
-    hull_points: '/gfx/interface/icons/ship_stats/hit_points.png',
-    armor_points: '/gfx/interface/icons/ship_stats/armor.png',
-    shield_points: '/gfx/interface/icons/ship_stats/shield.png',
-    size_limit: '/gfx/interface/icons/navy_size_icon.png',
-    fleet_power: '/gfx/interface/system/offensive_value.png',
+    hull_points: '/gfx/interface/icons/ship_stats/hit_points.webp',
+    armor_points: '/gfx/interface/icons/ship_stats/armor.webp',
+    shield_points: '/gfx/interface/icons/ship_stats/shield.webp',
+    size_limit: '/gfx/interface/icons/navy_size_icon.webp',
+    fleet_power: '/gfx/interface/system/offensive_value.webp',
 };
 
 const HIDDEN_ENTRY_BRANCHES = [
@@ -144,8 +144,8 @@ function renderCommander(container, commander) {
     const portrait = document.createElement('img');
     portrait.className = 'generated-fleet-commander-portrait';
     portrait.src = commander
-        ? '/gfx/interface/fleet_view/unknown_leader.png'
-        : '/gfx/interface/leaders/leader_assign_icon.png';
+        ? '/gfx/interface/fleet_view/unknown_leader.webp'
+        : '/gfx/interface/leaders/leader_assign_icon.webp';
     portrait.alt = '';
     overlay.appendChild(portrait);
 

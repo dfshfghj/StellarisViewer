@@ -61,7 +61,7 @@ function renderStatLabels(view) {
             if (file) {
                 const icon = document.createElement('img');
                 icon.className = 'generated-ship-stat-icon';
-                icon.src = `/gfx/interface/icons/ship_stats/${file}.png`;
+                icon.src = `/gfx/interface/icons/ship_stats/${file}.webp`;
                 icon.alt = '';
                 element.appendChild(icon);
             } else if (part) {

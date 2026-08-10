@@ -5,7 +5,7 @@ export function renderPlanetWindow(container, data, callbacks) {
 
     container.innerHTML = `
         <div class="planet-header">
-            <div class="planet-governor-portrait"><img src="${import.meta.env.BASE_URL}gfx/interface/fleet_view/unknown_leader.png" alt=""></div>
+            <div class="planet-governor-portrait"><img src="${import.meta.env.BASE_URL}gfx/interface/fleet_view/unknown_leader.webp" alt=""></div>
             <div class="planet-title-block">
                 <div class="planet-name">${esc(data.name)}</div>
                 <div class="planet-class-label">${classLabel} · ${esc(data.designation || '')}</div>
@@ -14,11 +14,11 @@ export function renderPlanetWindow(container, data, callbacks) {
             <button class="planet-close" id="planet-close" title="关闭" aria-label="关闭"></button>
         </div>
         <div class="planet-resources">
-            ${planetMetric('pop.png', data.num_pops, '人口')}
-            ${planetMetric('stability.png', `${data.stability.toFixed(0)}%`, '稳定度')}
-            ${planetMetric('planet_housing.png', data.total_housing.toFixed(0), '住房')}
-            ${planetMetric('planet_amenities.png', `${data.amenities.toFixed(0)}/${data.amenities_usage.toFixed(0)}`, '舒适度')}
-            ${planetMetric('text_icons/text_icon_defense_army.png', `${data.armies}`, '陆军')}
+            ${planetMetric('pop.webp', data.num_pops, '人口')}
+            ${planetMetric('stability.webp', `${data.stability.toFixed(0)}%`, '稳定度')}
+            ${planetMetric('planet_housing.webp', data.total_housing.toFixed(0), '住房')}
+            ${planetMetric('planet_amenities.webp', `${data.amenities.toFixed(0)}/${data.amenities_usage.toFixed(0)}`, '舒适度')}
+            ${planetMetric('text_icons/text_icon_defense_army.webp', `${data.armies}`, '陆军')}
         </div>
         <div class="planet-tabs">
             <div class="planet-tab active" data-tab="surface">地表</div>
@@ -33,7 +33,7 @@ export function renderPlanetWindow(container, data, callbacks) {
                 <div class="sidebar-section">
                     <div class="sidebar-section-title">行星总览</div>
                     <div class="sidebar-stat"><span class="label">类型</span><span class="value">${classLabel}</span></div>
-                    <div class="sidebar-stat"><span class="label">规模</span><span class="value icon-value"><img src="${import.meta.env.BASE_URL}gfx/interface/icons/planet_size.png" alt="">${data.size}</span></div>
+                    <div class="sidebar-stat"><span class="label">规模</span><span class="value icon-value"><img src="${import.meta.env.BASE_URL}gfx/interface/icons/planet_size.webp" alt="">${data.size}</span></div>
                     <div class="sidebar-stat"><span class="label">殖民时间</span><span class="value">${esc(data.colonize_date || '未殖民')}</span></div>
                     <div class="sidebar-stat"><span class="label">所有者</span><span class="value">${esc(data.owner_name || '无')}</span></div>
                     <div class="sidebar-stat"><span class="label">稳定度</span><span class="value">${data.stability.toFixed(1)}%</span></div>
@@ -153,7 +153,7 @@ function renderManageTab(container, data) {
         <div class="sidebar-section">
             <div class="sidebar-section-title">人口概要</div>
             <div class="pop-group">
-                <div class="pop-icon"><img src="${import.meta.env.BASE_URL}gfx/interface/icons/pop.png" alt=""></div>
+                <div class="pop-icon"><img src="${import.meta.env.BASE_URL}gfx/interface/icons/pop.webp" alt=""></div>
                 <div class="pop-info">
                     <div class="pop-name">总人口</div>
                     <div class="pop-count">${data.num_pops}</div>
@@ -171,7 +171,7 @@ function renderManageTab(container, data) {
             <div class="sidebar-section-title">总督</div>
             ${data.governor ? `
             <div class="pop-group">
-                <div class="pop-icon"><img src="${import.meta.env.BASE_URL}gfx/interface/fleet_view/unknown_leader.png" alt=""></div>
+                <div class="pop-icon"><img src="${import.meta.env.BASE_URL}gfx/interface/fleet_view/unknown_leader.webp" alt=""></div>
                 <div class="pop-info">
                     <div class="pop-name">${esc(data.governor.name)}</div>
                     <div class="pop-count">${getLeaderClassLabel(data.governor.class)} · 等级 ${data.governor.level}</div>

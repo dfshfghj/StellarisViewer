@@ -142,8 +142,8 @@ assert(html.includes('pv2-dc-count">4/17<'), 'city card shows built/cap 4/17 (su
 assert(html.includes('pv2-dc-count">2/5<'), 'generator card shows built/cap 2/5');
 // 已建方块（游戏原版形式）：城市 4 块 + 发电 2 块 = 6，贴图用各类型 rectangle 条图
 assert(count('class="pv2-dc-cube"') === 6, 'renders one cube per built district (6)');
-assert(html.includes('grid_box/district_city_rectangle.png'), 'city cubes use city rectangle sprite');
-assert(html.includes('grid_box/district_generator_rectangle.png'), 'generator cubes use generator rectangle sprite');
+assert(html.includes('grid_box/district_city_rectangle.webp'), 'city cubes use city rectangle sprite');
+assert(html.includes('grid_box/district_generator_rectangle.webp'), 'generator cubes use generator rectangle sprite');
 // 布局：城市类单独上排（main），其余下排（rest）
 assert(count('pv2-districts-row-main') === 1, 'city districts on main row');
 assert(count('pv2-districts-row-rest') === 1, 'resource districts on rest row');
@@ -158,15 +158,15 @@ assert(count('pv2-dc-slots-base') === 2, 'renders a base-zone grid per city inst
 assert(count('pv2-slot filled') === 5, 'places 5 buildings into slots');
 assert(count('pv2-slot empty') === 14, 'renders 14 empty/locked slots as +');
 // 建筑图标按 type 生成
-assert(html.includes('icons/buildings/building_capital.png'), 'base slot shows building_capital icon');
-assert(html.includes('icons/buildings/building_research_lab_1.png'), 'spec slot shows building_research_lab_1 icon');
+assert(html.includes('icons/buildings/building_capital.webp'), 'base slot shows building_capital icon');
+assert(html.includes('icons/buildings/building_research_lab_1.webp'), 'spec slot shows building_research_lab_1 icon');
 // 已解锁特化区：显示区名标签行
 assert(count('pv2-dc-zone-label') === 1, 'renders one unlocked specialization zone label');
 // 锁定特化：城市1(1) + 城市2(2) + 发电(1) = 4 处“特化可用”
 assert(count('特化可用') === 4, 'shows 特化可用 for all locked specialization slots');
 // 区划图标
-assert(html.includes('icons/districts/district_city.png'), 'city district icon path');
-assert(html.includes('icons/districts/district_generator.png'), 'generator district icon path');
+assert(html.includes('icons/districts/district_city.webp'), 'city district icon path');
+assert(html.includes('icons/districts/district_generator.webp'), 'generator district icon path');
 // 区划计数 = level 求和 3+1+2 = 6
 assert(html.includes('pv2-districts-count">6<'), 'district count header shows 6 (sum of level)');
 // ---- 总督 ----
@@ -174,12 +174,12 @@ assert(count('class="pv2-governor"') === 1, 'renders governor widget');
 assert(html.includes('娜雅·波帝'), 'governor name shown');
 assert(html.includes('星域总督'), 'governor title shown');
 assert(html.includes('pv2-gov-skill') && html.includes('30% 0'), 'governor skill icon at level-3 frame (30%)');
-assert(html.includes('fleet_view/unknown_leader.png'), 'governor portrait placeholder');
+assert(html.includes('fleet_view/unknown_leader.webp'), 'governor portrait placeholder');
 // ---- 行星修正 ----
 assert(count('class="pv2-mod"') === 3, 'renders 3 modifier items');
-assert(html.includes('planet_modifiers/pm_planet_from_space.png'), 'prosp_uni_mod resolves to pm_planet_from_space icon');
-assert(html.includes('planet_modifiers/pm_carbon_world.png'), 'pm_carbon_world resolves via static modifier carbon_world');
-assert(html.includes('planet_modifiers/pm_mineral_poor.png'), 'pm_mineral_poor icon');
+assert(html.includes('planet_modifiers/pm_planet_from_space.webp'), 'prosp_uni_mod resolves to pm_planet_from_space icon');
+assert(html.includes('planet_modifiers/pm_carbon_world.webp'), 'pm_carbon_world resolves via static modifier carbon_world');
+assert(html.includes('planet_modifiers/pm_mineral_poor.webp'), 'pm_mineral_poor icon');
 assert(html.includes('繁荣一统'), 'modifier name localized (prosp_uni_mod)');
 assert(html.includes('306'), 'timed modifier shows remaining days');
 assert(html.includes('background-position:100% 0'), 'negative modifier uses red frame (frame 3)');

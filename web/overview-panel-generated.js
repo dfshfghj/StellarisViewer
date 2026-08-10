@@ -15,7 +15,7 @@ function ensureStyle() {
         [data-overview-kind="planet"], [data-overview-kind="fleet"], [data-overview-kind="station"] { cursor:pointer; }
         .generated-overview-close {
             position:absolute; z-index:5; top:4px; right:5px; width:24px; height:24px;
-            padding:0; border:0; background:transparent url('/gfx/interface/buttons/button_close_24_animated.png') 0 0 / 300% 100% no-repeat;
+            padding:0; border:0; background:transparent url('/gfx/interface/buttons/button_close_24_animated.webp') 0 0 / 300% 100% no-repeat;
             cursor:pointer;
         }
         .generated-overview-close:hover { background-position:50% 0; }

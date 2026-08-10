@@ -282,16 +282,41 @@ function listFiles(directory, extension) {
     return files;
 }
 
-function pngDimensions(path) {
+function imageDimensions(path) {
     if (!existsSync(path)) return null;
-    const header = readFileSync(path).subarray(0, 24);
-    if (header.length < 24 || header.toString('ascii', 1, 4) !== 'PNG') return null;
-    return { width: header.readUInt32BE(16), height: header.readUInt32BE(20) };
+    const header = readFileSync(path).subarray(0, 30);
+    if (header.length >= 24 && header.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))) {
+        return { width: header.readUInt32BE(16), height: header.readUInt32BE(20) };
+    }
+    if (header.length < 25 || header.toString('ascii', 0, 4) !== 'RIFF' || header.toString('ascii', 8, 12) !== 'WEBP') {
+        return null;
+    }
+
+    const format = header.toString('ascii', 12, 16);
+    if (format === 'VP8X' && header.length >= 30) {
+        return {
+            width: 1 + header.readUIntLE(24, 3),
+            height: 1 + header.readUIntLE(27, 3),
+        };
+    }
+    if (format === 'VP8 ' && header.length >= 30 && header.subarray(23, 26).equals(Buffer.from([157, 1, 42]))) {
+        return {
+            width: header.readUInt16LE(26) & 0x3fff,
+            height: header.readUInt16LE(28) & 0x3fff,
+        };
+    }
+    if (format === 'VP8L' && header[20] === 0x2f) {
+        return {
+            width: 1 + header[21] + ((header[22] & 0x3f) << 8),
+            height: 1 + (header[22] >> 6) + (header[23] << 2) + ((header[24] & 0x0f) << 10),
+        };
+    }
+    return null;
 }
 
 function webTexturePath(texture) {
     return typeof texture === 'string'
-        ? texture.replace(/\\/g, '/').replace(/\.dds$/i, '.png')
+        ? texture.replace(/\\/g, '/').replace(/\.(?:dds|tga)$/i, '.webp')
         : null;
 }
 
@@ -332,7 +357,7 @@ export function compileGfxRegistry(assetsDirectory) {
             const textures = textureValues(props);
             const referencedTextures = [...referencedTextureValues(props)];
             const webTexture = textures[0] || null;
-            const dimensions = webTexture ? pngDimensions(resolve(assetsDirectory, webTexture)) : null;
+            const dimensions = webTexture ? imageDimensions(resolve(assetsDirectory, webTexture)) : null;
             const missingTextures = referencedTextures.filter(texture => !existsSync(resolve(assetsDirectory, texture)));
             registry[props.name] = {
                 name: props.name,

@@ -4,19 +4,19 @@
 //
 // 与 gui 的对应关系（ship_view.gui 650x650, clipping, moveable）：
 //   background  GFX_tile_outliner_bg        → outliner.gfx   corneredTile borderSize 80x30 → 9-slice
-//   hex_bg      GFX_hex_bg                  → planet_view.gfx  planet_view_hex_bg.png 340x68 @(-15,-15)
-//   empire_header_line GFX_line_long        → planet_view.gfx  line_long.png 512x17 @(6,22)
+//   hex_bg      GFX_hex_bg                  → planet_view.gfx  planet_view_hex_bg.webp 340x68 @(-15,-15)
+//   empire_header_line GFX_line_long        → planet_view.gfx  line_long.webp 512x17 @(6,22)
 //   name        font malgun_goth_24         → fonts.gfx simp_chinese 覆盖 = Chinese_header 20px
 //   type        font cg_16b, color code "E" → fonts.gfx simp_chinese 覆盖 = Chinese_normal 14px；§E 为引擎内置淡蓝
-//   close       GFX_close_square 3帧        → planet_view.gfx  close_button_square.png 114x38 (38x38/帧) UPPER_RIGHT(-40,11)
+//   close       GFX_close_square 3帧        → planet_view.gfx  close_button_square.webp 114x38 (38x38/帧) UPPER_RIGHT(-40,11)
 //   ship_model  348x120 @(15,65)，3d_icon=GFX_dummy_3d_ship_details(rendertarget着色器)
-//               → 游戏内此处是3D渲染目标，gui/gfx 只确定底图 ship_design_entry_bg.png（拉伸至348x120）
+//               → 游戏内此处是3D渲染目标，gui/gfx 只确定底图 ship_design_entry_bg.webp（拉伸至348x120）
 //   stats       260x220 @(-15,65) upper_right，底图 GFX_tiles_dark_area_cut_8 borderSize 8
 //   components  358x78 @(10,195)，grid 58x78 x6列，格子=ship_view_required_component_entry
 //   component_sets smoothListbox 630x320 @(10,292)，装 ship_view_armaments / ship_view_utilities（各630x150）
 //               格子=ship_view_component_entry：icon_bg=GFX_ship_designer_slot(16帧,60x58) + icon=GFX_ship_part_background(58x58)
 //   buttons     @(0,588)：open_designer x=48 / open_fleet_manager x=338（按游戏实际布局取左边距）
-//               GFX_standard_button_240_34_button → button_240_34_animated.png 792x60 (264x60/帧, 3帧)
+//               GFX_standard_button_240_34_button → button_240_34_animated.webp 792x60 (264x60/帧, 3帧)
 //
 // gui/gfx 无法确定、由运行时代码决定的部分（本实现按游戏行为补齐）：
 //   - 3d_icon 内容（rendertarget，只显示底图）
@@ -56,11 +56,11 @@ function loc(key, fallback) {
     s = s.replace(/\$([A-Z0-9_]+)\$/g, (_, k) => strings[k] ?? k);
     return s.replace(/£([a-z0-9_]+)£/g, (_, name) => {
         const file = TEXT_ICON_FILES[name];
-        return file ? `<img class="sv2-texticon" src="/gfx/interface/icons/ship_stats/${file}.png" alt="">` : '';
+        return file ? `<img class="sv2-texticon" src="/gfx/interface/icons/ship_stats/${file}.webp" alt="">` : '';
     });
 }
 
-const PLACEHOLDER = '/gfx/interface/icons/ship_parts/ship_part_placeholder.png';
+const PLACEHOLDER = '/gfx/interface/icons/ship_parts/ship_part_placeholder.webp';
 
 // ---- 必要样式：全部尺寸/坐标取自 ship_view.gui，贴图取自各 .gfx 定义 ----
 const CSS = `
@@ -85,7 +85,7 @@ const CSS = `
     border-style: solid;
     border-width: 30px 80px;
     border-color: transparent;
-    border-image: url('/gfx/interface/tiles/outliner_tile.png') 30 80 fill;
+    border-image: url('/gfx/interface/tiles/outliner_tile.webp') 30 80 fill;
 }
 .sv2-root > *:not(.sv2-bg) { position: absolute; }
 .sv2-hex { left: -15px; top: -15px; }                 /* GFX_hex_bg 340x68 */
@@ -97,7 +97,7 @@ const CSS = `
 /* close: GFX_close_square noOfFrames=3, UPPER_RIGHT position {-40,11} */
 .sv2-close {
     top: 11px; right: 2px; width: 38px; height: 38px; padding: 0; border: 0;
-    background: url('/gfx/interface/buttons/close_button_square.png') 0% 0 / 300% 100% no-repeat;
+    background: url('/gfx/interface/buttons/close_button_square.webp') 0% 0 / 300% 100% no-repeat;
     cursor: pointer;
 }
 .sv2-close:hover { background-position: 50% 0; }
@@ -111,7 +111,7 @@ const CSS = `
 .sv2-stats-bg {
     position: absolute; inset: 0; box-sizing: border-box;
     border: 8px solid transparent;
-    border-image: url('/gfx/interface/tiles/dark_area_cut_8.png') 8 fill;
+    border-image: url('/gfx/interface/tiles/dark_area_cut_8.webp') 8 fill;
 }
 .sv2-stat-label, .sv2-stat-value { position: absolute; font-size: 14px; line-height: 20px; height: 20px; }
 .sv2-stat-label { left: 6px; width: 200px; overflow: hidden; white-space: nowrap; }
@@ -125,7 +125,7 @@ const CSS = `
 .sv2-frame-bg {
     position: absolute; left: 0; top: 15px; width: 363px; height: 78px; box-sizing: border-box;
     border: 12px solid transparent;
-    border-image: url('/gfx/interface/tiles/planet_view_glow_tile.png') 12 fill;
+    border-image: url('/gfx/interface/tiles/planet_view_glow_tile.webp') 12 fill;
 }
 /* gridBox slotSize 58x78, max_slots_horizontal 6, position {9,15} */
 .sv2-core-grid { position: absolute; left: 9px; top: 15px; display: grid; grid-template-columns: repeat(6, 58px); grid-auto-rows: 78px; }
@@ -136,7 +136,7 @@ const CSS = `
 .sv2-core-cell .sv2-cell-frame {
     position: absolute; left: -3px; top: 7px; width: 64px; height: 64px; box-sizing: border-box;
     border: 12px solid transparent;
-    border-image: url('/gfx/interface/tiles/planet_view_glow_tile.png') 12 fill;
+    border-image: url('/gfx/interface/tiles/planet_view_glow_tile.webp') 12 fill;
 }
 .sv2-core-cell img.sv2-cell-img { position: absolute; left: 0; top: 10px; width: 58px; height: 58px; }
 /* component_sets smoothListbox 630x320 @(10,292)：整体不滚动，分区内部滚动 */
@@ -147,7 +147,7 @@ const CSS = `
 .sv2-set-list-bg {
     position: absolute; inset: 0; box-sizing: border-box;
     border: 12px solid transparent;
-    border-image: url('/gfx/interface/tiles/planet_view_glow_tile.png') 12 fill;
+    border-image: url('/gfx/interface/tiles/planet_view_glow_tile.webp') 12 fill;
 }
 .sv2-set-scroll { position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; }
 .sv2-set-scroll::-webkit-scrollbar { width: 6px; }
@@ -160,15 +160,15 @@ const CSS = `
 .sv2-set-cell { position: relative; width: 56px; height: 56px; }
 .sv2-set-cell .sv2-slotframe {
     position: absolute; z-index: 1; left: -2px; top: -1px; width: 60px; height: 58px;
-    background: url('/gfx/interface/ship_designer/ship_designer_slot.png') var(--slot-pos, 0%) 0 / 1600% 100% no-repeat;
+    background: url('/gfx/interface/ship_designer/ship_designer_slot.webp') var(--slot-pos, 0%) 0 / 1600% 100% no-repeat;
 }
 .sv2-set-cell img.sv2-cell-img { position: absolute; left: -2px; top: -2px; width: 58px; height: 58px; }
-/* buttons @(0,588)；GFX_standard_button_240_34_button = button_240_34_animated.png 3帧(264x60) */
+/* buttons @(0,588)；GFX_standard_button_240_34_button = button_240_34_animated.webp 3帧(264x60) */
 .sv2-buttons { left: 0; top: 588px; width: 650px; height: 60px; }
 .sv2-btn {
     position: absolute; top: 0; width: 264px; height: 60px; padding: 0 0 8px; border: 0;
     display: flex; align-items: center; justify-content: center;
-    background: url('/gfx/interface/buttons/button_240_34_animated.png') 0% 0 / 300% 100% no-repeat;
+    background: url('/gfx/interface/buttons/button_240_34_animated.webp') 0% 0 / 300% 100% no-repeat;
     color: #fff; font-size: 14px; font-family: inherit; cursor: pointer;
 }
 .sv2-btn:hover { background-position: 50% 0; }
@@ -206,20 +206,20 @@ export function renderShipWindow(container, data, callbacks) {
     container.innerHTML = `
         <div class="sv2-root">
             <div class="sv2-bg"></div>
-            <img class="sv2-hex" src="/gfx/interface/planetview/planet_view_hex_bg.png" alt="">
-            <img class="sv2-line" src="/gfx/interface/planetview/line_long.png" alt="">
+            <img class="sv2-hex" src="/gfx/interface/planetview/planet_view_hex_bg.webp" alt="">
+            <img class="sv2-line" src="/gfx/interface/planetview/line_long.webp" alt="">
             <div class="sv2-name">${esc(data.name)}</div>
             <div class="sv2-type">${esc(data.design_name || data.ship_size)}</div>
             <div class="popup-header"></div>
             <button class="sv2-close" id="sv2-close" title="${esc(closeTooltip)}" aria-label="${esc(closeTooltip)}"></button>
-            <div class="sv2-model"><img src="/gfx/interface/ship_designer/ship_design_entry_bg.png" alt=""></div>
+            <div class="sv2-model"><img src="/gfx/interface/ship_designer/ship_design_entry_bg.webp" alt=""></div>
             <div class="sv2-stats">
                 <div class="sv2-stats-bg"></div>
                 ${statRows.map(row => `
                     <div class="sv2-stat-label" style="top:${row.y}px">${loc(row.key, row.fb)}</div>
                     <div class="sv2-stat-value" style="top:${row.y}px">${row.value}</div>`).join('')}
                 <div class="sv2-stat-label" style="top:145px">${loc('SHIP_STAT_CLOAKING_INLINE', '£ship_stats_cloaking_strength£隐身强度')}</div>
-                <img class="sv2-cloak-icon" src="/gfx/interface/icons/ship_stats/cloaking_level_0.png" alt="">
+                <img class="sv2-cloak-icon" src="/gfx/interface/icons/ship_stats/cloaking_level_0.webp" alt="">
             </div>
             <div class="sv2-core">
                 <div class="sv2-label">${esc(t('FLEET_VIEW_COMPONENTS_LABEL', '核心部件'))}</div>
@@ -259,7 +259,7 @@ function coreCell(template) {
     return `
         <div class="sv2-core-cell" title="${esc(template)}">
             <div class="sv2-cell-frame"></div>
-            <img class="sv2-cell-img" src="/gfx/interface/icons/ship_parts/ship_part_background.png" alt="">
+            <img class="sv2-cell-img" src="/gfx/interface/icons/ship_parts/ship_part_background.webp" alt="">
             <img class="sv2-cell-img" data-ph src="${componentIcon(template)}" alt="${esc(template)}">
         </div>`;
 }
@@ -285,12 +285,12 @@ function setCell(component, kind) {
     return `
         <div class="sv2-set-cell" title="${esc(template)}${component.slot ? ` (${esc(component.slot)})` : ''}">
             <div class="sv2-slotframe" style="--slot-pos:${(frame / 15) * 100}%"></div>
-            <img class="sv2-cell-img" src="/gfx/interface/icons/ship_parts/ship_part_background.png" alt="">
+            <img class="sv2-cell-img" src="/gfx/interface/icons/ship_parts/ship_part_background.webp" alt="">
             <img class="sv2-cell-img" data-ph src="${componentIcon(template)}" alt="${esc(template)}">
         </div>`;
 }
 
-// ship_designer_slot.png 共16帧(60x58)，帧含义（逐帧核对贴图 + 游戏内确认）：
+// ship_designer_slot.webp 共16帧(60x58)，帧含义（逐帧核对贴图 + 游戏内确认）：
 //   0=通用S 1=通用M 2=通用L(绿) 3=P(点防) | 4=武器S 5=武器M 6=武器L(米黄/橙) |
 //   7=G(鱼雷) 8=X 9=T(泰坦) 10=W(歼星) | 11-12=A(辅助) 13-14=H(机库) | 15=空
 // 注意：该"尺寸→帧"对应是引擎代码硬编码，.gui/.gfx/common 配置里都没有，只能自维护；

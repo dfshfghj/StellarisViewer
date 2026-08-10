@@ -85,7 +85,7 @@ function parseBlocks(files, acceptsBlock) {
 }
 
 function textureToWebPath(textureFile) {
-    return `/${textureFile.replace(/\\/g, '/').replace(/^\/?gfx\//i, 'gfx/').replace(/\.dds$/i, '.png')}`;
+    return `/${textureFile.replace(/\\/g, '/').replace(/^\/?gfx\//i, 'gfx/').replace(/\.dds$/i, '.webp')}`;
 }
 
 export function buildComponentIconMap(assetsDirectory) {

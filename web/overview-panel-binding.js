@@ -82,7 +82,7 @@ function bindPlanetRow(view, list, planet, index, callbacks) {
         scoped(view, row, 'colony_type', 'instanttextboxtype'),
         `${planetClassShort(planet.planet_class)} · ${Number(planet.num_pops) || 0} 人口`,
     );
-    setBackgroundIcon(scoped(view, row, 'planet_type_icon', 'icontype'), '/gfx/interface/icons/planet.png');
+    setBackgroundIcon(scoped(view, row, 'planet_type_icon', 'icontype'), '/gfx/interface/icons/planet.webp');
     for (const name of [
         'designation_icon', 'planet_type_overlay_icon_bg', 'designation_overlay_icon_bg',
         'planet_type_icon_overlay', 'designation_icon_overlay', 'occupied', 'blockaded',
@@ -99,11 +99,11 @@ function bindMilitaryFleetRow(view, list, fleet, index, callbacks) {
     setText(scoped(view, row, 'size_limit', 'instanttextboxtype'), `${Number(fleet.ship_count) || 0} 艘`);
     setInlineValue(
         scoped(view, row, 'offensive_power', 'instanttextboxtype'),
-        '/gfx/interface/system/offensive_value.png', Number(fleet.military_power || 0).toFixed(0), '舰队战斗力',
+        '/gfx/interface/system/offensive_value.webp', Number(fleet.military_power || 0).toFixed(0), '舰队战斗力',
     );
     setBackgroundIcon(
         scoped(view, row, 'alliance_icon', 'icontype'),
-        '/gfx/interface/icons/ship_parts/ship_sizes.png', SHIP_SIZE_FRAME_COUNT, shipSizeFrame('corvette'),
+        '/gfx/interface/icons/ship_parts/ship_sizes.webp', SHIP_SIZE_FRAME_COUNT, shipSizeFrame('corvette'),
     );
     for (const name of ['fleet_status', 'leader_level', 'location', 'progress', 'fleet_status_grid']) {
         hide(scoped(view, row, name));
@@ -116,7 +116,7 @@ function bindCivilianFleetRow(view, list, fleet, index, callbacks) {
     prepareRow(view, row, callbacks.onFleetClick, fleet.id, 'fleet');
     setText(scoped(view, row, 'name', 'instanttextboxtype'), fleet.name);
     setText(scoped(view, row, 'type', 'instanttextboxtype'), civilianFleetType(fleet.name));
-    setBackgroundIcon(scoped(view, row, 'fleet_status', 'icontype'), '/gfx/interface/icons/fleet_task_small.png', 5, 0);
+    setBackgroundIcon(scoped(view, row, 'fleet_status', 'icontype'), '/gfx/interface/icons/fleet_task_small.webp', 5, 0);
     for (const name of ['leader_level', 'location', 'progress']) hide(scoped(view, row, name));
     return row;
 }
@@ -128,7 +128,7 @@ function bindStationRow(view, list, fleet, index, callbacks) {
     setText(scoped(view, row, 'starbase_type', 'instanttextboxtype'), '空间站');
     setInlineValue(
         scoped(view, row, 'military_power', 'instanttextboxtype'),
-        '/gfx/interface/system/offensive_value.png', Number(fleet.military_power || 0).toFixed(0), '空间站战斗力',
+        '/gfx/interface/system/offensive_value.webp', Number(fleet.military_power || 0).toFixed(0), '空间站战斗力',
     );
     for (const name of ['system', 'starbase_status_container', 'constructions']) hide(scoped(view, row, name));
     return row;

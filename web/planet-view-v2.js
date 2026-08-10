@@ -3,11 +3,11 @@
 // 与 ship-window-v2.js 同一模式：根容器 1162x680（gui planet_view size），clipping=no，moveable=yes。
 //
 // 与 gui 的对应关系（绝对坐标均换算到 1162x680 根）：
-//   planet_view_bg        GFX_tile_large_bg_plain   tiles/tile_large_bg_plain.png 680x612 borderSize x=330 y=296 → (0,28) 850x594 9-slice
-//   side_bar bg           GFX_plain_bg_tile         tiles/plain_bg_tile.png 180x180 borderSize 80 → (850,10) 312x631 9-slice
-//   stripes_1             GFX_planetview_big_stripes planetview/planetview_big_stripes.png → (0,9) 850x242
-//   planet_view_gradient  GFX_planet_view_gradient  planetview/planet_view_gradient.png 415x240 → (0,10) 拉伸 189x116
-//   planet_top_bar        GFX_planet_title_banner   planetview/planet_title_banner.png → (0,0) 251x72
+//   planet_view_bg        GFX_tile_large_bg_plain   tiles/tile_large_bg_plain.webp 680x612 borderSize x=330 y=296 → (0,28) 850x594 9-slice
+//   side_bar bg           GFX_plain_bg_tile         tiles/plain_bg_tile.webp 180x180 borderSize 80 → (850,10) 312x631 9-slice
+//   stripes_1             GFX_planetview_big_stripes planetview/planetview_big_stripes.webp → (0,9) 850x242
+//   planet_view_gradient  GFX_planet_view_gradient  planetview/planet_view_gradient.webp 415x240 → (0,10) 拉伸 189x116
+//   planet_top_bar        GFX_planet_title_banner   planetview/planet_title_banner.webp → (0,0) 251x72
 //   flag                  GFX_empire_flag_64        运行期按帝国绑定（无静态贴图）→ (3,0) 64x64 占位
 //   planet_name           malgun_goth_24(20px)      → (77,3) 163x40
 //   colony_type           (82,18)：icon GFX_colony_type(30x30/帧,50帧) scale0.8 → (76,28)24x24；text cg_16b(14px) → (106,33)
@@ -53,7 +53,7 @@ function t(key, fallback) {
     return strings[key] ?? fallback ?? key;
 }
 
-const PLACEHOLDER = '/gfx/interface/icons/ship_parts/ship_part_placeholder.png';
+const PLACEHOLDER = '/gfx/interface/icons/ship_parts/ship_part_placeholder.webp';
 const ICON = '/gfx/interface/icons/';
 const GFX = '/gfx/interface/';
 
@@ -73,7 +73,7 @@ function classFrame(planetClass) {
 }
 // 帧条带：background-position-x = frame/(N-1)*100%，background-size = N*100% 100%
 function bigIconStyle(frame) {
-    return `background:url('${ICON}planet_type_big_icons.png') ${(frame / (BIG_ICON_FRAMES - 1)) * 100}% 0 / ${BIG_ICON_FRAMES * 100}% 100% no-repeat;`;
+    return `background:url('${ICON}planet_type_big_icons.webp') ${(frame / (BIG_ICON_FRAMES - 1)) * 100}% 0 / ${BIG_ICON_FRAMES * 100}% 100% no-repeat;`;
 }
 
 // ---- 资源图标映射（ResourceInfo 字段 → resources/ 下贴图；sr_ 前缀特例见 resource-panel-v2.js）----
@@ -115,7 +115,7 @@ function governorHtml(gov) {
     const lvl = Math.max(0, Math.min(10, gov.level || 0));
     return `
         <div class="pv2-governor">
-            <div class="pv2-gov-portrait"><img data-ph src="${GFX}fleet_view/unknown_leader.png" alt=""></div>
+            <div class="pv2-gov-portrait"><img data-ph src="${GFX}fleet_view/unknown_leader.webp" alt=""></div>
             <div class="pv2-gov-skill" style="background-position:${(lvl / 10) * 100}% 0" title="${esc(t('LEVEL', '等级'))} ${lvl}"></div>
             <div class="pv2-gov-name" title="${esc(gov.name)}">${esc(gov.name)}</div>
             <div class="pv2-gov-title">${esc(t('SECTOR_GOVERNOR_TITLE', '星域总督'))}</div>
@@ -128,7 +128,7 @@ function modifiersHtml(mods) {
     if (!mods || !mods.length) return '';
     const items = mods.map(m => {
         const meta = MODIFIER_ICONS[m.key];
-        const icon = meta ? meta.icon : 'planet_modifiers/pm_unknown.png';
+        const icon = meta ? meta.icon : 'planet_modifiers/pm_unknown.webp';
         const frame = meta ? meta.frame : 1;
         const name = t(meta ? meta.name : m.key, m.key);
         const days = m.days >= 0 ? ` (${m.days}${t('DAYS', '天')})` : '';
@@ -163,13 +163,13 @@ const CSS = `
 .pv2-bg-left {
     position: absolute; left: 0; top: 28px; width: 850px; height: 594px; box-sizing: border-box;
     border-style: solid; border-width: 296px 330px; border-color: transparent;
-    border-image: url('${GFX}tiles/tile_large_bg_plain.png') 296 330 fill;
+    border-image: url('${GFX}tiles/tile_large_bg_plain.webp') 296 330 fill;
 }
 /* GFX_plain_bg_tile: corneredTile borderSize 80 */
 .pv2-bg-right {
     position: absolute; left: 850px; top: 10px; width: 312px; height: 631px; box-sizing: border-box;
     border-style: solid; border-width: 80px; border-color: transparent;
-    border-image: url('${GFX}tiles/plain_bg_tile.png') 80 fill;
+    border-image: url('${GFX}tiles/plain_bg_tile.webp') 80 fill;
 }
 /* ---- 顶栏 ---- */
 .pv2-stripes { position: absolute; left: 0; top: 9px; width: 850px; height: 242px; }
@@ -185,7 +185,7 @@ const CSS = `
 }
 .pv2-colony-icon {
     position: absolute; left: 76px; top: 28px; width: 24px; height: 24px;
-    background: url('${GFX}planetview/colony_type.png') 0% 0 / 5000% 100% no-repeat;
+    background: url('${GFX}planetview/colony_type.webp') 0% 0 / 5000% 100% no-repeat;
 }
 .pv2-colony-text {
     position: absolute; left: 106px; top: 33px; width: 140px; height: 20px;
@@ -199,10 +199,10 @@ const CSS = `
 }
 .pv2-hbtn:hover { background-position: 50% 0; }
 .pv2-hbtn:active { background-position: 100% 0; }
-.pv2-prev  { left: 1001px; background-image: url('${GFX}buttons/button_left_solid.png'); }
-.pv2-next  { left: 1037px; background-image: url('${GFX}buttons/button_right_solid.png'); }
-.pv2-zoom  { left: 1085px; background-image: url('${GFX}fleet_view/fleet_action_button_focus_on_solid.png'); }
-.pv2-close { left: 1120px; background-image: url('${GFX}buttons/close_button_solid.png'); }
+.pv2-prev  { left: 1001px; background-image: url('${GFX}buttons/button_left_solid.webp'); }
+.pv2-next  { left: 1037px; background-image: url('${GFX}buttons/button_right_solid.webp'); }
+.pv2-zoom  { left: 1085px; background-image: url('${GFX}fleet_view/fleet_action_button_focus_on_solid.webp'); }
+.pv2-close { left: 1120px; background-image: url('${GFX}buttons/close_button_solid.webp'); }
 /* ---- 行星肖像（3D rendertarget 代替）---- */
 .pv2-portrait { position: absolute; left: 5px; top: 10px; width: 850px; height: 240px; overflow: hidden; }
 .pv2-planet-big {
@@ -220,7 +220,7 @@ const CSS = `
 /* GFX_leader_skill：209x22 = 11帧 19x22，frame = 等级；gui @(65,124) centerPosition */
 .pv2-gov-skill {
     position: absolute; left: 55px; top: 113px; width: 19px; height: 22px;
-    background: url('${ICON}leaders/leader_skill.png') 0 0 / 1100% 100% no-repeat;
+    background: url('${ICON}leaders/leader_skill.webp') 0 0 / 1100% 100% no-repeat;
 }
 .pv2-gov-name {
     position: absolute; left: 80px; top: 108px; width: 120px; height: 20px;
@@ -241,7 +241,7 @@ const CSS = `
 /* GFX_modifier_frames 180x60 = 3帧 60x60：帧1绿(正面)/2黄/3红(负面)；icon_frame 1-based */
 .pv2-mod-frame {
     position: absolute; inset: 0; pointer-events: none;
-    background: url('${ICON}planet_modifiers/modifier_frames.png') 0 0 / 300% 100% no-repeat;
+    background: url('${ICON}planet_modifiers/modifier_frames.webp') 0 0 / 300% 100% no-repeat;
 }
 /* ---- 信息条 ---- */
 .pv2-info-bg { position: absolute; left: 0; top: 212px; width: 850px; height: 40px; }
@@ -253,7 +253,7 @@ const CSS = `
 /* ---- 区划 ---- */
 .pv2-districts-header {
     position: absolute; left: 4px; top: 253px; width: 841px; height: 38px;
-    background: url('${GFX}tiles/dark_area.png') 0 0 / 100% 100% no-repeat;
+    background: url('${GFX}tiles/dark_area.webp') 0 0 / 100% 100% no-repeat;
 }
 .pv2-districts-title { position: absolute; left: 9px; top: 258px; font-size: 20px; line-height: 20px; }
 .pv2-districts-count {
@@ -273,7 +273,7 @@ const CSS = `
 .pv2-districts-row-rest .pv2-district-card { flex: 0 0 279px; }
 .pv2-district-card {
     position: relative; margin: 0; padding: 6px 8px 8px; box-sizing: border-box;
-    background: url('${GFX}tiles/dark_area.png') 0 0 / 100% 100% no-repeat;
+    background: url('${GFX}tiles/dark_area.webp') 0 0 / 100% 100% no-repeat;
 }
 .pv2-dc-header { display: flex; align-items: center; gap: 7px; height: 32px; padding-right: 96px; }
 .pv2-dc-icon { width: 30px; height: 30px; flex: none; }
@@ -282,17 +282,17 @@ const CSS = `
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .pv2-dc-count { flex: none; font-size: 13px; line-height: 16px; color: #a8d4e6; }
-/* 建造按钮：GFX_button_animated_75_24（button_75_24_animated.png 3帧），orientation=UPPER_RIGHT x=-93 → right:18 */
+/* 建造按钮：GFX_button_animated_75_24（button_75_24_animated.webp 3帧），orientation=UPPER_RIGHT x=-93 → right:18 */
 .pv2-dc-build {
     position: absolute; top: 4px; right: 18px; width: 75px; height: 24px; padding: 0 0 2px; border: 0;
     display: flex; align-items: center; justify-content: center;
-    background: url('${GFX}buttons/button_75_24_animated.png') 0% 0 / 300% 100% no-repeat;
+    background: url('${GFX}buttons/button_75_24_animated.webp') 0% 0 / 300% 100% no-repeat;
     color: #fff; font-size: 12px; font-family: inherit; cursor: pointer;
 }
 .pv2-dc-build:hover { background-position: 50% 0; }
 .pv2-dc-build:active { background-position: 100% 0; }
 /* 已建区划方块：对应 gui district_box_grid（slotsize 22x10，每行10个，最多3行=30）。
-   方块用每类区划的 grid_box/<type>_rectangle.png（60x8=3帧20x8，取第0帧），缺图时以底色兜底 */
+   方块用每类区划的 grid_box/<type>_rectangle.webp（60x8=3帧20x8，取第0帧），缺图时以底色兜底 */
 .pv2-dc-cubes { display: flex; flex-wrap: wrap; gap: 2px; width: 218px; margin-top: 5px; }
 .pv2-dc-cube {
     width: 20px; height: 8px; background-color: rgba(120, 200, 180, .45);
@@ -301,7 +301,7 @@ const CSS = `
 /* 超过30个方块时显示数字框：planet_district_cap_container（GFX_district_any_big 47x28 + num_districts_text） */
 .pv2-dc-capbox {
     position: relative; width: 47px; height: 28px; margin-top: 5px;
-    background: url('${GFX}icons/districts/grid_box/district_any_big.png') 0 0 / 100% 100% no-repeat;
+    background: url('${GFX}icons/districts/grid_box/district_any_big.webp') 0 0 / 100% 100% no-repeat;
 }
 .pv2-dc-capbox-num {
     position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
@@ -321,7 +321,7 @@ const CSS = `
 /* GFX_tiles_frame_extra_light: borderSize 2 */
 .pv2-slot.filled {
     border-style: solid; border-width: 2px; border-color: transparent;
-    border-image: url('${GFX}tiles/black_bg_green_frame_extra_light_tile.png') 2 fill;
+    border-image: url('${GFX}tiles/black_bg_green_frame_extra_light_tile.webp') 2 fill;
 }
 .pv2-slot.filled img { position: absolute; left: 2px; top: 2px; width: calc(100% - 4px); height: calc(100% - 4px); }
 .pv2-slot.empty {
@@ -341,11 +341,11 @@ const CSS = `
 /* ---- 资源产出/赤字 ---- */
 .pv2-resources {
     position: absolute; left: 568px; top: 295px; width: 277px; height: 168px;
-    background: url('${GFX}tiles/dark_area.png') 0 0 / 100% 100% no-repeat;
+    background: url('${GFX}tiles/dark_area.webp') 0 0 / 100% 100% no-repeat;
 }
 .pv2-res-titlebg {
     position: absolute; left: 0; width: 280px; height: 28px;
-    background: url('${GFX}tiles/dark_area.png') 0 0 / 100% 100% no-repeat;
+    background: url('${GFX}tiles/dark_area.webp') 0 0 / 100% 100% no-repeat;
 }
 .pv2-res-prod-titlebg { top: 0; }
 .pv2-res-cons-titlebg { top: 91px; }
@@ -369,17 +369,17 @@ const CSS = `
 /* ---- 右侧摘要 ---- */
 .pv2-summary {
     position: absolute; left: 855px; top: 52px; width: 302px; height: 150px;
-    background: url('${GFX}planetview/planet_summary_bg.png') 0 0 / 100% 100% no-repeat;
+    background: url('${GFX}planetview/planet_summary_bg.webp') 0 0 / 100% 100% no-repeat;
 }
 .pv2-summary-class-icon { position: absolute; left: 190px; top: 15px; width: 76px; height: 76px; }
 .pv2-summary-header { position: absolute; left: 10px; top: 5px; font-size: 20px; line-height: 20px; color: #a8d4e6; }
 .pv2-summary-class-text { position: absolute; left: 10px; top: 32px; width: 175px; font-size: 14px; line-height: 16px; color: #a8d4e6; white-space: nowrap; overflow: hidden; }
 .pv2-summary-line { position: absolute; left: 10px; width: 175px; font-size: 14px; line-height: 16px; white-space: nowrap; overflow: hidden; }
-/* GFX_standard_button_dark_116_34: button_116_dark_animated.png 3帧(140x58)，按逻辑尺寸 116x34 渲染 */
+/* GFX_standard_button_dark_116_34: button_116_dark_animated.webp 3帧(140x58)，按逻辑尺寸 116x34 渲染 */
 .pv2-btn-dark {
     position: absolute; top: 95px; width: 116px; height: 34px; padding: 0 0 4px; border: 0;
     display: flex; align-items: center; justify-content: center;
-    background: url('${GFX}buttons/button_116_dark_animated.png') 0% 0 / 300% 100% no-repeat;
+    background: url('${GFX}buttons/button_116_dark_animated.webp') 0% 0 / 300% 100% no-repeat;
     color: #fff; font-size: 14px; font-family: inherit; cursor: pointer;
 }
 .pv2-btn-dark:hover { background-position: 50% 0; }
@@ -390,9 +390,9 @@ const CSS = `
 .pv2-designation {
     position: absolute; left: 855px; top: 213px; width: 302px; height: 32px; box-sizing: border-box;
     border-style: solid; border-width: 12px; border-color: transparent;
-    border-image: url('${GFX}tiles/button_dark_job_tile.png') 12 fill;
+    border-image: url('${GFX}tiles/button_dark_job_tile.webp') 12 fill;
 }
-.pv2-designation-icon { position: absolute; left: 5px; top: 1px; width: 30px; height: 30px; background: url('${GFX}planetview/colony_type.png') 0% 0 / 5000% 100% no-repeat; }
+.pv2-designation-icon { position: absolute; left: 5px; top: 1px; width: 30px; height: 30px; background: url('${GFX}planetview/colony_type.webp') 0% 0 / 5000% 100% no-repeat; }
 .pv2-designation-name {
     position: absolute; left: 37px; top: 5px; width: 200px; height: 22px;
     font-size: 14px; line-height: 22px; white-space: nowrap; overflow: hidden;
@@ -400,7 +400,7 @@ const CSS = `
 /* ---- 建造队列 ---- */
 .pv2-queue-titlebg {
     position: absolute; left: 855px; top: 253px; width: 300px; height: 41px;
-    background: url('${GFX}tiles/dark_area.png') 0 0 / 100% 100% no-repeat;
+    background: url('${GFX}tiles/dark_area.webp') 0 0 / 100% 100% no-repeat;
 }
 .pv2-queue-header {
     position: absolute; left: 904px; top: 261px; width: 195px; height: 20px;
@@ -410,7 +410,7 @@ const CSS = `
 .pv2-queue-subwindow {
     position: absolute; left: 855px; top: 294px; width: 300px; height: 342px; box-sizing: border-box;
     border-style: solid; border-width: 4px; border-color: transparent;
-    border-image: url('${GFX}tiles/black_bg_green_frame_tile.png') 4 fill;
+    border-image: url('${GFX}tiles/black_bg_green_frame_tile.webp') 4 fill;
 }
 .pv2-queue-empty {
     position: absolute; left: 858px; top: 298px; width: 294px; height: 334px;
@@ -420,7 +420,7 @@ const CSS = `
 /* ---- 破坏度（devastation>0）---- */
 .pv2-devastation {
     position: absolute; left: 667px; top: 105px; width: 175px; height: 35px;
-    background: url('${GFX}tiles/dark_area_cut.png') 0 0 / 100% 100% no-repeat;
+    background: url('${GFX}tiles/dark_area_cut.webp') 0 0 / 100% 100% no-repeat;
 }
 .pv2-devastation-text {
     position: absolute; left: 0; top: 9px; width: 120px; height: 20px;
@@ -469,9 +469,9 @@ export function renderPlanetWindow(container, data, callbacks) {
             <div class="pv2-bg-left"></div>
             <div class="pv2-bg-right"></div>
 
-            <img class="pv2-stripes" src="${GFX}planetview/planetview_big_stripes.png" alt="">
-            <img class="pv2-gradient" src="${GFX}planetview/planet_view_gradient.png" alt="">
-            <img class="pv2-banner" src="${GFX}planetview/planet_title_banner.png" alt="">
+            <img class="pv2-stripes" src="${GFX}planetview/planetview_big_stripes.webp" alt="">
+            <img class="pv2-gradient" src="${GFX}planetview/planet_view_gradient.webp" alt="">
+            <img class="pv2-banner" src="${GFX}planetview/planet_title_banner.webp" alt="">
             <div class="pv2-flag" title="${esc(data.owner_name || '')}"></div>
             <div class="pv2-name">${esc(data.name)}</div>
             <div class="pv2-colony-icon" title="${esc(colonyText)}"></div>
@@ -488,9 +488,9 @@ export function renderPlanetWindow(container, data, callbacks) {
             </div>
             ${governorHtml(data.governor)}
 
-            <img class="pv2-info-bg" src="${GFX}planetview/planet_info_background.png" alt="">
+            <img class="pv2-info-bg" src="${GFX}planetview/planet_info_background.webp" alt="">
             ${metrics.map(m => `
-                <img class="pv2-metric-icon" style="left:${m.left}px;top:${m.top}px;width:${m.size}px;height:${m.size}px" src="${GFX}${m.icon}.png" title="${esc(m.label)}" alt="">
+                <img class="pv2-metric-icon" style="left:${m.left}px;top:${m.top}px;width:${m.size}px;height:${m.size}px" src="${GFX}${m.icon}.webp" title="${esc(m.label)}" alt="">
                 <div class="pv2-metric-val" style="left:${m.valLeft}px" title="${esc(m.label)}">${esc(m.value)}</div>`).join('')}
             ${modifiersHtml(data.modifiers)}
 
@@ -503,13 +503,13 @@ export function renderPlanetWindow(container, data, callbacks) {
 
             <div class="pv2-resources">
                 <div class="pv2-res-titlebg pv2-res-prod-titlebg"></div>
-                <img class="pv2-res-pos-icon" src="${GFX}planetview/population_growing.png" alt="">
+                <img class="pv2-res-pos-icon" src="${GFX}planetview/population_growing.webp" alt="">
                 <div class="pv2-res-title pv2-res-prod-title">${esc(t('PLANETARY_PRODUCTION', '行星产出'))}</div>
                 <div class="pv2-res-amount pv2-res-prod-amount">
                     ${produces.map(r => resItem(r, '+')).join('') || emptyRes()}
                 </div>
                 <div class="pv2-res-titlebg pv2-res-cons-titlebg"></div>
-                <img class="pv2-res-neg-icon" src="${GFX}planetview/population_declining.png" alt="">
+                <img class="pv2-res-neg-icon" src="${GFX}planetview/population_declining.webp" alt="">
                 <div class="pv2-res-title pv2-res-cons-title">${esc(t('PLANETARY_DEFICIT', '行星赤字'))}</div>
                 <div class="pv2-res-amount pv2-res-cons-amount">
                     ${upkeep.map(r => resItem(r, '-')).join('') || emptyRes()}
@@ -540,7 +540,7 @@ export function renderPlanetWindow(container, data, callbacks) {
             ${data.devastation > 0 ? `
             <div class="pv2-devastation">
                 <div class="pv2-devastation-text">${esc(t('DEVASTATION', '破坏度'))}: ${fmtInt(data.devastation)}%</div>
-                <img class="pv2-devastation-icon" src="${GFX}planetview/devastation.png" alt="">
+                <img class="pv2-devastation-icon" src="${GFX}planetview/devastation.webp" alt="">
             </div>` : ''}
         </div>
     `;
@@ -622,7 +622,7 @@ function districtRows(districts, data) {
 
 function districtTypeCard(type, list, data) {
     const name = typeName(type, 'district_');
-    const icon = `/gfx/interface/icons/districts/${type}.png`;
+    const icon = `/gfx/interface/icons/districts/${type}.webp`;
     const cap = districtCap(districtCategory(type), data);
     // 存档中每种区划类型只有一个 District 对象，已建数量存在 level 字段里
     const built = list.reduce((s, d) => s + (d.level || 0), 0);
@@ -644,13 +644,13 @@ function districtTypeCard(type, list, data) {
     return html;
 }
 
-// 已建区划方块（游戏原版形式）：每块 20x8，用 grid_box/<type>_rectangle.png 第0帧，
+// 已建区划方块（游戏原版形式）：每块 20x8，用 grid_box/<type>_rectangle.webp 第0帧，
 // 每行10个、最多3行（对应 district_box_grid slotsize 22x10 / max 10x3）；超过30个改用数字框
 function districtCubes(type, built) {
     if (built > 30) {
         return `<div class="pv2-dc-capbox"><span class="pv2-dc-capbox-num">${built}</span></div>`;
     }
-    const sprite = `${ICON}districts/grid_box/${type}_rectangle.png`;
+    const sprite = `${ICON}districts/grid_box/${type}_rectangle.webp`;
     let cubes = '';
     for (let i = 0; i < built; i++) {
         cubes += `<span class="pv2-dc-cube" style="background-image:url('${sprite}')"></span>`;
@@ -699,7 +699,7 @@ function zoneSlots(zone) {
         if (b) {
             const bname = typeName(b.building_type, 'building_');
             html += `<div class="pv2-slot filled" title="${esc(bname)}">` +
-                `<img data-ph src="/gfx/interface/icons/buildings/${b.building_type}.png" alt=""></div>`;
+                `<img data-ph src="/gfx/interface/icons/buildings/${b.building_type}.webp" alt=""></div>`;
         } else {
             html += `<div class="pv2-slot empty">+</div>`;
         }
@@ -713,7 +713,7 @@ function emptyDistricts() {
 
 function resItem(r, sign) {
     return `<span class="pv2-res-item ${sign === '+' ? 'pv2-res-pos' : 'pv2-res-neg'}" title="${esc(r.label)}">
-        <img src="${ICON}resources/${r.icon}.png" alt="">${sign}${fmtRes(r.value)}</span>`;
+        <img src="${ICON}resources/${r.icon}.webp" alt="">${sign}${fmtRes(r.value)}</span>`;
 }
 
 function emptyRes() {

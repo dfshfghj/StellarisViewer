@@ -250,7 +250,7 @@ function spriteFrame(resource, node) {
 }
 
 function webTexturePath(texture) {
-    return String(texture).replace(/\\/g, '/').replace(/\.(?:dds|tga)$/i, '.png');
+    return String(texture).replace(/\\/g, '/').replace(/\.(?:dds|tga)$/i, '.webp');
 }
 
 function applySprite(element, node, resource, baseUrl) {

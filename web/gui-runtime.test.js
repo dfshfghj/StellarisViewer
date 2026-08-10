@@ -159,26 +159,26 @@ const rootNode = {
 const container = new FakeElement('main');
 const resources = {
     GFX_masked: {
-        type: 'spritetype', texture: 'gfx/base.png', textures: ['gfx/base.png'], frames: 1,
-        maskingTexture: 'gfx/mask.png', alwaysTransparent: true,
+        type: 'spritetype', texture: 'gfx/base.webp', textures: ['gfx/base.webp'], frames: 1,
+        maskingTexture: 'gfx/mask.webp', alwaysTransparent: true,
     },
     GFX_progress: {
-        type: 'progressbartype', texture: 'gfx/fill.png', textures: ['gfx/fill.png', 'gfx/empty.png'], frames: 1,
+        type: 'progressbartype', texture: 'gfx/fill.webp', textures: ['gfx/fill.webp', 'gfx/empty.webp'], frames: 1,
     },
     GFX_vertical_progress: {
-        type: 'progressbartype', texture: 'gfx/vertical-fill.png',
-        textures: ['gfx/vertical-fill.png', 'gfx/vertical-empty.png'], frames: 1,
+        type: 'progressbartype', texture: 'gfx/vertical-fill.webp',
+        textures: ['gfx/vertical-fill.webp', 'gfx/vertical-empty.webp'], frames: 1,
         dimensions: { width: 40, height: 10 },
         properties: { size: { x: 7, y: 40 }, horizontal: false, flipdirection: false },
     },
     GFX_vertical_progress_flipped: {
-        type: 'progressbartype', texture: 'gfx/vertical-fill.png',
-        textures: ['gfx/vertical-fill.png', 'gfx/vertical-empty.png'], frames: 1,
+        type: 'progressbartype', texture: 'gfx/vertical-fill.webp',
+        textures: ['gfx/vertical-fill.webp', 'gfx/vertical-empty.webp'], frames: 1,
         dimensions: { width: 40, height: 10 },
         properties: { size: { x: 7, y: 40 }, horizontal: false, flipdirection: true },
     },
     GFX_animated: {
-        type: 'frameanimatedspritetype', texture: 'gfx/animated.png', textures: ['gfx/animated.png'],
+        type: 'frameanimatedspritetype', texture: 'gfx/animated.webp', textures: ['gfx/animated.webp'],
         frames: 4, fps: 8, looping: true, playOnShow: true,
     },
 };
@@ -192,7 +192,7 @@ assert.equal(view.root.style.pointerEvents, 'none');
 assert.equal(view.find('conditional_text').textContent, 'SMALL');
 assert.equal(view.find('conditional_text').attributes.title, 'loc:TIP');
 assert.equal(view.find('conditional_text').style.padding, '2px 4px');
-assert.equal(view.find('conditional_text').style.backgroundImage, 'url("/gfx/interface/tiles/tooltip.png")');
+assert.equal(view.find('conditional_text').style.backgroundImage, 'url("/gfx/interface/tiles/tooltip.webp")');
 assert.equal(view.root.children[0].dataset.guiName, 'conditional_text');
 assert.equal(view.root.children[1].dataset.guiName, 'nested_text');
 assert.equal(view.find('default_button').style.textAlign, 'center');
@@ -200,13 +200,13 @@ assert.equal(view.find('default_text').style.textAlign, 'left');
 assert.equal(view.find('name').tagName, 'INPUT');
 assert.equal(view.find('name').maxLength, 12);
 assert.equal(view.find('list').dataset.guiSprite, 'GFX_masked');
-assert.equal(view.find('list').style.maskImage, 'url("/gfx/mask.png")');
+assert.equal(view.find('list').style.maskImage, 'url("/gfx/mask.webp")');
 assert.equal(view.find('list').style.pointerEvents, 'none');
 assert.equal(view.find('right_anchored_list_item').style.left, 'auto');
 assert.equal(view.find('right_anchored_list_item').style.top, 'auto');
 assert.equal(view.find('progress').style.left, 'calc(0% + -8px)');
-assert.equal(view.find('progress').style.backgroundImage, 'url("/gfx/empty.png")');
-assert.equal(view.find('progress').children[0].style.backgroundImage, 'url("/gfx/fill.png")');
+assert.equal(view.find('progress').style.backgroundImage, 'url("/gfx/empty.webp")');
+assert.equal(view.find('progress').children[0].style.backgroundImage, 'url("/gfx/fill.webp")');
 assert.equal(view.setProgress('progress', 3, 4), true);
 assert.equal(view.find('progress').children[0].style.width, '100%');
 assert.equal(view.find('progress').children[0].style.clipPath, 'inset(0 25% 0 0)');
@@ -221,7 +221,7 @@ assert.equal(view.find('vertical_progress').style.backgroundImage, 'none');
 assert.equal(view.find('vertical_progress').children[0].children[0].style.width, '40px');
 assert.equal(view.find('vertical_progress').children[0].children[0].style.height, '7px');
 assert.equal(view.find('vertical_progress').children[0].children[0].style.transform, 'rotate(90deg) translateY(-100%)');
-assert.equal(view.find('vertical_progress').children[1].style.backgroundImage, 'url("/gfx/vertical-empty.png")');
+assert.equal(view.find('vertical_progress').children[1].style.backgroundImage, 'url("/gfx/vertical-empty.webp")');
 assert.equal(view.find('vertical_progress').children[1].style.transform, 'rotate(90deg) translateY(-100%)');
 assert.equal(view.setProgress('vertical_progress_flipped', 1, 4), true);
 assert.equal(view.find('vertical_progress_flipped').children[0].style.clipPath, 'inset(0 0 75% 0)');

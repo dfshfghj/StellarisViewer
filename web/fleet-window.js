@@ -12,7 +12,7 @@ export function renderFleetWindow(container, data, callbacks) {
 
     container.innerHTML = `
         <div class="popup-header fleet-popup-header">
-            <div class="fleet-emblem">${spriteFrame(`${ICON_ROOT}fleet_type_icons.png`, 5, getFleetTypeFrame(data, shipType), 'fleet-type-sprite')}</div>
+            <div class="fleet-emblem">${spriteFrame(`${ICON_ROOT}fleet_type_icons.webp`, 5, getFleetTypeFrame(data, shipType), 'fleet-type-sprite')}</div>
             <div>
                 <div class="popup-title">${esc(data.name)}</div>
                 <div class="popup-subtitle">${typeLabel} · ${fleetType} · ${data.ships.length} 艘</div>
@@ -60,12 +60,12 @@ export function renderFleetWindow(container, data, callbacks) {
 
 function renderFleetStats(data) {
     const stats = [
-        [`${ICON_ROOT}ship_stats/hit_points.png`, '船体', `${avgStat(data.ships, 'hp_pct').toFixed(0)}%`],
-        [`${ICON_ROOT}ship_stats/armor.png`, '装甲', `${avgStat(data.ships, 'armor_pct').toFixed(0)}%`],
-        [`${ICON_ROOT}ship_stats/shield.png`, '护盾', `${avgStat(data.ships, 'shield_pct').toFixed(0)}%`],
-        [`${ICON_ROOT}ship_stats/cloaking_strength.png`, '隐身强度', '0'],
-        [`${ICON_ROOT}fleet_capacity_icon.png`, '舰容', navalUsage(data.ships).toString()],
-        [`${ICON_ROOT}fleet_size_icon.png`, '战斗力', data.military_power.toFixed(0)],
+        [`${ICON_ROOT}ship_stats/hit_points.webp`, '船体', `${avgStat(data.ships, 'hp_pct').toFixed(0)}%`],
+        [`${ICON_ROOT}ship_stats/armor.webp`, '装甲', `${avgStat(data.ships, 'armor_pct').toFixed(0)}%`],
+        [`${ICON_ROOT}ship_stats/shield.webp`, '护盾', `${avgStat(data.ships, 'shield_pct').toFixed(0)}%`],
+        [`${ICON_ROOT}ship_stats/cloaking_strength.webp`, '隐身强度', '0'],
+        [`${ICON_ROOT}fleet_capacity_icon.webp`, '舰容', navalUsage(data.ships).toString()],
+        [`${ICON_ROOT}fleet_size_icon.webp`, '战斗力', data.military_power.toFixed(0)],
     ];
     return `<div class="fleet-stat-strip">${stats.map(([icon, label, value]) => `
         <div class="fleet-stat" title="${label}">
@@ -77,13 +77,13 @@ function renderFleetStats(data) {
 function renderCommander(commander) {
     if (!commander) {
         return `<div class="commander-section commander-empty">
-            <img class="leader-assign-icon" src="${GFX_ROOT}leaders/leader_assign_icon.png" alt="">
+            <img class="leader-assign-icon" src="${GFX_ROOT}leaders/leader_assign_icon.webp" alt="">
             <div><div class="commander-name">未指派领袖</div><div class="commander-role">该舰队当前没有司令</div></div>
         </div>`;
     }
     const traits = (commander.traits || []).slice(0, 3);
     return `<div class="commander-section">
-        <div class="commander-portrait" title="${esc(commander.portrait)}"><img src="${GFX_ROOT}fleet_view/unknown_leader.png" alt=""></div>
+        <div class="commander-portrait" title="${esc(commander.portrait)}"><img src="${GFX_ROOT}fleet_view/unknown_leader.webp" alt=""></div>
         <div class="commander-info">
             <div class="commander-name">${esc(commander.name)}</div>
             <div class="commander-role">${getLeaderClassLabel(commander.class)} · 等级 ${commander.level}${commander.age ? ` · ${commander.age} 岁` : ''}</div>
@@ -137,9 +137,9 @@ function getLeaderClassLabel(cls) {
 }
 
 function renderShipIcon(size) {
-    if (size === 'colonizer') return `<img src="${ICON_ROOT}icon_colony_ship.png" alt="">`;
-    if (size === 'starbase') return `<img src="${ICON_ROOT}starbase_outliner.png" alt="">`;
-    return spriteFrame(`${ICON_ROOT}ship_parts/ship_sizes.png`, SHIP_SIZE_FRAME_COUNT, shipSizeFrame(size), 'ship-size-sprite');
+    if (size === 'colonizer') return `<img src="${ICON_ROOT}icon_colony_ship.webp" alt="">`;
+    if (size === 'starbase') return `<img src="${ICON_ROOT}starbase_outliner.webp" alt="">`;
+    return spriteFrame(`${ICON_ROOT}ship_parts/ship_sizes.webp`, SHIP_SIZE_FRAME_COUNT, shipSizeFrame(size), 'ship-size-sprite');
 }
 
 function getMovementLabel(data) {

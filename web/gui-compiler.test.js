@@ -36,6 +36,7 @@ assert.deepEqual(find(root, 'buttons').props.position, { x: 0, y: 588 });
 assert.equal(definition.resources.GFX_tile_outliner_bg.type, 'corneredtilespritetype');
 assert.deepEqual(definition.resources.GFX_tile_outliner_bg.border, { x: 80, y: 30 });
 assert.equal(definition.resources.GFX_close_square.frames, 3);
+assert.deepEqual(definition.resources.GFX_close_square.dimensions, { width: 114, height: 38 });
 assert.equal(definition.resources.GFX_ship_designer_slot.frames, 16);
 assert.equal(definition.resources.GFX_standard_button_240_34_button.frames, 3);
 assert.equal(definition.resources.GFX_dummy_3d_ship_details.type, 'spritetype');
@@ -116,13 +117,14 @@ assert.deepEqual(semantics.diagnostics.duplicateVariables, [{ name: '@global', p
 assert.deepEqual(semantics.diagnostics.unresolvedVariables, [{ name: '@missing', path: 'diagnostic_root/size/width' }]);
 
 const gfx = compileGfxRegistry(assetsDirectory);
+assert.equal(gfx.GFX_ncp_scroll_bg.texture, 'gfx/interface/sliders/ncp_scroll_bg.webp');
 assert.equal(gfx.GFX_tutorial_entry_animation_1.effectFile, 'gfx/FX/buttonstate_onlydisable.shader');
 assert.equal(gfx.GFX_tutorial_entry_animation_1.animations[0].animationrotation, 180);
 assert.deepEqual(gfx.GFX_fleet_combat_progressbar.textures, [
-    'gfx/interface/progressbars/fleet_combat_progeress_bar_green.png',
-    'gfx/interface/progressbars/fleet_combat_progeress_bar_red.png',
+    'gfx/interface/progressbars/fleet_combat_progeress_bar_green.webp',
+    'gfx/interface/progressbars/fleet_combat_progeress_bar_red.webp',
 ]);
-assert.equal(gfx.GFX_evt_archaeological_site_in_progress.maskingTexture, 'gfx/interface/situation_log/event_mask.png');
+assert.equal(gfx.GFX_evt_archaeological_site_in_progress.maskingTexture, 'gfx/interface/situation_log/event_mask.webp');
 assert.equal(gfx.GFX_evt_archaeological_site_in_progress.alwaysTransparent, true);
 assert.equal(gfx.GFX_ship_designer_slot_indicator.fps, 10);
 

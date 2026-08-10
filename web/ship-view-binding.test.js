@@ -58,10 +58,10 @@ function fakeView() {
             const instance = element(templateName, 'containerwindowtype');
             instance.dataset.guiInstance = overrides.name;
             if (templateName === 'ship_view_required_component_entry') {
-                instance.scoped.push(element('icon', 'icontype', 'url("/ship-part-bg.png")'));
+                instance.scoped.push(element('icon', 'icontype', 'url("/ship-part-bg.webp")'));
             } else if (templateName === 'ship_view_component_entry') {
-                instance.scoped.push(element('icon', 'icontype', 'url("/ship-part-bg.png")'));
-                instance.scoped.push(element('icon_bg', 'icontype', 'url("/slot.png")'));
+                instance.scoped.push(element('icon', 'icontype', 'url("/ship-part-bg.webp")'));
+                instance.scoped.push(element('icon_bg', 'icontype', 'url("/slot.webp")'));
             } else if (templateName === 'ship_view_armaments') {
                 instance.scoped.push(element('armaments', 'gridboxtype'));
             } else if (templateName === 'ship_view_utilities') {
@@ -90,10 +90,10 @@ bindShipViewData(view, {
     ],
     utilities: [{ slot: 'AUX_UTILITY_01', template: 'AUX_FIRE_CONTROL' }],
 }, {
-    FISSION_REACTOR: '/reactor.png',
-    POINT_DEFENCE: '/pd.png',
-    XL_CANNON: '/xl.png',
-    AUX_FIRE_CONTROL: '/aux.png',
+    FISSION_REACTOR: '/reactor.webp',
+    POINT_DEFENCE: '/pd.webp',
+    XL_CANNON: '/xl.webp',
+    AUX_FIRE_CONTROL: '/aux.webp',
 });
 
 assert.equal(view.find('name').textContent, '测试舰');
@@ -113,7 +113,7 @@ const utilities = view.instances.filter(instance => /^utility-\d+$/.test(instanc
 assert.equal(cores.length, 2);
 assert.equal(weapons.length, 2);
 assert.equal(utilities.length, 1);
-assert.equal(view.findIn(cores[0], 'icon').dataset.componentIcon, '/reactor.png');
+assert.equal(view.findIn(cores[0], 'icon').dataset.componentIcon, '/reactor.webp');
 assert.equal(view.findIn(cores[1], 'icon').dataset.componentIcon, COMPONENT_PLACEHOLDER);
 assert.equal(view.findIn(weapons[0], 'icon_bg').dataset.componentSlotFrame, '3');
 assert.equal(view.findIn(weapons[1], 'icon_bg').dataset.componentSlotFrame, '8');

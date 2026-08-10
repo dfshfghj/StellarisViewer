@@ -6,11 +6,11 @@ const { icons, stats } = buildComponentIconMap(fileURLToPath(new URL('./assets',
 
 assert.equal(
     icons.SMALL_MASS_DRIVER_2,
-    '/gfx/interface/icons/ship_parts/ship_part_mass_driver_2.png',
+    '/gfx/interface/icons/ship_parts/ship_part_mass_driver_2.webp',
 );
 assert.equal(
     icons.SMALL_ARMOR_1,
-    '/gfx/interface/icons/ship_parts/ship_part_armor_1.png',
+    '/gfx/interface/icons/ship_parts/ship_part_armor_1.webp',
 );
 for (const component of [
     'CORVETTE_FISSION_REACTOR',

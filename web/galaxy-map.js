@@ -3,21 +3,21 @@ import { computeTerritoryBorders } from './territory-borders.js';
 
 // Star class → texture filename mapping
 const STAR_TEXTURES = {
-    'sc_a': 'a_star.png',
-    'sc_b': 'b_star.png',
-    'sc_f': 'f_star.png',
-    'sc_g': 'g_star.png',
-    'sc_k': 'k_star.png',
-    'sc_m': 'm_star.png',
-    'sc_m_giant': 'sc_m_giant.png',
-    'sc_t': 't_star.png',
-    'sc_x': 'x_star.png',
-    'sc_black_hole': 'black_hole.png',
-    'sc_neutron_star': 'neutron_star.png',
-    'sc_pulsar': 'pulsar.png',
+    'sc_a': 'a_star.webp',
+    'sc_b': 'b_star.webp',
+    'sc_f': 'f_star.webp',
+    'sc_g': 'g_star.webp',
+    'sc_k': 'k_star.webp',
+    'sc_m': 'm_star.webp',
+    'sc_m_giant': 'sc_m_giant.webp',
+    'sc_t': 't_star.webp',
+    'sc_x': 'x_star.webp',
+    'sc_black_hole': 'black_hole.webp',
+    'sc_neutron_star': 'neutron_star.webp',
+    'sc_pulsar': 'pulsar.webp',
 };
-const BINARY_TEXTURES = ['a_binary_star.png', 'b_binary_star.png', 'c_binary_star.png', 'd_binary_star.png', 'e_binary_star.png'];
-const TRINARY_TEXTURE = 'a_trinary_star.png';
+const BINARY_TEXTURES = ['a_binary_star.webp', 'b_binary_star.webp', 'c_binary_star.webp', 'd_binary_star.webp', 'e_binary_star.webp'];
+const TRINARY_TEXTURE = 'a_trinary_star.webp';
 const STAR_TEX_PATH = `${import.meta.env.BASE_URL}gfx/map/star_classes/`;
 const MAP_TEX_PATH = `${import.meta.env.BASE_URL}gfx/map/`;
 const ICON_TEX_PATH = `${import.meta.env.BASE_URL}gfx/interface/icons/`;
@@ -101,7 +101,7 @@ export class GalaxyMap {
     }
 
     loadFleetTextures() {
-        for (const file of ['ship_icons_type.png', 'ship_overlay_icons.png']) {
+        for (const file of ['ship_icons_type.webp', 'ship_overlay_icons.webp']) {
             const img = new Image();
             img.onload = () => this.active && this.render();
             img.src = ICON_TEX_PATH + file;
@@ -118,7 +118,7 @@ export class GalaxyMap {
         // dust.dds        → DustTexture: per-quad soft shape, carried by the ALPHA channel.
         // nebula/nebulacolor.dds → galaxy_nebula.shader: same pattern, shape alpha ×6,
         //                   color sampled per-quad (stretched), not map-space.
-        for (const file of ['center.png', 'galaxycolor.png', 'dust.png', 'nebula.png', 'nebulacolor.png']) {
+        for (const file of ['center.webp', 'galaxycolor.webp', 'dust.webp', 'nebula.webp', 'nebulacolor.webp']) {
             const img = new Image();
             img.onload = () => this.onGalaxyTextureLoad();
             img.src = MAP_TEX_PATH + file;
@@ -345,8 +345,8 @@ export class GalaxyMap {
 
     buildDustField() {
         if (this.dustField) return;
-        const color = this.galaxyImages.get('galaxycolor.png');
-        const dust = this.galaxyImages.get('dust.png');
+        const color = this.galaxyImages.get('galaxycolor.webp');
+        const dust = this.galaxyImages.get('dust.webp');
         if (!color?.complete || !dust?.complete) return;
 
         // galaxy_dust.shader, per quad:
@@ -429,8 +429,8 @@ export class GalaxyMap {
 
     buildNebulaField() {
         if (this.nebulaField) return;
-        const shape = this.galaxyImages.get('nebula.png');
-        const colorTex = this.galaxyImages.get('nebulacolor.png');
+        const shape = this.galaxyImages.get('nebula.webp');
+        const colorTex = this.galaxyImages.get('nebulacolor.webp');
         if (!shape?.complete || !colorTex?.complete || !this.data.systems.length) return;
 
         // galaxy_nebula.shader: vDiffuse.a = saturate(a * 6) — boost the very low
@@ -478,7 +478,7 @@ export class GalaxyMap {
 
     buildCenterFlat() {
         if (this.centerFlat) return;
-        const core = this.galaxyImages.get('center.png');
+        const core = this.galaxyImages.get('center.webp');
         if (!core?.complete) return;
         // galaxy_center.shader blends ONE/ONE: the alpha channel is IGNORED and
         // the edge fade is carried by RGB going to black. Canvas 'lighter'
@@ -589,8 +589,8 @@ export class GalaxyMap {
     }
 
     drawFleetMarkers(ctx, w, h) {
-        const base = this.fleetImages.get('ship_icons_type.png');
-        const powerOverlay = this.fleetImages.get('ship_overlay_icons.png');
+        const base = this.fleetImages.get('ship_icons_type.webp');
+        const powerOverlay = this.fleetImages.get('ship_overlay_icons.webp');
         if (!base?.complete || !powerOverlay?.complete) return;
 
         for (const marker of this.fleetMarkers) {

@@ -73,11 +73,11 @@ const result = bindFleetViewData(view, {
 
 assert.equal(view.findIn(result.entry, 'fleet_name', 'instanttextboxtype').textContent, '第一舰队');
 assert.equal(view.findIn(result.entry, 'fleet_power', 'instanttextboxtype').textContent, '1234');
-assert.equal(view.findIn(result.entry, 'hull_points', 'instanttextboxtype').children[0].src, '/gfx/interface/icons/ship_stats/hit_points.png');
-assert.equal(view.findIn(result.entry, 'armor_points', 'instanttextboxtype').children[0].src, '/gfx/interface/icons/ship_stats/armor.png');
-assert.equal(view.findIn(result.entry, 'shield_points', 'instanttextboxtype').children[0].src, '/gfx/interface/icons/ship_stats/shield.png');
-assert.equal(view.findIn(result.entry, 'size_limit', 'instanttextboxtype').children[0].src, '/gfx/interface/icons/navy_size_icon.png');
-assert.equal(view.findIn(result.entry, 'fleet_power', 'instanttextboxtype').children[0].src, '/gfx/interface/system/offensive_value.png');
+assert.equal(view.findIn(result.entry, 'hull_points', 'instanttextboxtype').children[0].src, '/gfx/interface/icons/ship_stats/hit_points.webp');
+assert.equal(view.findIn(result.entry, 'armor_points', 'instanttextboxtype').children[0].src, '/gfx/interface/icons/ship_stats/armor.webp');
+assert.equal(view.findIn(result.entry, 'shield_points', 'instanttextboxtype').children[0].src, '/gfx/interface/icons/ship_stats/shield.webp');
+assert.equal(view.findIn(result.entry, 'size_limit', 'instanttextboxtype').children[0].src, '/gfx/interface/icons/navy_size_icon.webp');
+assert.equal(view.findIn(result.entry, 'fleet_power', 'instanttextboxtype').children[0].src, '/gfx/interface/system/offensive_value.webp');
 assert.equal(view.findIn(result.entry, 'fleet_power', 'instanttextboxtype').children[1].textContent, '1234');
 assert.equal(view.findIn(result.entry, 'activity', 'instanttextboxtype').textContent, '正在移动 → 太阳系');
 assert.equal(view.findIn(result.entry, 'growth_interface').style.display, 'none');

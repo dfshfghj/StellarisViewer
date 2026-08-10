@@ -68,18 +68,18 @@ const CSS = `
 .rb2-bg {
     position: absolute; inset: 0; box-sizing: border-box;
     border-style: solid; border-width: 8px; border-color: transparent;
-    border-image: url('${GFX}main/topbar_background.png') 8 fill;
+    border-image: url('${GFX}main/topbar_background.webp') 8 fill;
     pointer-events: none;
 }
 
 /* topbar_static @(57,0) */
 .rb2-static { position: absolute; left: ${TOPBAR_STATIC_LEFT}px; top: 0; height: 36px; }
 
-/* 资源组 70x36；底图 topbar_main_button_70_36.png 为 2 帧条图(140x36)：帧1常态 / 帧2悬停 */
+/* 资源组 70x36；底图 topbar_main_button_70_36.webp 为 2 帧条图(140x36)：帧1常态 / 帧2悬停 */
 .rb2-group { position: absolute; top: 0; width: 70px; height: 36px; }
 .rb2-group-bg {
     position: absolute; inset: 0;
-    background: url('${GFX}buttons/topbar_main_button_70_36.png') 0% 0 / 200% 100% no-repeat;
+    background: url('${GFX}buttons/topbar_main_button_70_36.webp') 0% 0 / 200% 100% no-repeat;
 }
 .rb2-group:hover .rb2-group-bg { background-position: 100% 0; }
 
@@ -100,7 +100,7 @@ const CSS = `
 /* 分隔线 @(216/500/714,2) 8 x 75%，底图 vertical_line(1x30) 居中拉伸 */
 .rb2-divider {
     position: absolute; top: 2px; width: 8px; height: 75%;
-    background: url('${GFX}vertical_line.png') center / 1px 100% no-repeat;
+    background: url('${GFX}vertical_line.webp') center / 1px 100% no-repeat;
     pointer-events: none;
 }
 
@@ -186,7 +186,7 @@ function computeGroup(group, playerInfo, resources, monthly) {
 function iconTag(group) {
     const native = group.size || 18;
     const px = Math.round(native * (group.scale || 1));
-    return `<img class="rb2-icon" src="${ICON_ROOT}${group.icon}.png" width="${px}" height="${px}" alt="">`;
+    return `<img class="rb2-icon" src="${ICON_ROOT}${group.icon}.webp" width="${px}" height="${px}" alt="">`;
 }
 
 function groupHtml(group, playerInfo, resources, monthly) {
@@ -201,7 +201,7 @@ function groupHtml(group, playerInfo, resources, monthly) {
             ${group.noBg ? '' : '<div class="rb2-group-bg"></div>'}
             ${iconTag(group)}
             <div class="rb2-amount ${cls}">${text}${deltaHtml}</div>
-            ${group.dropdown ? `<img class="rb2-arrow" src="${GFX}galacticCommunity/resolutiuon_direction_down.png" alt="" aria-hidden="true">` : ''}
+            ${group.dropdown ? `<img class="rb2-arrow" src="${GFX}galacticCommunity/resolutiuon_direction_down.webp" alt="" aria-hidden="true">` : ''}
         </div>`;
 }
 

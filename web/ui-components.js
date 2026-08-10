@@ -1,7 +1,7 @@
 // UI Components: Resource Bar and Status Bar
 
 const ICON_ROOT = `${import.meta.env.BASE_URL}gfx/interface/icons/`;
-const resourceIcon = (name) => `${ICON_ROOT}resources/${name}.png`;
+const resourceIcon = (name) => `${ICON_ROOT}resources/${name}.webp`;
 
 const STRATEGIC_RESOURCES = [
     { key: 'volatile_motes', label: '易爆微粒' },
@@ -32,12 +32,12 @@ const HEADER_ITEMS = [
 
     { type: 'resource', key: 'influence', label: '影响力', icon: resourceIcon('influence'), group: 2 },
     { type: 'resource', key: 'unity', label: '凝聚力', icon: resourceIcon('unity'), group: 2 },
-    { type: 'composite', keys: RESEARCH_RESOURCES, label: '研究', icon: `${ICON_ROOT}research_icon.png`, group: 2 },
+    { type: 'composite', keys: RESEARCH_RESOURCES, label: '研究', icon: `${ICON_ROOT}research_icon.webp`, group: 2 },
 
-    { type: 'metric', key: 'empire_size', label: '帝国规模', icon: `${ICON_ROOT}empire_sprawl_icon.png`, group: 3 },
+    { type: 'metric', key: 'empire_size', label: '帝国规模', icon: `${ICON_ROOT}empire_sprawl_icon.webp`, group: 3 },
     { type: 'metric', key: 'envoys', label: '使节', icon: resourceIcon('diplomatic_weight'), group: 3 },
-    { type: 'ratio', numerator: 'num_upgraded_starbase', denominator: 'starbase_capacity', label: '升级恒星基地', icon: `${ICON_ROOT}station_icon.png`, group: 3 },
-    { type: 'metric', key: 'used_naval_capacity', label: '已用海军容量', icon: `${ICON_ROOT}fleet_size_icon.png`, group: 3 },
+    { type: 'ratio', numerator: 'num_upgraded_starbase', denominator: 'starbase_capacity', label: '升级恒星基地', icon: `${ICON_ROOT}station_icon.webp`, group: 3 },
+    { type: 'metric', key: 'used_naval_capacity', label: '已用海军容量', icon: `${ICON_ROOT}fleet_size_icon.webp`, group: 3 },
 ];
 
 export function renderResourceBar(container, playerInfo) {

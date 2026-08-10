@@ -1,4 +1,4 @@
-export const COMPONENT_PLACEHOLDER = '/gfx/interface/icons/ship_parts/ship_part_placeholder.png';
+export const COMPONENT_PLACEHOLDER = '/gfx/interface/icons/ship_parts/ship_part_placeholder.webp';
 
 const WEAPON_SLOT_FRAMES = [
     ['EXTRA_LARGE', 8], ['PRIMARY_GUN', 8],

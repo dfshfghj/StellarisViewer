@@ -14,7 +14,7 @@
 // 本模块只负责面板的"数据 + 渲染 + 显隐"，不绑定任何 DOM 事件——
 // 事件委托由调用方（resource-bar-v2.js）持有，因为下拉组属于顶栏。
 // 名称与 localisation/simp_chinese 对齐；living_metal/zro/dark_matter 存档键无 sr_ 前缀，
-// 但图标文件带 sr_ 前缀（sr_living_metal.png 等），故需 icon 覆盖。
+// 但图标文件带 sr_ 前缀（sr_living_metal.webp 等），故需 icon 覆盖。
 
 const ICON_ROOT = `${import.meta.env.BASE_URL}gfx/interface/icons/`;
 const GFX = `${import.meta.env.BASE_URL}gfx/interface/`;
@@ -63,7 +63,7 @@ const PANEL_CSS = `
 .rb2-panel {
     position: absolute; z-index: 200; box-sizing: border-box;
     min-width: 100px; width: max-content; padding: 3px;
-    background: url('${GFX}tiles/subwindow_tile_plain_solid.png') 0 0 / 100% 100% no-repeat;
+    background: url('${GFX}tiles/subwindow_tile_plain_solid.webp') 0 0 / 100% 100% no-repeat;
 }
 .rb2-panel-row {
     display: flex; align-items: center; gap: 4px;
@@ -77,7 +77,7 @@ const PANEL_CSS = `
 /* bg_separator：GFX_subwindow_tile_plain_solid_separator(180x1) 横向分隔线 */
 .rb2-panel-separator {
     height: 1px; margin: 2px 3px;
-    background: url('${GFX}tiles/subwindow_tile_plain_solid_separator.png') 0 0 / 100% 100% no-repeat;
+    background: url('${GFX}tiles/subwindow_tile_plain_solid_separator.webp') 0 0 / 100% 100% no-repeat;
 }
 `;
 
@@ -140,7 +140,7 @@ export function panelHtml(categories, anchor, resources, monthly) {
             const icon = r.icon || r.key;
             rows += `
             <div class="rb2-panel-row">
-                <img class="rb2-row-icon" src="${ICON_ROOT}resources/${icon}.png" alt="">
+                <img class="rb2-row-icon" src="${ICON_ROOT}resources/${icon}.webp" alt="">
                 <span class="rb2-row-name">${r.label}</span>
                 <span class="rb2-row-amount ${amount.cls}">${amount.text}</span>
             </div>`;

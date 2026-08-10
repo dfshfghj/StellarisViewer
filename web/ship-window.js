@@ -58,11 +58,11 @@ function renderStat(data, icon, label, field) {
     else if (field === 'damage') value = Number.isFinite(value) ? fmt(value, 1) : '—';
     else value = Number.isFinite(value) ? fmt(value, field === 'speed' ? 1 : 0) : '—';
     const timeIcon = field === 'damage'
-        ? `<img class="ship-time-icon" src="${IMAGE_ROOT}/resources/time.png" alt="每日">`
+        ? `<img class="ship-time-icon" src="${IMAGE_ROOT}/resources/time.webp" alt="每日">`
         : '';
     return `
         <div class="ship-stat">
-            <span class="stat-name"><img src="${IMAGE_ROOT}/ship_stats/${icon}.png" alt="">${label}</span>
+            <span class="stat-name"><img src="${IMAGE_ROOT}/ship_stats/${icon}.webp" alt="">${label}</span>
             <span class="stat-value">${value}${timeIcon}</span>
         </div>`;
 }
@@ -84,14 +84,14 @@ function renderComponent(component, kind) {
     const icon = getComponentIconPath(template);
     return `
         <div class="component-slot ${kind} slot-frame-${slotType.toLowerCase()}" title="${esc(template)}${component.slot ? ` (${esc(component.slot)})` : ''}">
-            <img class="component-icon" src="${icon}" data-fallback-src="${PART_ROOT}/ship_part_placeholder.png" alt="${esc(template)}">
+            <img class="component-icon" src="${icon}" data-fallback-src="${PART_ROOT}/ship_part_placeholder.webp" alt="${esc(template)}">
         </div>`;
 }
 
 function installImageFallbacks(container) {
     for (const image of container.querySelectorAll('img[data-fallback-src]')) {
         image.addEventListener('error', () => {
-            if (image.src.endsWith('/ship_part_placeholder.png')) return;
+            if (image.src.endsWith('/ship_part_placeholder.webp')) return;
             image.src = image.dataset.fallbackSrc;
         }, { once: true });
     }
@@ -110,7 +110,7 @@ function getShipSizeLabel(size) {
 }
 
 function renderShipClass(size) {
-    return spriteFrame(`${IMAGE_ROOT}/ship_parts/ship_sizes.png`, SHIP_SIZE_FRAME_COUNT, shipSizeFrame(size), 'ship-visual-class');
+    return spriteFrame(`${IMAGE_ROOT}/ship_parts/ship_sizes.webp`, SHIP_SIZE_FRAME_COUNT, shipSizeFrame(size), 'ship-visual-class');
 }
 
 function getSlotType(slot, template) {
@@ -127,7 +127,7 @@ function getSlotType(slot, template) {
 }
 
 function getComponentIconPath(template) {
-    return componentIcons[template] || `${PART_ROOT}/ship_part_placeholder.png`;
+    return componentIcons[template] || `${PART_ROOT}/ship_part_placeholder.webp`;
 }
 
 function fmt(value, digits = 0) {
