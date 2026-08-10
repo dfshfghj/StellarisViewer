@@ -58,6 +58,24 @@ export function parseLocalization(directory) {
     return strings;
 }
 
+function localizationModuleSource(url) {
+    return `let localizationPromise;
+
+export default function loadLocalization() {
+    if (!localizationPromise) {
+        localizationPromise = (async () => {
+            const response = await fetch(${url});
+            if (!response.ok) throw new Error('Failed to load localization');
+            return response.json();
+        })().catch(error => {
+            localizationPromise = undefined;
+            throw error;
+        });
+    }
+    return localizationPromise;
+}`;
+}
+
 function localizationPlugin() {
     let root;
     let command;
@@ -84,11 +102,7 @@ function localizationPlugin() {
         load(id) {
             if (id !== RESOLVED_LOCALIZATION_MODULE_ID) return null;
             if (command === 'serve') {
-                return `export default async function loadLocalization() {
-                    const response = await fetch('/@stellaris-localization');
-                    if (!response.ok) throw new Error('Failed to load localization');
-                    return response.json();
-                }`;
+                return localizationModuleSource("'/@stellaris-localization'");
             }
 
             serializedStrings ??= JSON.stringify(
@@ -99,11 +113,7 @@ function localizationPlugin() {
                 name: 'localization-simp-chinese.json',
                 source: serializedStrings,
             });
-            return `export default async function loadLocalization() {
-                const response = await fetch(import.meta.ROLLUP_FILE_URL_${reference});
-                if (!response.ok) throw new Error('Failed to load localization');
-                return response.json();
-            }`;
+            return localizationModuleSource(`import.meta.ROLLUP_FILE_URL_${reference}`);
         },
     };
 }
