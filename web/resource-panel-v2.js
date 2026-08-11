@@ -16,27 +16,29 @@
 // 名称与 localisation/simp_chinese 对齐；living_metal/zro/dark_matter 存档键无 sr_ 前缀，
 // 但图标文件带 sr_ 前缀（sr_living_metal.webp 等），故需 icon 覆盖。
 
+import { t } from './app-i18n.js';
+
 const ICON_ROOT = `${import.meta.env.BASE_URL}gfx/interface/icons/`;
 const GFX = `${import.meta.env.BASE_URL}gfx/interface/`;
 
 // 战略资源明细分类（topbar_other_resource_groups.txt）
 export const STRATEGIC_CATEGORIES = [
     {
-        key: 'RARE_RESOURCES', label: '战略资源', format: 'default',
+        key: 'RARE_RESOURCES', labelKey: 'resource.rare', format: 'default',
         resources: [
-            { key: 'volatile_motes', label: '易爆微粒' },
-            { key: 'exotic_gases', label: '异星天然气' },
-            { key: 'rare_crystals', label: '稀有水晶' },
-            { key: 'living_metal', label: '活体金属', icon: 'sr_living_metal' },
-            { key: 'zro', label: '泽珞', icon: 'sr_zro' },
-            { key: 'dark_matter', label: '暗物质', icon: 'sr_dark_matter' },
-            { key: 'nanites', label: '纳米机器人' },
+            { key: 'volatile_motes', labelKey: 'resource.volatileMotes' },
+            { key: 'exotic_gases', labelKey: 'resource.exoticGases' },
+            { key: 'rare_crystals', labelKey: 'resource.rareCrystals' },
+            { key: 'living_metal', labelKey: 'resource.livingMetal', icon: 'sr_living_metal' },
+            { key: 'zro', labelKey: 'resource.zro', icon: 'sr_zro' },
+            { key: 'dark_matter', labelKey: 'resource.darkMatter', icon: 'sr_dark_matter' },
+            { key: 'nanites', labelKey: 'resource.nanites' },
         ],
     },
     {
-        key: 'EXCEPTIONAL_MATERIALS', label: '卓越材料', format: 'default', onlyIfOwned: true,
+        key: 'EXCEPTIONAL_MATERIALS', labelKey: 'resource.exceptional', format: 'default', onlyIfOwned: true,
         resources: [
-            { key: 'minor_artifacts', label: '稀有文物' },
+            { key: 'minor_artifacts', labelKey: 'resource.minorArtifacts' },
             // astral_threads(星界丝缕)/entropy_crystals(结晶熵) 在 txt 中但 parser 未导出，暂略
         ],
     },
@@ -45,11 +47,11 @@ export const STRATEGIC_CATEGORIES = [
 // 研究明细分类（topbar_research_resource_groups.txt）
 export const RESEARCH_CATEGORIES = [
     {
-        key: 'RESEARCH', label: '研究', format: 'balance_only',
+        key: 'RESEARCH', labelKey: 'resource.research', format: 'balance_only',
         resources: [
-            { key: 'physics_research', label: '物理学研究' },
-            { key: 'society_research', label: '社会学研究' },
-            { key: 'engineering_research', label: '工程学研究' },
+            { key: 'physics_research', labelKey: 'resource.physics' },
+            { key: 'society_research', labelKey: 'resource.society' },
+            { key: 'engineering_research', labelKey: 'resource.engineering' },
         ],
     },
 ];
@@ -141,7 +143,7 @@ export function panelHtml(categories, anchor, resources, monthly) {
             rows += `
             <div class="rb2-panel-row">
                 <img class="rb2-row-icon" src="${ICON_ROOT}resources/${icon}.webp" alt="">
-                <span class="rb2-row-name">${r.label}</span>
+                <span class="rb2-row-name">${t(r.labelKey)}</span>
                 <span class="rb2-row-amount ${amount.cls}">${amount.text}</span>
             </div>`;
         }

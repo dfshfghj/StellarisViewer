@@ -1,28 +1,8 @@
 import shipViewDefinition from 'virtual:stellaris-ship-view-ui';
-import loadLocalization from 'virtual:stellaris-localization';
 import componentIcons from 'virtual:stellaris-component-icons';
 import { mountGui } from './gui-runtime.js';
+import { localizeGameText as localize, resolveGameLocalization } from './game-localization.js';
 import { bindShipViewData, bindShipViewTextData } from './ship-view-binding.js';
-
-let strings = {};
-const localizationReady = loadLocalization().then(value => {
-    strings = value;
-    return value;
-});
-
-function resolveLocalization(key) {
-    let text = strings[key] ?? key;
-    for (let depth = 0; depth < 4 && /\$[^$]+\$/.test(text); depth += 1) {
-        text = text.replace(/\$([^$]+)\$/g, (_match, nestedKey) => strings[nestedKey] ?? '—');
-    }
-    return text;
-}
-
-function localize(key) {
-    return resolveLocalization(key)
-        .replace(/£[^£]+£/g, '')
-        .replace(/§./g, '');
-}
 
 const TEXT_ICON_FILES = {
     ship_stats_hitpoints: 'hit_points',
@@ -52,7 +32,7 @@ function renderStatLabels(view) {
     for (const [name, key] of Object.entries(STAT_LABEL_KEYS)) {
         const element = view.findIn(stats, name, 'instanttextboxtype');
         if (!element) continue;
-        const localized = resolveLocalization(key).replace(/§./g, '');
+        const localized = resolveGameLocalization(key).replace(/§./g, '');
         const parts = localized.split(/(£[a-z0-9_]+£)/gi);
         element.replaceChildren();
         for (const part of parts) {
@@ -108,11 +88,9 @@ export function renderShipWindow(container, data = {}, callbacks = {}) {
     const view = mountGui(container, shipViewDefinition, { localize, applyRootPosition: false });
     bindShipViewData(view, data, componentIcons);
     addDragHandle(view);
-    localizationReady.then(() => {
-        view.localizeAll(localize);
-        bindShipViewTextData(view, data);
-        renderStatLabels(view);
-    });
+    view.localizeAll(localize);
+    bindShipViewTextData(view, data);
+    renderStatLabels(view);
 
     const close = view.find('close');
     const designer = view.find('open_designer');

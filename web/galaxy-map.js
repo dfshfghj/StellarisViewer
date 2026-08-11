@@ -41,7 +41,6 @@ export class GalaxyMap {
     constructor(canvas, data, callbacks) {
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');
-        this.data = data;
         this.callbacks = callbacks;
 
         // Preload star textures
@@ -60,33 +59,28 @@ export class GalaxyMap {
         this.active = false;
         this.selectedFleetMarkerKey = null;
 
-        // Build lookup
-        this.systemMap = new Map();
-        for (const s of data.systems) this.systemMap.set(s.id, s);
-
-        // Country colors
-        this.countryColors = new Map();
-        for (const c of data.countries) this.countryColors.set(c.id, c.color);
-
-        // System ownership
-        this.systemOwner = new Map();
-        for (const t of data.territory) {
-            for (const sid of t.systems) this.systemOwner.set(sid, t.country_id);
-        }
-
-        // Galaxy radial extent (for backdrop texture sizing)
-        let maxR = 0;
-        for (const s of data.systems) maxR = Math.max(maxR, Math.hypot(s.x, s.y));
-        this.galaxyRadius = maxR || 500;
-
-        this.fleetMarkers = this.buildFleetMarkers();
-
-        // Compute Voronoi borders (world space, done once)
-        this.borderLoops = this.computeBorders();
+        this.setData(data, false);
 
         this.setupEvents();
         this.resize();
         this.centerCamera();
+    }
+
+    setData(data, render = true) {
+        this.data = data;
+        this.systemMap = new Map(data.systems.map(system => [system.id, system]));
+        this.countryColors = new Map(data.countries.map(country => [country.id, country.color]));
+        this.systemOwner = new Map();
+        for (const territory of data.territory) {
+            for (const systemId of territory.systems) this.systemOwner.set(systemId, territory.country_id);
+        }
+        this.galaxyRadius = data.systems.reduce(
+            (radius, system) => Math.max(radius, Math.hypot(system.x, system.y)),
+            0,
+        ) || 500;
+        this.fleetMarkers = this.buildFleetMarkers();
+        this.borderLoops = this.computeBorders();
+        if (render && this.active) this.render();
     }
 
     loadStarTextures() {

@@ -1,8 +1,10 @@
+import { t } from './app-i18n.js';
+
 export function showDialog(layer, options = {}) {
     const {
-        title = '信息',
+        title = t('dialog.info'),
         description = '',
-        confirmText = '确定',
+        confirmText = t('dialog.confirm'),
         cancelText = '',
         tone = 'standard',
         onConfirm = null,

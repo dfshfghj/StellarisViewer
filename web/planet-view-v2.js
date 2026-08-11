@@ -42,15 +42,13 @@
 //   - jobs/unemployed 精确受雇/失业数（存档未提供 → jobs 用 employable_pops，unemployed 显示 —）
 //   - habitability（存档未提供 → —）；build queue（存档未提供 → 空）
 
-import loadLocalization from 'virtual:stellaris-localization';
+import { resolveGameLocalization } from './game-localization.js';
 import { MODIFIER_ICONS } from './modifier-icons.js';
 
 // ---- 本地化（与 main.js 共用同一 virtual 模块；窗口打开时必然已解析完） ----
-let strings = {};
-loadLocalization().then(s => { strings = s; });
-
 function t(key, fallback) {
-    return strings[key] ?? fallback ?? key;
+    const value = resolveGameLocalization(key);
+    return value === key ? fallback ?? key : value;
 }
 
 const PLACEHOLDER = '/gfx/interface/icons/ship_parts/ship_part_placeholder.webp';
@@ -103,8 +101,8 @@ function resourceEntries(info) {
 // ---- 本地化名（区划/建筑直接用 type 作键；designation 去前缀兜底）----
 function typeName(typeStr, fallbackPrefix) {
     if (!typeStr) return '—';
-    const direct = strings[typeStr];
-    if (direct) return direct;
+    const direct = resolveGameLocalization(typeStr);
+    if (direct !== typeStr) return direct;
     const cleaned = String(typeStr).replace(new RegExp(`^${fallbackPrefix}`), '').replace(/_/g, ' ');
     return cleaned || typeStr;
 }

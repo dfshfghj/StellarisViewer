@@ -1,23 +1,26 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stellaris 存档查看器</title>
+    <title>Stellaris Save Viewer</title>
 </head>
 <body>
+    <button id="language-toggle" class="language-toggle" type="button" data-i18n-title="app.switchLanguage">
+        <span data-i18n="app.switchLanguageShort">中文</span>
+    </button>
     <!-- Loading Screen -->
     <div id="loading-screen">
         <div class="loading-content">
-            <h1>Stellaris 存档查看器</h1>
-            <p>选择存档文件以开始</p>
+            <h1 data-i18n="app.title">Stellaris Save Viewer</h1>
+            <p data-i18n="app.chooseSave">Choose a save file to begin</p>
             <label class="file-btn">
-                选择 gamestate 文件
+                <span data-i18n="app.chooseFile">Choose gamestate file</span>
                 <input type="file" id="file-input" accept="*">
             </label>
             <div id="loading-progress" class="hidden">
                 <div class="progress-bar"><div class="progress-fill"></div></div>
-                <span id="loading-text">正在解析...</span>
+                <span id="loading-text" data-i18n="loading.parsing">Parsing...</span>
             </div>
         </div>
     </div>
@@ -25,17 +28,17 @@
     <!-- Main App -->
     <div id="app" class="hidden">
         <!-- Top Resource Bar -->
-        <header id="resource-bar" aria-label="帝国资源栏"></header>
+        <header id="resource-bar" data-i18n-title="nav.resources" aria-label="Empire resources"></header>
 
         <!-- Left Sidebar -->
         <div id="sidebar">
-            <button class="sidebar-icon" data-action="galaxy" title="银河地图" aria-label="银河地图"><span class="gfx-frame nav-sprite" style="--sprite:url('/gfx/interface/icons/navbar_icons_galaxy.webp');--frames:3"></span></button>
-            <button class="sidebar-icon" data-action="overview" title="大纲" aria-label="大纲"><span class="gfx-frame nav-sprite" style="--sprite:url('/gfx/interface/icons/navbar_icons_planets_and_sectors.webp');--frames:3"></span></button>
-            <button class="sidebar-icon" data-action="fleets" title="舰队管理" aria-label="舰队管理"><span class="gfx-frame nav-sprite" style="--sprite:url('/gfx/interface/icons/navbar_icons_fleet_manager.webp');--frames:3"></span></button>
-            <button class="sidebar-icon" data-action="planets" title="行星与星域" aria-label="行星与星域"><img src="/gfx/interface/icons/menu_icon_planets_and_sectors.webp" alt=""></button>
-            <button class="sidebar-icon" data-action="research" title="科技" aria-label="科技"><span class="gfx-frame nav-sprite" style="--sprite:url('/gfx/interface/icons/navbar_icons_technology.webp');--frames:3"></span></button>
+            <button class="sidebar-icon" data-action="galaxy" data-i18n-title="nav.galaxy" title="Galaxy map" aria-label="Galaxy map"><span class="gfx-frame nav-sprite" style="--sprite:url('/gfx/interface/icons/navbar_icons_galaxy.webp');--frames:3"></span></button>
+            <button class="sidebar-icon" data-action="overview" data-i18n-title="nav.overview" title="Outliner" aria-label="Outliner"><span class="gfx-frame nav-sprite" style="--sprite:url('/gfx/interface/icons/navbar_icons_planets_and_sectors.webp');--frames:3"></span></button>
+            <button class="sidebar-icon" data-action="fleets" data-i18n-title="nav.fleets" title="Fleet manager" aria-label="Fleet manager"><span class="gfx-frame nav-sprite" style="--sprite:url('/gfx/interface/icons/navbar_icons_fleet_manager.webp');--frames:3"></span></button>
+            <button class="sidebar-icon" data-action="planets" data-i18n-title="nav.planets" title="Planets and sectors" aria-label="Planets and sectors"><img src="/gfx/interface/icons/menu_icon_planets_and_sectors.webp" alt=""></button>
+            <button class="sidebar-icon" data-action="research" data-i18n-title="nav.research" title="Technology" aria-label="Technology"><span class="gfx-frame nav-sprite" style="--sprite:url('/gfx/interface/icons/navbar_icons_technology.webp');--frames:3"></span></button>
             <span class="sidebar-divider" aria-hidden="true"></span>
-            <button class="sidebar-icon" data-action="ship-designer" title="舰船设计器" aria-label="舰船设计器"><span class="gfx-frame nav-sprite" style="--sprite:url('/gfx/interface/icons/navbar_icons_ship_designer.webp');--frames:3"></span></button>
+            <button class="sidebar-icon" data-action="ship-designer" data-i18n-title="nav.shipDesigner" title="Ship designer" aria-label="Ship designer"><span class="gfx-frame nav-sprite" style="--sprite:url('/gfx/interface/icons/navbar_icons_ship_designer.webp');--frames:3"></span></button>
         </div>
 
         <!-- Main Canvas Area -->
@@ -50,11 +53,11 @@
                 <span id="status-date"></span>
             </div>
             <div class="status-center">
-                <span class="pause-indicator"><span class="pause-glyph">Ⅱ</span> 暂停</span>
+                <span class="pause-indicator"><span class="pause-glyph">Ⅱ</span> <span data-i18n="status.paused">Paused</span></span>
                 <span id="status-empire"></span>
             </div>
             <div class="status-right">
-                <button class="ctrl-btn" id="btn-back" title="返回" aria-label="返回"></button>
+                <button class="ctrl-btn" id="btn-back" data-i18n-title="nav.back" title="Back" aria-label="Back"></button>
             </div>
         </div>
 

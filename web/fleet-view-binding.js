@@ -1,4 +1,5 @@
 import { SHIP_SIZE_FRAME_COUNT, shipSizeFrame } from './gfx-sprites.js';
+import { t } from './app-i18n.js';
 
 const SHIP_ROW_HEIGHT = 43;
 const MAX_VISIBLE_SHIPS = 8;
@@ -43,27 +44,21 @@ export function navalUsage(ships = []) {
 }
 
 export function fleetMovementLabel(data = {}) {
-    if (data.movement_state === 'idle' || data.movement_state === 'move_idle') return '待命中';
-    if (data.movement_state === 'move_system') return `正在移动${data.destination ? ` → ${data.destination}` : ''}`;
-    return data.movement_state || '状态未知';
+    if (data.movement_state === 'idle' || data.movement_state === 'move_idle') return t('fleet.idle');
+    if (data.movement_state === 'move_system') return `${t('fleet.moving')}${data.destination ? ` → ${data.destination}` : ''}`;
+    return data.movement_state || t('fleet.unknownState');
 }
 
 export function shipSizeLabel(size) {
-    const labels = {
-        corvette: '护卫舰', destroyer: '驱逐舰', cruiser: '巡洋舰',
-        battleship: '战列舰', titan: '泰坦', juggernaut: '主宰',
-        science: '科研船', constructor: '工程船', colonizer: '殖民船',
-        transport: '运输船', military_station_small: '小型防御平台',
-        military_station_medium: '中型防御平台', military_station_large: '大型防御平台',
-        starbase: '星港', ion_cannon: '离子炮',
-    };
-    return labels[size] || size || '未知舰种';
+    const key = `ship.${size}`;
+    const localized = t(key);
+    return localized === key ? size || t('ship.unknown') : localized;
 }
 
 function fleetTypeLabel(data) {
     const shipType = data.ships?.[0]?.ship_size;
-    const category = data.station ? '空间站' : data.civilian ? '民用舰船' : '军用舰队';
-    return `${shipSizeLabel(shipType)} · ${category} · ${data.ships?.length || 0} 艘`;
+    const category = t(data.station ? 'fleet.station' : data.civilian ? 'fleet.civilian' : 'fleet.military');
+    return `${shipSizeLabel(shipType)} · ${category} · ${t('fleet.ships', { count: data.ships?.length || 0 })}`;
 }
 
 function formatPercent(value) {
@@ -125,8 +120,9 @@ function disable(element) {
 }
 
 function commanderClassLabel(value) {
-    return ({ commander: '舰队司令', scientist: '科学家', governor: '总督', general: '陆军司令' })[value]
-        || value || '领袖';
+    const key = `fleet.${value}`;
+    const localized = t(key);
+    return localized === key ? value || t('fleet.leader') : localized;
 }
 
 function formatTrait(value) {
@@ -153,13 +149,13 @@ function renderCommander(container, commander) {
     copy.className = 'generated-fleet-commander-copy';
     const name = document.createElement('div');
     name.className = 'generated-fleet-commander-name';
-    name.textContent = commander?.name || '未指派领袖';
+    name.textContent = commander?.name || t('fleet.noLeader');
     copy.appendChild(name);
     const detail = document.createElement('div');
     detail.className = 'generated-fleet-commander-detail';
     detail.textContent = commander
-        ? `${commanderClassLabel(commander.class)} · 等级 ${commander.level || 1}${commander.age ? ` · ${commander.age} 岁` : ''}`
-        : '该舰队当前没有司令';
+        ? `${commanderClassLabel(commander.class)} · ${t('fleet.level', { level: commander.level || 1 })}${commander.age ? ` · ${t('fleet.age', { age: commander.age })}` : ''}`
+        : t('fleet.noCommander');
     copy.appendChild(detail);
     if (commander?.traits?.length) {
         const traits = document.createElement('div');
@@ -185,25 +181,25 @@ export function bindFleetViewText(view, entry, data = {}) {
     setText(scoped(view, top, 'fleet_type', 'instanttextboxtype'), fleetTypeLabel(data));
     setInlineMetric(
         scoped(view, bottom, 'hull_points', 'instanttextboxtype'),
-        FLEET_METRIC_ICONS.hull_points, formatPercent(averageFleetStat(data.ships, 'hp_pct')), '船体',
+        FLEET_METRIC_ICONS.hull_points, formatPercent(averageFleetStat(data.ships, 'hp_pct')), t('metric.hull'),
     );
     setInlineMetric(
         scoped(view, bottom, 'armor_points', 'instanttextboxtype'),
-        FLEET_METRIC_ICONS.armor_points, formatPercent(averageFleetStat(data.ships, 'armor_pct')), '装甲',
+        FLEET_METRIC_ICONS.armor_points, formatPercent(averageFleetStat(data.ships, 'armor_pct')), t('metric.armor'),
     );
     setInlineMetric(
         scoped(view, bottom, 'shield_points', 'instanttextboxtype'),
-        FLEET_METRIC_ICONS.shield_points, formatPercent(averageFleetStat(data.ships, 'shield_pct')), '护盾',
+        FLEET_METRIC_ICONS.shield_points, formatPercent(averageFleetStat(data.ships, 'shield_pct')), t('metric.shields'),
     );
     setInlineMetric(
         scoped(view, bottom, 'size_limit', 'instanttextboxtype'),
-        FLEET_METRIC_ICONS.size_limit, String(navalUsage(data.ships)), '舰队规模',
+        FLEET_METRIC_ICONS.size_limit, String(navalUsage(data.ships)), t('metric.fleetSize'),
     );
     setInlineMetric(
         scoped(view, bottom, 'fleet_power', 'instanttextboxtype'),
-        FLEET_METRIC_ICONS.fleet_power, formatNumber(data.military_power), '舰队战斗力',
+        FLEET_METRIC_ICONS.fleet_power, formatNumber(data.military_power), t('overview.fleetPower'),
     );
-    setText(scoped(view, bottom, 'orders', 'instanttextboxtype'), data.stance || '无命令');
+    setText(scoped(view, bottom, 'orders', 'instanttextboxtype'), data.stance || t('fleet.noOrders'));
     setText(scoped(view, bottom, 'activity', 'instanttextboxtype'), fleetMovementLabel(data));
 }
 

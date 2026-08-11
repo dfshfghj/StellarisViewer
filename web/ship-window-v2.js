@@ -28,14 +28,12 @@
 //   - component_sets 滚动：改为武器/通用分区内部滚动，窗口整体不滚动
 
 import componentIcons from 'virtual:stellaris-component-icons';
-import loadLocalization from 'virtual:stellaris-localization';
+import { resolveGameLocalization } from './game-localization.js';
 
 // ---- 本地化（与 main.js 共用同一 virtual 模块；窗口打开时必然已解析完） ----
-let strings = {};
-loadLocalization().then(s => { strings = s; });
-
 function t(key, fallback) {
-    return strings[key] ?? fallback ?? key;
+    const value = resolveGameLocalization(key);
+    return value === key ? fallback ?? key : value;
 }
 
 // texticons.gfx: GFX_text_<name> → gfx/interface/icons/ship_stats/<file>.dds
@@ -53,7 +51,6 @@ const TEXT_ICON_FILES = {
 // 解析本地化串：展开 $VAR$ 引用与 £icon£ 文本图标（如 SHIP_STAT_HITPOINTS_INLINE）
 function loc(key, fallback) {
     let s = t(key, fallback);
-    s = s.replace(/\$([A-Z0-9_]+)\$/g, (_, k) => strings[k] ?? k);
     return s.replace(/£([a-z0-9_]+)£/g, (_, name) => {
         const file = TEXT_ICON_FILES[name];
         return file ? `<img class="sv2-texticon" src="/gfx/interface/icons/ship_stats/${file}.webp" alt="">` : '';

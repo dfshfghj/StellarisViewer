@@ -10,18 +10,21 @@ const moduleUrl = `data:text/javascript;base64,${Buffer.from(source).toString('b
 const { default: loadLocalization } = await import(moduleUrl);
 
 const localized = { NAME: '星联' };
-let fetchCount = 0;
-globalThis.fetch = async () => {
-    fetchCount += 1;
-    return { ok: true, json: async () => localized };
+const english = { NAME: 'Star Union' };
+const fetches = [];
+globalThis.fetch = async (url) => {
+    fetches.push(url);
+    return { ok: true, json: async () => url.endsWith('/zh') ? localized : english };
 };
 
-const first = loadLocalization();
-const second = loadLocalization();
+assert.deepEqual(fetches, [], 'importing the loader must not fetch localization data');
+const first = loadLocalization('zh');
+const second = loadLocalization('zh');
 
 assert.strictEqual(first, second, 'concurrent callers should share the same localization promise');
 assert.deepEqual(await first, localized);
-assert.deepEqual(await loadLocalization(), localized);
-assert.equal(fetchCount, 1, 'localization JSON should only be fetched once');
+assert.deepEqual(await loadLocalization('zh'), localized);
+assert.deepEqual(await loadLocalization(), english, 'English is the default game language');
+assert.deepEqual(fetches, ['/@stellaris-localization/zh', '/@stellaris-localization/en']);
 
-console.log('✓ loads localization JSON once across repeated callers');
+console.log('✓ lazily loads and caches localization JSON per language');

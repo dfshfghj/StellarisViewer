@@ -52,19 +52,19 @@ function makeContainer() {
     };
 }
 
-// ---- 本地化（供 fetch 桩返回）----
+// ---- 本地化 ----
 const localized = parseLocalization(resolve(__dirname, 'assets/localisation/simp_chinese'));
-globalThis.fetch = async () => ({ ok: true, json: async () => localized });
 
 // ---- 启动 vite SSR 并加载被测模块 ----
 const server = await createServer({
     root: __dirname,
-    server: { middlewareMode: true },
+    server: { middlewareMode: true, hmr: false },
     appType: 'custom',
     logLevel: 'error',
 });
+const localization = await server.ssrLoadModule('/game-localization.js');
+localization.setGameLocalization(localized);
 const mod = await server.ssrLoadModule('/planet-view-v2.js');
-await new Promise(r => setTimeout(r, 80)); // 等模块级 loadLocalization().then 填充 strings
 
 // ---- 模拟 PlanetDetail（含 zones 层级 + resource_deposits；同类型多实例验证分组）----
 const LOCKED = { id: 4294967295, zone_type: '', locked: true, slots: 0, buildings: [] };

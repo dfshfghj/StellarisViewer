@@ -8,6 +8,7 @@ const LOCALIZATION_MODULE_ID = 'virtual:stellaris-localization';
 const RESOLVED_LOCALIZATION_MODULE_ID = `\0${LOCALIZATION_MODULE_ID}`;
 const COMPONENT_ICONS_MODULE_ID = 'virtual:stellaris-component-icons';
 const RESOLVED_COMPONENT_ICONS_MODULE_ID = `\0${COMPONENT_ICONS_MODULE_ID}`;
+const LOCALIZATION_DIRECTORIES = { en: 'english', zh: 'simp_chinese' };
 
 const GUI_VIEWS = [
     {
@@ -58,28 +59,39 @@ export function parseLocalization(directory) {
     return strings;
 }
 
-function localizationModuleSource(url) {
-    return `let localizationPromise;
+function localizationModuleSource(urls) {
+    return `const urls = ${JSON.stringify(urls)};
+const localizationPromises = new Map();
 
-export default function loadLocalization() {
-    if (!localizationPromise) {
-        localizationPromise = (async () => {
-            const response = await fetch(${url});
+export default function loadLocalization(language = 'en') {
+    const locale = Object.hasOwn(urls, language) ? language : 'en';
+    if (!localizationPromises.has(locale)) {
+        const promise = (async () => {
+            const response = await fetch(urls[locale]);
             if (!response.ok) throw new Error('Failed to load localization');
             return response.json();
         })().catch(error => {
-            localizationPromise = undefined;
+            localizationPromises.delete(locale);
             throw error;
         });
+        localizationPromises.set(locale, promise);
     }
-    return localizationPromise;
+    return localizationPromises.get(locale);
 }`;
 }
 
 function localizationPlugin() {
     let root;
     let command;
-    let serializedStrings;
+    const serializedStrings = new Map();
+    function serialize(root, language) {
+        if (!serializedStrings.has(language)) {
+            serializedStrings.set(language, JSON.stringify(
+                parseLocalization(resolve(root, 'assets/localisation', LOCALIZATION_DIRECTORIES[language])),
+            ));
+        }
+        return serializedStrings.get(language);
+    }
     return {
         name: 'stellaris-localization',
         configResolved(config) {
@@ -87,13 +99,12 @@ function localizationPlugin() {
             command = config.command;
         },
         configureServer(server) {
-            server.middlewares.use('/@stellaris-localization', (_request, response) => {
-                serializedStrings ??= JSON.stringify(
-                    parseLocalization(resolve(root, 'assets/localisation/simp_chinese')),
-                );
+            server.middlewares.use('/@stellaris-localization', (request, response, next) => {
+                const language = request.url?.split(/[/?#]/).filter(Boolean)[0];
+                if (!Object.hasOwn(LOCALIZATION_DIRECTORIES, language)) return next();
                 response.statusCode = 200;
                 response.setHeader('Content-Type', 'application/json; charset=utf-8');
-                response.end(serializedStrings);
+                response.end(serialize(root, language));
             });
         },
         resolveId(id) {
@@ -102,18 +113,23 @@ function localizationPlugin() {
         load(id) {
             if (id !== RESOLVED_LOCALIZATION_MODULE_ID) return null;
             if (command === 'serve') {
-                return localizationModuleSource("'/@stellaris-localization'");
+                return localizationModuleSource({
+                    en: '/@stellaris-localization/en',
+                    zh: '/@stellaris-localization/zh',
+                });
             }
 
-            serializedStrings ??= JSON.stringify(
-                parseLocalization(resolve(root, 'assets/localisation/simp_chinese')),
-            );
-            const reference = this.emitFile({
-                type: 'asset',
-                name: 'localization-simp-chinese.json',
-                source: serializedStrings,
-            });
-            return localizationModuleSource(`import.meta.ROLLUP_FILE_URL_${reference}`);
+            const urls = {};
+            for (const [language, directory] of Object.entries(LOCALIZATION_DIRECTORIES)) {
+                const reference = this.emitFile({
+                    type: 'asset',
+                    name: `localization-${directory}.json`,
+                    source: serialize(root, language),
+                });
+                urls[language] = `__ROLLUP_URL_${reference}__`;
+            }
+            const source = localizationModuleSource(urls);
+            return source.replace(/"__ROLLUP_URL_(\w+)__"/g, 'import.meta.ROLLUP_FILE_URL_$1');
         },
     };
 }

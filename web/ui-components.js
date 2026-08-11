@@ -131,18 +131,13 @@ function trimFixed(value, digits) {
 }
 
 function getGovLabel(govType) {
-    const map = {
-        gov_moral_democracy: '道德民主制', gov_plutocratic_oligarchy: '财阀寡头制',
-        gov_military_dictatorship: '军事独裁制', gov_theocratic_monarchy: '神权君主制',
-        gov_despotic_empire: '专制帝国', gov_feudal_empire: '封建帝国',
-        gov_military_junta: '军事执政团', gov_citizen_republic: '公民共和制',
-        gov_irenic_monarchy: '和平君主制', gov_despotic_hegemony: '专制霸权',
-        gov_megacorporation: '超大型企业', gov_hive_mind: '蜂巢思维',
-        gov_machine_empire: '机械帝国', gov_fanatic_purifiers: '极端净化者',
-    };
-    return map[govType] || govType || '未知政体';
+    if (!govType) return t('common.unknown');
+    const localized = resolveGameLocalization(govType);
+    return localized === govType ? govType : localized.replace(/§./g, '');
 }
 
 function escAttr(s) {
     return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 }
+import { resolveGameLocalization } from './game-localization.js';
+import { t } from './app-i18n.js';

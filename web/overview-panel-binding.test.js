@@ -4,10 +4,10 @@ import { compileGuiView } from './gui-compiler.js';
 import { mountGui } from './gui-runtime.js';
 import { bindOverviewPanelData, civilianFleetType, planetClassShort } from './overview-panel-binding.js';
 
-assert.equal(planetClassShort('pc_continental'), '陆地');
+assert.equal(planetClassShort('pc_continental'), 'Continental');
 assert.equal(planetClassShort('pc_custom'), 'custom');
-assert.equal(civilianFleetType('ISS Science Explorer'), '科研船');
-assert.equal(civilianFleetType('Unnamed'), '民用舰船');
+assert.equal(civilianFleetType('ISS Science Explorer'), 'Science ship');
+assert.equal(civilianFleetType('Unnamed'), 'Civilian ship');
 
 class FakeElement {
     constructor(tagName) {
@@ -59,7 +59,7 @@ const result = bindOverviewPanelData(view, {
     onPlanetClick: id => { openedPlanet = id; },
 });
 
-assert.equal(view.find('tab_name').textContent, '大纲');
+assert.equal(view.find('tab_name').textContent, 'Outliner');
 assert.equal(view.find('options').style.display, 'none');
 assert.equal(result.sections.length, 5);
 assert.equal(result.military.length, 1);
@@ -71,7 +71,7 @@ assert.equal(result.sections[0].style.height, '77px');
 const planetList = view.findIn(result.sections[0], 'list', 'smoothlistboxtype');
 const planetRow = view.findAll('outliner_member_planet_entry_window', planetList, 'containerwindowtype')[0];
 assert.equal(view.findIn(planetRow, 'name', 'instanttextboxtype').textContent, '新地球');
-assert.equal(view.findIn(planetRow, 'colony_type', 'instanttextboxtype').textContent, '陆地 · 42 人口');
+assert.equal(view.findIn(planetRow, 'colony_type', 'instanttextboxtype').textContent, 'Continental · 42 Population');
 assert.equal(view.findIn(planetRow, 'planet_type_icon', 'icontype').dataset.overviewIcon, '/gfx/interface/icons/planet.webp');
 planetRow.onclick();
 assert.equal(openedPlanet, 3);
@@ -79,14 +79,14 @@ assert.equal(openedPlanet, 3);
 const militaryList = view.findIn(result.sections[1], 'list', 'smoothlistboxtype');
 const militaryRow = view.findAll('outliner_member_fleet_entry_window', militaryList, 'containerwindowtype')[0];
 assert.equal(view.findIn(militaryRow, 'name', 'instanttextboxtype').textContent, '第一舰队');
-assert.equal(view.findIn(militaryRow, 'size_limit', 'instanttextboxtype').textContent, '5 艘');
+assert.equal(view.findIn(militaryRow, 'size_limit', 'instanttextboxtype').textContent, '5 ships');
 assert.equal(view.findIn(militaryRow, 'offensive_power', 'instanttextboxtype').children[0].src, '/gfx/interface/system/offensive_value.webp');
 militaryRow.onclick();
 assert.equal(openedFleet, 7);
 
 const civilianList = view.findIn(result.sections[2], 'list', 'smoothlistboxtype');
 const civilianRow = view.findAll('outliner_member_fleet_civilian_entry_window', civilianList, 'containerwindowtype')[0];
-assert.equal(view.findIn(civilianRow, 'type', 'instanttextboxtype').textContent, '科研船');
+assert.equal(view.findIn(civilianRow, 'type', 'instanttextboxtype').textContent, 'Science ship');
 
 const stationList = view.findIn(result.sections[3], 'list', 'smoothlistboxtype');
 const stationRow = view.findAll('outliner_member_starbase_entry_window', stationList, 'containerwindowtype')[0];

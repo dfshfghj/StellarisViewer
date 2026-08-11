@@ -1,26 +1,22 @@
 import { SHIP_SIZE_FRAME_COUNT, shipSizeFrame } from './gfx-sprites.js';
+import { t } from './app-i18n.js';
 
 const SECTION_HEADER_HEIGHT = 36;
 const ROW_HEIGHT = 41;
 
 export function planetClassShort(value) {
-    const labels = {
-        pc_continental: '陆地', pc_ocean: '海洋', pc_desert: '沙漠',
-        pc_arid: '干旱', pc_tundra: '冻原', pc_arctic: '极地',
-        pc_tropical: '热带', pc_alpine: '高山', pc_savannah: '草原',
-        pc_city: '城市', pc_machine: '机械', pc_hive: '蜂巢',
-        pc_ringworld_habitable: '环世', pc_habitat: '栖息地',
-    };
-    return labels[value] || String(value || '').replace(/^pc_/, '') || '?';
+    const key = `planet.${value}`;
+    const localized = t(key);
+    return localized === key ? String(value || '').replace(/^pc_/, '') || '?' : localized;
 }
 
 export function civilianFleetType(name) {
     const normalized = String(name || '').toLowerCase();
-    if (normalized.includes('explorer') || normalized.includes('science')) return '科研船';
-    if (normalized.includes('constructor') || normalized.includes('builder')) return '工程船';
-    if (normalized.includes('colon')) return '殖民船';
-    if (normalized.includes('transport')) return '运输船';
-    return '民用舰船';
+    if (normalized.includes('explorer') || normalized.includes('science')) return t('ship.science');
+    if (normalized.includes('constructor') || normalized.includes('builder')) return t('ship.constructor');
+    if (normalized.includes('colon')) return t('ship.colonizer');
+    if (normalized.includes('transport')) return t('ship.transport');
+    return t('fleet.civilian');
 }
 
 function setText(element, value, { allowEmpty = false } = {}) {
@@ -80,7 +76,7 @@ function bindPlanetRow(view, list, planet, index, callbacks) {
     setText(scoped(view, row, 'name', 'instanttextboxtype'), planet.name);
     setText(
         scoped(view, row, 'colony_type', 'instanttextboxtype'),
-        `${planetClassShort(planet.planet_class)} · ${Number(planet.num_pops) || 0} 人口`,
+        `${planetClassShort(planet.planet_class)} · ${Number(planet.num_pops) || 0} ${t('common.population')}`,
     );
     setBackgroundIcon(scoped(view, row, 'planet_type_icon', 'icontype'), '/gfx/interface/icons/planet.webp');
     for (const name of [
@@ -96,10 +92,10 @@ function bindMilitaryFleetRow(view, list, fleet, index, callbacks) {
     const row = view.instantiate('outliner_member_fleet_entry_window', list, { name: `military-${index}` });
     prepareRow(view, row, callbacks.onFleetClick, fleet.id, 'fleet');
     setText(scoped(view, row, 'name', 'instanttextboxtype'), fleet.name);
-    setText(scoped(view, row, 'size_limit', 'instanttextboxtype'), `${Number(fleet.ship_count) || 0} 艘`);
+    setText(scoped(view, row, 'size_limit', 'instanttextboxtype'), t('fleet.ships', { count: Number(fleet.ship_count) || 0 }));
     setInlineValue(
         scoped(view, row, 'offensive_power', 'instanttextboxtype'),
-        '/gfx/interface/system/offensive_value.webp', Number(fleet.military_power || 0).toFixed(0), '舰队战斗力',
+        '/gfx/interface/system/offensive_value.webp', Number(fleet.military_power || 0).toFixed(0), t('overview.fleetPower'),
     );
     setBackgroundIcon(
         scoped(view, row, 'alliance_icon', 'icontype'),
@@ -125,10 +121,10 @@ function bindStationRow(view, list, fleet, index, callbacks) {
     const row = view.instantiate('outliner_member_starbase_entry_window', list, { name: `station-${index}` });
     prepareRow(view, row, callbacks.onFleetClick, fleet.id, 'station');
     setText(scoped(view, row, 'name', 'instanttextboxtype'), fleet.name);
-    setText(scoped(view, row, 'starbase_type', 'instanttextboxtype'), '空间站');
+    setText(scoped(view, row, 'starbase_type', 'instanttextboxtype'), t('overview.station'));
     setInlineValue(
         scoped(view, row, 'military_power', 'instanttextboxtype'),
-        '/gfx/interface/system/offensive_value.webp', Number(fleet.military_power || 0).toFixed(0), '空间站战斗力',
+        '/gfx/interface/system/offensive_value.webp', Number(fleet.military_power || 0).toFixed(0), t('overview.stationPower'),
     );
     for (const name of ['system', 'starbase_status_container', 'constructions']) hide(scoped(view, row, name));
     return row;
@@ -158,7 +154,7 @@ function addSection(view, rootList, title, items, bindRow, callbacks, index) {
 }
 
 export function bindOverviewPanelData(view, playerInfo = {}, callbacks = {}) {
-    setText(view.find('tab_name'), '大纲');
+    setText(view.find('tab_name'), t('overview.title'));
     hide(view.find('options'));
     hide(view.find('rearrange'));
     const rootList = view.find('list');
@@ -169,15 +165,15 @@ export function bindOverviewPanelData(view, playerInfo = {}, callbacks = {}) {
     const civilian = fleets.filter(fleet => fleet.civilian && !fleet.station);
     const stations = fleets.filter(fleet => fleet.station);
     const sections = [
-        ['星域', playerInfo.planets || [], bindPlanetRow],
-        ['军用舰队', military, bindMilitaryFleetRow],
-        ['民用舰船', civilian, bindCivilianFleetRow],
+        [t('overview.sectors'), playerInfo.planets || [], bindPlanetRow],
+        [t('overview.militaryFleets'), military, bindMilitaryFleetRow],
+        [t('overview.civilianShips'), civilian, bindCivilianFleetRow],
     ];
-    if (stations.length) sections.push(['船坞', stations, bindStationRow]);
-    sections.push(['帝国概况', [
-        { label: '军事力量', value: Number(playerInfo.military_power || 0).toFixed(0) },
-        { label: '帝国规模', value: String(playerInfo.empire_size ?? '—') },
-        { label: '人口', value: String(playerInfo.num_pops ?? '—') },
+    if (stations.length) sections.push([t('overview.shipyards'), stations, bindStationRow]);
+    sections.push([t('overview.empire'), [
+        { label: t('overview.militaryPower'), value: Number(playerInfo.military_power || 0).toFixed(0) },
+        { label: t('overview.empireSize'), value: String(playerInfo.empire_size ?? '—') },
+        { label: t('common.population'), value: String(playerInfo.num_pops ?? '—') },
     ], bindMetricRow]);
 
     const instances = sections.map(([title, items, binder], index) =>

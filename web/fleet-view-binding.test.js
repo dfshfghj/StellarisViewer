@@ -17,9 +17,9 @@ const ships = [
 assert.equal(averageFleetStat(ships, 'hp_pct'), 75);
 assert.equal(averageFleetStat([], 'hp_pct'), null);
 assert.equal(navalUsage(ships), 3);
-assert.equal(shipSizeLabel('science'), '科研船');
-assert.equal(fleetMovementLabel({ movement_state: 'idle' }), '待命中');
-assert.equal(fleetMovementLabel({ movement_state: 'move_system', destination: '太阳系' }), '正在移动 → 太阳系');
+assert.equal(shipSizeLabel('science'), 'Science ship');
+assert.equal(fleetMovementLabel({ movement_state: 'idle' }), 'Idle');
+assert.equal(fleetMovementLabel({ movement_state: 'move_system', destination: '太阳系' }), 'Moving → 太阳系');
 
 class FakeElement {
     constructor(tagName) {
@@ -79,7 +79,7 @@ assert.equal(view.findIn(result.entry, 'shield_points', 'instanttextboxtype').ch
 assert.equal(view.findIn(result.entry, 'size_limit', 'instanttextboxtype').children[0].src, '/gfx/interface/icons/navy_size_icon.webp');
 assert.equal(view.findIn(result.entry, 'fleet_power', 'instanttextboxtype').children[0].src, '/gfx/interface/system/offensive_value.webp');
 assert.equal(view.findIn(result.entry, 'fleet_power', 'instanttextboxtype').children[1].textContent, '1234');
-assert.equal(view.findIn(result.entry, 'activity', 'instanttextboxtype').textContent, '正在移动 → 太阳系');
+assert.equal(view.findIn(result.entry, 'activity', 'instanttextboxtype').textContent, 'Moving → 太阳系');
 assert.equal(view.findIn(result.entry, 'growth_interface').style.display, 'none');
 assert.equal(view.findIn(result.entry, 'cloaking_values').style.display, 'none');
 assert.equal(view.find('fleets').style.height, '345px');
@@ -96,7 +96,7 @@ assert.equal(shipList.style.width, '510px');
 assert.equal(shipList.style.overflowX, 'hidden');
 const rows = view.findAll('fleet_view_subentry', shipList, 'containerwindowtype');
 assert.equal(rows.length, 2);
-assert.equal(view.findIn(rows[0], 'name', 'instanttextboxtype').textContent, '长矛号 · 护卫舰');
+assert.equal(view.findIn(rows[0], 'name', 'instanttextboxtype').textContent, '长矛号 · Corvette');
 assert.equal(view.findIn(rows[0], 'health', 'icontype').attributes['aria-valuenow'], '75');
 assert.equal(view.findIn(rows[0], 'health', 'icontype').style.width, '7px');
 assert.equal(view.findIn(rows[0], 'health', 'icontype').style.height, '40px');

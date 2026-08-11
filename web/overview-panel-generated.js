@@ -1,6 +1,7 @@
 import outlinerDefinition from 'virtual:stellaris-outliner-ui';
 import { mountGui } from './gui-runtime.js';
 import { bindOverviewPanelData } from './overview-panel-binding.js';
+import { t } from './app-i18n.js';
 
 function ensureStyle() {
     if (document.getElementById('generated-overview-panel-style')) return;
@@ -32,8 +33,8 @@ export function renderOverviewPanel(container, playerInfo = {}, callbacks = {}) 
     const close = document.createElement('button');
     close.className = 'generated-overview-close';
     close.type = 'button';
-    close.title = '关闭';
-    close.setAttribute('aria-label', '关闭');
+    close.title = t('common.close');
+    close.setAttribute('aria-label', t('common.close'));
     close.onclick = callbacks.onClose || (() => {});
     view.root.appendChild(close);
     return { ...view, ...result };

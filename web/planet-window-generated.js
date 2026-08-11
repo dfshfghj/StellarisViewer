@@ -1,20 +1,7 @@
 import planetViewDefinition from 'virtual:stellaris-planet-view-ui';
-import loadLocalization from 'virtual:stellaris-localization';
 import { mountGui } from './gui-runtime.js';
-
-let strings = {};
-const localizationReady = loadLocalization().then(value => {
-    strings = value;
-    return value;
-});
-
-function localize(key) {
-    let text = strings[key] ?? key;
-    for (let depth = 0; depth < 4 && /\$[^$]+\$/.test(text); depth += 1) {
-        text = text.replace(/\$([^$]+)\$/g, (_match, nestedKey) => strings[nestedKey] ?? '—');
-    }
-    return text.replace(/£[^£]+£/g, '').replace(/§./g, '');
-}
+import { localizeGameText as localize } from './game-localization.js';
+import { t } from './app-i18n.js';
 
 function ensureStyle() {
     if (document.getElementById('generated-planet-view-style')) return;
@@ -87,8 +74,8 @@ function seedDistrictPlaceholders(view, colonizable) {
 
 function applyStaticPlaceholders(view) {
     const values = {
-        planet_name: '行星名称',
-        colony_type_text: '殖民地类型',
+        planet_name: t('planet.name'),
+        colony_type_text: t('planet.colonyType'),
         planet_stability_amount: '—',
         planet_pops_amount: '—',
         crime_amount: '—',
@@ -106,10 +93,8 @@ export function renderPlanetWindow(container, _data = {}, callbacks = {}) {
     seedDistrictPlaceholders(view, colonizable);
     applyStaticPlaceholders(view);
 
-    localizationReady.then(() => {
-        view.localizeAll(localize);
-        applyStaticPlaceholders(view);
-    });
+    view.localizeAll(localize);
+    applyStaticPlaceholders(view);
 
     const close = view.find('close');
     if (close) close.onclick = callbacks.onClose || (() => {});

@@ -1,5 +1,7 @@
 import './style.css';
 import loadLocalization from 'virtual:stellaris-localization';
+import { getLanguage, setLanguage, t, translateDocument } from './app-i18n.js';
+import { setGameLocalization } from './game-localization.js';
 import { GalaxyMap } from './galaxy-map.js';
 import { SystemView } from './system-view.js';
 import { renderFleetWindow } from './fleet-window-generated.js';
@@ -28,6 +30,8 @@ const state = {
     selectedSystem: null,
     galaxyData: null,
     playerInfo: null,
+    localizationLoaded: false,
+    saveLoaded: false,
 };
 
 // ============ DOM References ============
@@ -48,6 +52,7 @@ const els = {
     planetWindow: document.getElementById('planet-window'),
     btnBack: document.getElementById('btn-back'),
     modalLayer: document.getElementById('modal-layer'),
+    languageToggle: document.getElementById('language-toggle'),
 };
 
 // ============ Renderers ============
@@ -56,8 +61,9 @@ let systemView = null;
 
 // ============ Initialization ============
 async function main() {
+    setLanguage('en');
+    translateDocument();
     await init({ module_or_path: wasmUrl });
-    set_localization(await loadLocalization());
     console.log('[Stellaris Viewer] WASM initialized successfully');
     setupEventListeners();
 }
@@ -65,6 +71,7 @@ async function main() {
 function setupEventListeners() {
     els.fileInput.addEventListener('change', handleFileSelect);
     els.btnBack.addEventListener('click', handleBack);
+    els.languageToggle.addEventListener('click', handleLanguageToggle);
     enablePopupDragging(els.fleetWindow);
     enablePopupDragging(els.shipWindow);
     enablePopupDragging(els.planetWindow);
@@ -89,7 +96,7 @@ function setupEventListeners() {
             if (!['galaxy', 'overview'].includes(action)) {
                 showDialog(els.modalLayer, {
                     title: icon.title,
-                    description: '该视图的 GUI/GFX 外壳已接入导航，存档数据页将在后续批次开放。',
+                    description: t('dialog.unavailable'),
                 });
             }
         });
@@ -103,20 +110,28 @@ async function handleFileSelect(e) {
     if (!file) return;
 
     els.loadingProgress.classList.remove('hidden');
-    els.loadingText.textContent = `正在读取 ${file.name}...`;
+    els.languageToggle.disabled = true;
+    els.loadingText.textContent = t('loading.localization', {
+        language: t(getLanguage() === 'zh' ? 'language.chinese' : 'language.english'),
+    });
     document.querySelector('.progress-fill').style.width = '20%';
 
-    const text = await file.text();
-    document.querySelector('.progress-fill').style.width = '50%';
-    els.loadingText.textContent = '正在解析存档...';
-
-    // Small delay to let UI update
-    await new Promise(r => setTimeout(r, 50));
-
     try {
+        const localization = await loadLocalization(getLanguage());
+        setGameLocalization(localization);
+        set_localization(localization);
+        state.localizationLoaded = true;
+        els.loadingText.textContent = t('loading.reading', { file: file.name });
+        const text = await file.text();
+        document.querySelector('.progress-fill').style.width = '50%';
+        els.loadingText.textContent = t('loading.parsingSave');
+
+        // Small delay to let UI update
+        await new Promise(r => setTimeout(r, 50));
         const parseTime = parse_save(text);
+        state.saveLoaded = true;
         document.querySelector('.progress-fill').style.width = '80%';
-        els.loadingText.textContent = `解析完成 (${parseTime.toFixed(0)}ms)，正在加载视图...`;
+        els.loadingText.textContent = t('loading.complete', { time: parseTime.toFixed(0) });
 
         state.playerInfo = get_player_info();
         state.galaxyData = get_galaxy_data();
@@ -127,8 +142,52 @@ async function handleFileSelect(e) {
         startApp();
     } catch (err) {
         console.error('[Stellaris Viewer] Parse failed:', err);
-        els.loadingText.textContent = `解析错误: ${err}`;
+        els.loadingText.textContent = t('loading.error', { error: err });
         document.querySelector('.progress-fill').style.width = '0%';
+    } finally {
+        els.languageToggle.disabled = false;
+    }
+}
+
+async function handleLanguageToggle() {
+    const language = getLanguage() === 'en' ? 'zh' : 'en';
+    setLanguage(language);
+    translateDocument();
+    if (!state.localizationLoaded) return;
+
+    els.languageToggle.disabled = true;
+    try {
+        const localization = await loadLocalization(language);
+        setGameLocalization(localization);
+        set_localization(localization);
+        if (state.saveLoaded) refreshLocalizedView();
+    } catch (error) {
+        console.error('[Stellaris Viewer] Language switch failed:', error);
+        setLanguage(language === 'en' ? 'zh' : 'en');
+        translateDocument();
+    } finally {
+        els.languageToggle.disabled = false;
+    }
+}
+
+function refreshLocalizedView() {
+    state.playerInfo = get_player_info();
+    state.galaxyData = get_galaxy_data();
+    renderResourceBar(els.resourceBar, state.playerInfo);
+    renderStatusBar(els.statusDate, els.statusEmpire, state.playerInfo);
+    renderOverviewPanel(els.overviewPanel, state.playerInfo, {
+        onFleetClick: openFleetWindow,
+        onPlanetClick: openPlanetWindow,
+        onClose: () => {
+            els.overviewPanel.classList.add('hidden');
+            updateSidebar(state.view);
+        },
+    });
+    closePopups();
+    els.planetWindow.classList.add('hidden');
+    galaxyMap?.setData(state.galaxyData);
+    if (state.view === 'system' && state.selectedSystem != null) {
+        systemView?.setData(get_system_view(state.selectedSystem));
     }
 }
 
@@ -211,14 +270,14 @@ function openFleetWindow(fleetId) {
         onShipClick: (shipId) => openShipWindow(shipId),
         onClose: () => els.fleetWindow.classList.add('hidden'),
         onManage: () => showDialog(els.modalLayer, {
-            title: '舰队管理',
-            description: '这是只读存档查看器；舰队管理操作不会写回存档。',
+            title: t('nav.fleets'),
+            description: t('dialog.readOnlyFleet'),
         }),
         onDisband: () => showDialog(els.modalLayer, {
-            title: '解散舰队？',
-            description: `将要解散“${data.name}”。只读模式下确认不会修改存档。`,
-            confirmText: '确认',
-            cancelText: '取消',
+            title: t('dialog.disbandFleet'),
+            description: t('dialog.disbandFleetDescription', { name: data.name }),
+            confirmText: t('dialog.confirm'),
+            cancelText: t('dialog.cancel'),
             tone: 'danger',
         }),
     });
@@ -230,8 +289,8 @@ function openShipWindow(shipId) {
     const data = get_ship_detail(shipId);
     renderShipWindow(els.shipWindow, data, {
         onClose: () => els.shipWindow.classList.add('hidden'),
-        onOpenDesigner: () => showDialog(els.modalLayer, { title: '舰船设计器', description: '设计器入口将在对应视图实现后开放。' }),
-        onOpenFleetManager: () => showDialog(els.modalLayer, { title: '舰队管理', description: '舰船数据来自存档，当前为只读显示。' }),
+        onOpenDesigner: () => showDialog(els.modalLayer, { title: t('nav.shipDesigner'), description: t('dialog.shipDesignerUnavailable') }),
+        onOpenFleetManager: () => showDialog(els.modalLayer, { title: t('nav.fleets'), description: t('dialog.shipReadOnly') }),
     });
     els.shipWindow.classList.remove('hidden');
     positionPopup(els.shipWindow, 650);

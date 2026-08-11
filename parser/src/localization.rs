@@ -56,7 +56,7 @@ fn resolve_special_formatter(
         "%SEQ%" => {
             let format = resolve_variable(name, "fmt", strings, depth)?;
             let number = resolve_variable(name, "num", strings, depth)?;
-            let ordinal = format!("第{}", number);
+            let ordinal = format_ordinal(&number, strings);
             Some(
                 format
                     .replace("$ORD0$", &ordinal)
@@ -89,6 +89,31 @@ fn resolve_special_formatter(
         "%ACRONYM%" => resolve_variable(name, "base", strings, depth),
         _ => None,
     }
+}
+
+fn format_ordinal(number: &str, strings: &HashMap<String, String>) -> String {
+    if strings
+        .get("ORD")
+        .or_else(|| strings.get("ORD0"))
+        .is_some_and(|rule| rule.contains('第'))
+    {
+        return format!("第{number}");
+    }
+
+    let Ok(value) = number.parse::<i64>() else {
+        return number.to_string();
+    };
+    let suffix = if (11..=13).contains(&(value.abs() % 100)) {
+        "th"
+    } else {
+        match value.abs() % 10 {
+            1 => "st",
+            2 => "nd",
+            3 => "rd",
+            _ => "th",
+        }
+    };
+    format!("{number}{suffix}")
 }
 
 fn resolve_variable(
@@ -239,6 +264,22 @@ mod tests {
         };
 
         assert_eq!(resolve_name_inner(&name, &strings, 0), "第1超前摄看护小队");
+    }
+
+    #[test]
+    fn formats_english_ordinals() {
+        let strings = HashMap::from([("ORD".to_string(), "$C$st/$C$nd/$C$rd/$C$th".to_string())]);
+        for (number, expected) in [
+            ("1", "1st"),
+            ("2", "2nd"),
+            ("3", "3rd"),
+            ("11", "11th"),
+            ("12", "12th"),
+            ("13", "13th"),
+            ("21", "21st"),
+        ] {
+            assert_eq!(format_ordinal(number, &strings), expected);
+        }
     }
 
     #[test]

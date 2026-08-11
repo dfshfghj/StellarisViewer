@@ -26,6 +26,24 @@ body {
     width: 100vw;
 }
 
+.language-toggle {
+    position: fixed;
+    z-index: 1100;
+    top: 12px;
+    right: 14px;
+    min-width: 72px;
+    padding: 7px 12px;
+    border: 1px solid #6f917f;
+    border-radius: 3px;
+    background: rgba(9, 24, 27, 0.92);
+    color: #d9f0e8;
+    font: 600 13px/1.2 Arial, "Microsoft YaHei", sans-serif;
+    cursor: pointer;
+}
+
+.language-toggle:hover { border-color: #b99d55; color: #fff4c2; }
+.language-toggle:disabled { cursor: wait; opacity: 0.65; }
+
 * {
     background: transparent;
 }

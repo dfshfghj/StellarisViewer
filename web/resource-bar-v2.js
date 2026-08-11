@@ -18,6 +18,7 @@
 // 数据模型沿用 ui-components.js 的 playerInfo.resources / monthly_resources。
 
 import { STRATEGIC_CATEGORIES, RESEARCH_CATEGORIES, createPanelController } from './resource-panel-v2.js';
+import { t } from './app-i18n.js';
 
 const ICON_ROOT = `${import.meta.env.BASE_URL}gfx/interface/icons/`;
 const GFX = `${import.meta.env.BASE_URL}gfx/interface/`;
@@ -32,23 +33,23 @@ const RESEARCH_RESOURCES = RESEARCH_CATEGORIES.flatMap(c => c.resources);
 // gui 组定义：x 为 main.gui 中组在 topbar_static 内的横坐标；icon 为贴图相对 icons/ 的路径。
 // size = 原生像素，scale = gui 的 scale 系数（显示尺寸 = size*scale，定位仍按 gui 的 left:26 top:2）。
 const GROUPS = [
-    { x: 2,   type: 'resource', key: 'energy',         label: '能量币',   icon: 'resources/energy' },
-    { x: 72,  type: 'resource', key: 'minerals',       label: '矿物',     icon: 'resources/minerals' },
-    { x: 142, type: 'resource', key: 'food',           label: '食物',     icon: 'resources/food' },
+    { x: 2,   type: 'resource', key: 'energy',         labelKey: 'resource.energy',   icon: 'resources/energy' },
+    { x: 72,  type: 'resource', key: 'minerals',       labelKey: 'resource.minerals', icon: 'resources/minerals' },
+    { x: 142, type: 'resource', key: 'food',           labelKey: 'resource.food', icon: 'resources/food' },
     { x: 216, divider: true },
-    { x: 216, type: 'resource', key: 'consumer_goods', label: '消费品',   icon: 'resources/consumer_goods' },
-    { x: 286, type: 'resource', key: 'alloys',         label: '合金',     icon: 'resources/alloys' },
-    { x: 356, type: 'resource', key: 'trade',          label: '贸易额',   icon: 'resources/trade' },
-    { x: 426, type: 'composite', keys: STRATEGIC_RESOURCES, label: '战略资源', icon: 'resources/strategic', dropdown: true, panelCategories: STRATEGIC_CATEGORIES, panelTop: 36 },
+    { x: 216, type: 'resource', key: 'consumer_goods', labelKey: 'resource.consumerGoods', icon: 'resources/consumer_goods' },
+    { x: 286, type: 'resource', key: 'alloys',         labelKey: 'resource.alloys', icon: 'resources/alloys' },
+    { x: 356, type: 'resource', key: 'trade',          labelKey: 'resource.trade', icon: 'resources/trade' },
+    { x: 426, type: 'composite', keys: STRATEGIC_RESOURCES, labelKey: 'resource.strategic', icon: 'resources/strategic', dropdown: true, panelCategories: STRATEGIC_CATEGORIES, panelTop: 36 },
     { x: 500, divider: true },
-    { x: 500, type: 'resource', key: 'influence',      label: '影响力',   icon: 'resources/influence' },
-    { x: 570, type: 'resource', key: 'unity',          label: '凝聚力',   icon: 'resources/unity' },
-    { x: 640, type: 'composite', keys: RESEARCH_RESOURCES, label: '研究', icon: 'research_icon', size: 22, scale: 0.9, dropdown: true, panelCategories: RESEARCH_CATEGORIES, panelTop: 35 },
+    { x: 500, type: 'resource', key: 'influence',      labelKey: 'resource.influence', icon: 'resources/influence' },
+    { x: 570, type: 'resource', key: 'unity',          labelKey: 'resource.unity', icon: 'resources/unity' },
+    { x: 640, type: 'composite', keys: RESEARCH_RESOURCES, labelKey: 'resource.research', icon: 'research_icon', size: 22, scale: 0.9, dropdown: true, panelCategories: RESEARCH_CATEGORIES, panelTop: 35 },
     { x: 714, divider: true },
-    { x: 714, type: 'metric', key: 'empire_size',      label: '帝国规模', icon: 'empire_sprawl_icon', size: 25, scale: 0.8 },
-    { x: 784, type: 'metric', key: 'envoys',           label: '使节',     icon: 'diplomacy/diplomacy_envoy', size: 33, scale: 0.65, noBg: true }, // gui: GFX_envoy_icon(diplomacy_envoy 33x33, scale 0.65)
-    { x: 854, type: 'ratio', numerator: 'num_upgraded_starbase', denominator: 'starbase_capacity', label: '升级恒星基地', icon: 'station_icon', size: 20 },
-    { x: 924, type: 'metric', key: 'used_naval_capacity', label: '已用海军容量', icon: 'fleet_size_icon', size: 19 },
+    { x: 714, type: 'metric', key: 'empire_size',      labelKey: 'overview.empireSize', icon: 'empire_sprawl_icon', size: 25, scale: 0.8 },
+    { x: 784, type: 'metric', key: 'envoys',           labelKey: 'resource.envoys', icon: 'diplomacy/diplomacy_envoy', size: 33, scale: 0.65, noBg: true }, // gui: GFX_envoy_icon(diplomacy_envoy 33x33, scale 0.65)
+    { x: 854, type: 'ratio', numerator: 'num_upgraded_starbase', denominator: 'starbase_capacity', labelKey: 'resource.starbaseCapacity', icon: 'station_icon', size: 20 },
+    { x: 924, type: 'metric', key: 'used_naval_capacity', labelKey: 'resource.navalCapacity', icon: 'fleet_size_icon', size: 19 },
 ];
 
 const STYLE_ID = 'resource-bar-v2-style';
@@ -160,14 +161,14 @@ function computeGroup(group, playerInfo, resources, monthly) {
             text: formatNum(value),
             delta,
             cls: deltaClass(delta),
-            tooltip: `${group.label}: ${formatNum(value)} (${formatDelta(delta)})`,
+            tooltip: `${t(group.labelKey)}: ${formatNum(value)} (${formatDelta(delta)})`,
         };
     }
     if (group.type === 'composite') {
         const value = group.keys.reduce((s, e) => s + numberOrZero(resources[e.key]), 0);
         const delta = group.keys.reduce((s, e) => s + numberOrZero(monthly[e.key]), 0);
         const tooltip = group.keys
-            .map(e => `${e.label}: ${formatNum(numberOrZero(resources[e.key]))} (${formatDelta(numberOrZero(monthly[e.key]))})`)
+            .map(e => `${t(e.labelKey)}: ${formatNum(numberOrZero(resources[e.key]))} (${formatDelta(numberOrZero(monthly[e.key]))})`)
             .join('\n');
         return { text: formatNum(value), delta, cls: deltaClass(delta), tooltip };
     }
@@ -175,12 +176,12 @@ function computeGroup(group, playerInfo, resources, monthly) {
         const num = numberOrZero(playerInfo[group.numerator]);
         const den = numberOrZero(playerInfo[group.denominator]);
         const text = `${num.toFixed(0)}/${den.toFixed(0)}`;
-        return { text, delta: null, cls: '', tooltip: `${group.label}: ${text}` };
+        return { text, delta: null, cls: '', tooltip: `${t(group.labelKey)}: ${text}` };
     }
     // metric
     const raw = playerInfo[group.key];
     const text = raw == null ? '—' : formatNum(numberOrZero(raw));
-    return { text, delta: null, cls: '', tooltip: `${group.label}: ${text}` };
+    return { text, delta: null, cls: '', tooltip: `${t(group.labelKey)}: ${text}` };
 }
 
 function iconTag(group) {

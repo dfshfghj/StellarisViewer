@@ -1,21 +1,7 @@
 import fleetViewDefinition from 'virtual:stellaris-fleet-view-ui';
-import loadLocalization from 'virtual:stellaris-localization';
 import { mountGui } from './gui-runtime.js';
+import { localizeGameText as localize } from './game-localization.js';
 import { bindFleetViewData, bindFleetViewText } from './fleet-view-binding.js';
-
-let strings = {};
-const localizationReady = loadLocalization().then(value => {
-    strings = value;
-    return value;
-});
-
-function localize(key) {
-    let text = strings[key] ?? key;
-    for (let depth = 0; depth < 4 && /\$[^$]+\$/.test(text); depth += 1) {
-        text = text.replace(/\$([^$]+)\$/g, (_match, nestedKey) => strings[nestedKey] ?? '—');
-    }
-    return text.replace(/£[^£]+£/g, '').replace(/§./g, '');
-}
 
 function ensureStyle() {
     if (document.getElementById('generated-fleet-view-style')) return;
@@ -58,9 +44,7 @@ export function renderFleetWindow(container, data = {}, callbacks = {}) {
     const close = header && view.findIn(header, 'close', 'buttontype');
     if (close) close.onclick = callbacks.onClose || (() => {});
 
-    localizationReady.then(() => {
-        view.localizeAll(localize);
-        bindFleetViewText(view, result.entry, data);
-    });
+    view.localizeAll(localize);
+    bindFleetViewText(view, result.entry, data);
     return view;
 }
