@@ -201,6 +201,11 @@ function guiViewsPlugin(viewConfigs) {
 export default defineConfig({
     publicDir: 'assets',
     plugins: [localizationPlugin(), componentIconsPlugin(), guiViewsPlugin(GUI_VIEWS), copyImagesPlugin()],
+    server: {
+        // Game assets are read by the virtual-module plugins and served as static files.
+        // Watching the full extracted asset tree exhausts Linux inotify limits during E2E.
+        watch: { ignored: ['**/assets/**'] },
+    },
     build: {
         outDir: 'dist',
         emptyOutDir: true,

@@ -171,11 +171,88 @@ pub struct PlanetDetail {
     pub districts: Vec<DistrictInfo>,
     pub buildings: Vec<BuildingInfo>,
     pub armies: u32,
+    pub army_power: f64,
+    pub army_units: Vec<PlanetArmyInfo>,
+    pub recruitable_armies: Vec<RecruitableArmyInfo>,
     pub deposits_count: u32,
+    pub features: Vec<PlanetFeatureInfo>,
+    pub species: Vec<PlanetSpeciesInfo>,
+    pub pop_groups: Vec<PlanetPopGroupInfo>,
+    pub jobs: Vec<PlanetJobInfo>,
+    pub monthly_population: MonthlyPopulationInfo,
     /// Per-resource-category deposit counts, used to derive resource district caps.
     pub resource_deposits: ResourceDepositCounts,
+    /// Uncleared blocker deposits, rendered as blocked district markers.
+    pub blocked_districts: u32,
     /// 行星修正：planet_modifier（永久）+ timed_modifier（限时）
     pub modifiers: Vec<PlanetModifierInfo>,
+}
+
+#[derive(Serialize)]
+pub struct PlanetFeatureInfo {
+    pub id: u32,
+    pub feature_type: String,
+    pub icon_key: String,
+}
+
+#[derive(Serialize)]
+pub struct PlanetSpeciesInfo {
+    pub id: u32,
+    pub name: String,
+    pub class: String,
+    pub portrait: String,
+    pub pops: f64,
+}
+
+#[derive(Serialize)]
+pub struct PlanetPopGroupInfo {
+    pub id: u32,
+    pub species_id: u32,
+    pub species_name: String,
+    pub category: String,
+    pub size: f64,
+    pub happiness: f64,
+    pub habitability: f64,
+}
+
+#[derive(Serialize)]
+pub struct PlanetJobInfo {
+    pub id: u32,
+    pub job_type: String,
+    pub category: String,
+    pub workforce: f64,
+    pub max_workforce: f64,
+    pub bonus_workforce: f64,
+}
+
+#[derive(Serialize, Default)]
+pub struct MonthlyPopulationInfo {
+    pub growth: f64,
+    pub migration: f64,
+    pub assembly: f64,
+    pub net: f64,
+}
+
+#[derive(Serialize)]
+pub struct PlanetArmyInfo {
+    pub id: u32,
+    pub name: String,
+    pub army_type: String,
+    pub species_id: u32,
+    pub species_name: String,
+    pub health: f64,
+    pub max_health: f64,
+    pub morale: f64,
+    pub power: f64,
+}
+
+#[derive(Serialize)]
+pub struct RecruitableArmyInfo {
+    pub army_type: String,
+    pub species_id: u32,
+    pub species_name: String,
+    pub build_time: u32,
+    pub mineral_cost: f64,
 }
 
 #[derive(Serialize, Clone)]
@@ -932,6 +1009,177 @@ fn deposit_district_add(deposit_type: &str) -> (i32, i32, i32) {
     }
 }
 
+fn deposit_blocked_districts(deposit_type: &str) -> u32 {
+    match deposit_type {
+        "d_abandoned_cities" |
+        "d_active_volcano" |
+        "d_archaeological_site" |
+        "d_assimilators_ruins" |
+        "d_aura_blocker" |
+        "d_big_nature_preserve_blocker" |
+        "d_biological_enclaves" |
+        "d_bioship_remains" |
+        "d_blue_lava" |
+        "d_bomb_crater" |
+        "d_city_ruins" |
+        "d_coagulated_landscape" |
+        "d_collapsed_burrows" |
+        "d_collapsed_spire" |
+        "d_crater" |
+        "d_crumbling_mining_tunnels" |
+        "d_dangerous_wildlife_blocker" |
+        "d_decrepit_dwellings" |
+        "d_decrepit_tunnels_1" |
+        "d_decrepit_tunnels_2" |
+        "d_decrepit_tunnels_3" |
+        "d_deep_sinkhole" |
+        "d_dense_jungle" |
+        "d_devastated_cities" |
+        "d_devoured_continent" |
+        "d_eater_deposit" |
+        "d_egg_cracking" |
+        "d_exploited_deposit_blocker" |
+        "d_exterminators_ruins" |
+        "d_failing_infrastructure" |
+        "d_failing_infrastructure_earth" |
+        "d_flooded_reactor_pits" |
+        "d_floodplains" |
+        "d_forgotten_civilization" |
+        "d_former_battlefield" |
+        "d_fungoid_extermination" |
+        "d_genesis_preserve" |
+        "d_georadiation_displacement" |
+        "d_ghostly_canyon" |
+        "d_gravity_storm_3_engineering" |
+        "d_great_pacific_garbage_patch" |
+        "d_invasion_site" |
+        "d_kaiju_lair" |
+        "d_landgrab_blocker" |
+        "d_lethal_ecosphere_blocker" |
+        "d_lithoid_devastation" |
+        "d_living_snow_reserve" |
+        "d_machine_empire_ruins" |
+        "d_machine_ongoing_construction" |
+        "d_machine_prototype_pc_machine" |
+        "d_malfunctioning_reactor" |
+        "d_mass_graves" |
+        "d_massive_crevice" |
+        "d_massive_glacier" |
+        "d_mothballed_facilities" |
+        "d_mountain_range" |
+        "d_mountains_of_steel" |
+        "d_nanotech_devastation" |
+        "d_nature_preserve_blocker" |
+        "d_noxious_swamp" |
+        "d_old_towns" |
+        "d_particle_storm_1_society" |
+        "d_particle_storm_2_unity" |
+        "d_poisonous_algae" |
+        "d_quicksand_basin" |
+        "d_radioactive_ruins" |
+        "d_radioactive_wasteland" |
+        "d_raging_lavafalls" |
+        "d_resource_consolidation_1" |
+        "d_rotten_soil" |
+        "d_rugged_landscape" |
+        "d_ruined_arcology" |
+        "d_ruined_building_blocker" |
+        "d_ruined_district" |
+        "d_ruined_hatchery" |
+        "d_ruined_sanctum_of_the_lost" |
+        "d_scorched_plains" |
+        "d_seed_bombing_fungoid_blocker" |
+        "d_seed_bombing_plantoid_blocker" |
+        "d_segment_rubble_1" |
+        "d_segment_rubble_1_small" |
+        "d_segment_rubble_2" |
+        "d_segment_rubble_3" |
+        "d_segment_rubble_4" |
+        "d_sentinels" |
+        "d_shattered_solar_array" |
+        "d_shimmering_structure" |
+        "d_ship_debris_broken_shackles_blocker" |
+        "d_ship_debris_payback_blocker" |
+        "d_shroud_flora_deposit" |
+        "d_shroudfall" |
+        "d_shroudgate" |
+        "d_shroudstone" |
+        "d_sinkhole_subterraneans" |
+        "d_space_ship_graveyard" |
+        "d_spawning_complex_blocker" |
+        "d_sprawling_landfill_blocker" |
+        "d_sr_diurnal_regulator" |
+        "d_sr_power_grid" |
+        "d_sr_ring_gyros" |
+        "d_sr_vacuum_fields" |
+        "d_star_mall_blocker" |
+        "d_star_mall_promenade_blocker" |
+        "d_strip_mine" |
+        "d_tainted_snowcaps" |
+        "d_technocracy_molten_waste_blocker" |
+        "d_technocracy_toxic_waste_blocker" |
+        "d_terraforming_blocker" |
+        "d_titanic_life_blocker" |
+        "d_tomb_world_ruins" |
+        "d_tomb_world_wasteland" |
+        "d_toxic_god_blight_upon_the_land" |
+        "d_toxic_god_deitys_swarms" |
+        "d_toxic_god_envenomed_seas" |
+        "d_toxic_god_pestilential_wasteland" |
+        "d_toxic_god_pools_most_venemous" |
+        "d_toxic_kelp" |
+        "d_unplugged_assimilator_hulk" |
+        "d_unsupervised_settlement" |
+        "d_venomous_insects" |
+        "d_wandering_forests" |
+        "d_wilderness_city" |
+        "d_wilderness_city_2" |
+        "d_wilderness_farming" |
+        "d_wilderness_farming_2" |
+        "d_wilderness_generator" |
+        "d_wilderness_generator_2" |
+        "d_wilderness_glade_blocker" |
+        "d_wilderness_industrial" |
+        "d_wilderness_industrial_2" |
+        "d_wilderness_mining" |
+        "d_wilderness_mining_2" => 1,
+        _ => 0,
+    }
+}
+
+fn deposit_icon_key(deposit_type: &str) -> &str {
+    match deposit_type {
+        "d_mesopotamian_urban_corridor" => "d_marvelous_oasis",
+        "d_boswash_metropolitan_axis" | "d_delhi_sprawl" => "d_city",
+        "d_pearl_river_agglomerate" => "d_building_complex",
+        "d_mauritanian_security_zone" | "d_genesis_preserve" => "d_quarantine_zone",
+        "d_great_albertan_crater" => "d_crater",
+        "d_scandinavian_reclamation_sector" => "d_radioactive_wasteland",
+        "d_saharan_irrigation_project" => "d_green_hills",
+        "d_pacific_algae_tracts" => "d_toxic_kelp",
+        _ => deposit_type,
+    }
+}
+
+fn job_category(job_type: &str) -> &str {
+    match job_type {
+        "politician" => "ruler",
+        "physicist" | "biologist" | "engineer" | "bureaucrat" | "enforcer"
+        | "entertainer" | "trader" | "foundry" | "artisan" => "specialist",
+        "technician" | "miner" | "farmer" => "worker",
+        "civilian" => "civilian",
+        "xeno_zoo_animal" => "pre_sapients",
+        _ => "other",
+    }
+}
+
+fn species_name(gs: &Gamestate, species_id: u32) -> String {
+    gs.species_db
+        .get(&species_id)
+        .map(|species| resolve_name(&species.name))
+        .unwrap_or_else(|| format!("Species {species_id}"))
+}
+
 pub fn extract_planet_detail(gs: &Gamestate, planet_id: u32, name_vars: &HashMap<u32, String>) -> Option<PlanetDetail> {
     let planets_data = gs.planets.as_ref()?;
     let planet = planets_data.planet.get(&planet_id)?;
@@ -1039,13 +1287,130 @@ pub fn extract_planet_detail(gs: &Gamestate, planet_id: u32, name_vars: &HashMap
     // The cap for a resource district type is the sum of district_<type>_max_add
     // across the planet's deposits (see common/deposits/*.txt), not the deposit count.
     let mut resource_deposits = ResourceDepositCounts::default();
+    let mut blocked_districts = 0;
+    let mut features = Vec::new();
     for &dep_id in &planet.deposits {
         if let Some(dep) = gs.deposit.get(&dep_id) {
             if let Some(t) = dep.deposit_type.as_deref() {
+                blocked_districts += deposit_blocked_districts(t);
                 let (g, m, f) = deposit_district_add(t);
                 resource_deposits.generator += g;
                 resource_deposits.mining += m;
                 resource_deposits.farming += f;
+                features.push(PlanetFeatureInfo {
+                    id: dep_id,
+                    feature_type: t.to_string(),
+                    icon_key: deposit_icon_key(t).to_string(),
+                });
+            }
+        }
+    }
+
+    let mut pop_groups = Vec::new();
+    let mut species_totals: HashMap<u32, f64> = HashMap::new();
+    for &group_id in &planet.pop_groups {
+        let Some(group) = gs.pop_groups.get(&group_id) else { continue };
+        let Some(key) = group.key.as_ref() else { continue };
+        let species_id = key.species.unwrap_or(0);
+        let size = group.size.unwrap_or(0.0);
+        *species_totals.entry(species_id).or_default() += size;
+        pop_groups.push(PlanetPopGroupInfo {
+            id: group_id,
+            species_id,
+            species_name: species_name(gs, species_id),
+            category: key.category.clone().unwrap_or_default(),
+            size,
+            happiness: group.happiness.unwrap_or(0.0),
+            habitability: group.habitability.unwrap_or(0.0),
+        });
+    }
+    let mut species: Vec<_> = species_totals
+        .into_iter()
+        .map(|(id, pops)| {
+            let model = gs.species_db.get(&id);
+            PlanetSpeciesInfo {
+                id,
+                name: species_name(gs, id),
+                class: model.and_then(|item| item.class.clone()).unwrap_or_default(),
+                portrait: model.and_then(|item| item.portrait.clone()).unwrap_or_default(),
+                pops,
+            }
+        })
+        .collect();
+    species.sort_by(|a, b| b.pops.total_cmp(&a.pops));
+
+    let mut jobs = Vec::new();
+    for &job_id in &planet.pop_jobs {
+        let Some(job) = gs.pop_jobs.get(&job_id) else { continue };
+        let workforce = job.workforce.unwrap_or(0.0);
+        if workforce <= 0.0 { continue; }
+        let job_type = job.job_type.clone().unwrap_or_default();
+        jobs.push(PlanetJobInfo {
+            id: job_id,
+            category: job_category(&job_type).to_string(),
+            job_type,
+            workforce,
+            max_workforce: job.max_workforce.unwrap_or(-1.0),
+            bonus_workforce: job.bonus_workforce.unwrap_or(0.0),
+        });
+    }
+
+    let mut army_units = Vec::new();
+    for &army_id in &planet.army {
+        let Some(army) = gs.army.get(&army_id) else { continue };
+        let species_id = army.species.unwrap_or(0);
+        let max_health = army.max_health.unwrap_or(0.0);
+        let morale = army.morale.unwrap_or(0.0);
+        let has_exoskeletons = army.owner
+            .and_then(|owner| gs.country.get(&owner))
+            .and_then(|country| country.tech_status.as_ref())
+            .is_some_and(|status| status.technology.iter().any(|tech| tech == "tech_powered_exoskeletons"));
+        let template_damage = if army.army_type.as_deref() == Some("defense_army") { 1.5 } else { 1.0 };
+        let damage_modifier = if has_exoskeletons { 1.05 } else { 1.0 };
+        let damage = 2.25 * template_damage * damage_modifier;
+        let effective_damage = damage * 1.5;
+        let effective_health = max_health + morale * 0.5;
+        let power = (effective_health * effective_damage).powf(0.65) * 0.25;
+        army_units.push(PlanetArmyInfo {
+            id: army_id,
+            name: resolve_name(&army.name),
+            army_type: army.army_type.clone().unwrap_or_default(),
+            species_id,
+            species_name: species_name(gs, species_id),
+            health: army.health.unwrap_or(0.0),
+            max_health,
+            morale,
+            power,
+        });
+    }
+    let army_power = army_units.iter().map(|army| army.power).sum();
+    let has_assault_armies = planet.owner
+        .and_then(|owner| gs.country.get(&owner))
+        .and_then(|country| country.tech_status.as_ref())
+        .is_some_and(|status| status.technology.iter().any(|tech| tech == "tech_assault_armies"));
+    let recruitable_armies = if has_assault_armies {
+        species.first().map(|item| vec![RecruitableArmyInfo {
+            army_type: "assault_army".to_string(),
+            species_id: item.id,
+            species_name: item.name.clone(),
+            build_time: 90,
+            mineral_cost: 100.0,
+        }]).unwrap_or_default()
+    } else {
+        Vec::new()
+    };
+
+    let mut monthly_population = MonthlyPopulationInfo::default();
+    if let Some(growth) = &planet.last_month_growth_data {
+        monthly_population.net = growth.growth_and_size.as_ref().and_then(|item| item.growth).unwrap_or(0.0);
+        if let Some(details) = &growth.current_month_growth_details {
+            for (key, value) in details.key.iter().zip(&details.value) {
+                match key.as_str() {
+                    "GROWTH_CAT_GROWTH" => monthly_population.growth = *value,
+                    "GROWTH_CAT_EMIGRATION" => monthly_population.migration = -*value,
+                    "GROWTH_CAT_ASSEMBLY" => monthly_population.assembly = *value,
+                    _ => {}
+                }
             }
         }
     }
@@ -1077,9 +1442,18 @@ pub fn extract_planet_detail(gs: &Gamestate, planet_id: u32, name_vars: &HashMap
         upkeep,
         districts,
         buildings,
-        armies: planet.army.len() as u32,
+        armies: army_units.len() as u32,
+        army_power,
+        army_units,
+        recruitable_armies,
         deposits_count: planet.deposits.len() as u32,
+        features,
+        species,
+        pop_groups,
+        jobs,
+        monthly_population,
         resource_deposits,
+        blocked_districts,
         modifiers,
     })
 }

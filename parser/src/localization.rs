@@ -61,7 +61,8 @@ fn resolve_special_formatter(
                 format
                     .replace("$ORD0$", &ordinal)
                     .replace("$ORD$", &ordinal)
-                    .replace("$CARD$", &number),
+                    .replace("$CARD$", &number)
+                    .replace("$C$", &number),
             )
         }
         "%LEADER_1%" | "%LEADER_2%" => {
@@ -128,6 +129,11 @@ fn resolve_variable(
         .find(|variable| variable.key.as_deref() == Some(key))?
         .value
         .as_deref()?;
+    if let Some(key) = value.key.as_deref() {
+        if key.chars().all(|character| character.is_ascii_digit()) {
+            return Some(key.to_string());
+        }
+    }
     Some(resolve_name_inner(value, strings, depth + 1))
 }
 
@@ -154,7 +160,7 @@ fn expand_localization_references(
         let key = token.split('|').next().unwrap_or(token);
         // ORD/ORD0 are engine number-rule definitions, not display strings.
         // %SEQ% must consume these tokens together with its `num` variable.
-        if matches!(key, "ORD" | "ORD0" | "CARD") {
+        if matches!(key, "ORD" | "ORD0" | "CARD" | "C" | "R") {
             output.push('$');
             output.push_str(token);
             output.push('$');
@@ -264,6 +270,22 @@ mod tests {
         };
 
         assert_eq!(resolve_name_inner(&name, &strings, 0), "第1超前摄看护小队");
+    }
+
+    #[test]
+    fn resolves_cardinal_sequence_placeholder_without_expanding_number_rules() {
+        let strings = HashMap::from([
+            ("HUMAN1_PLANETARYGUARD".to_string(), "$C$行星护卫".to_string()),
+            ("C".to_string(), "(100?:(0 1 2 3)):1".to_string()),
+        ]);
+        let name = Name {
+            key: Some("%SEQ%".to_string()),
+            variables: vec![
+                NameVariable { key: Some("fmt".to_string()), value: Some(Box::new(keyed("HUMAN1_PLANETARYGUARD"))) },
+                NameVariable { key: Some("num".to_string()), value: Some(Box::new(keyed("1"))) },
+            ],
+        };
+        assert_eq!(resolve_name_inner(&name, &strings, 0), "1行星护卫");
     }
 
     #[test]

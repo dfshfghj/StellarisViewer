@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "test": "node app-i18n.test.js && node localization-loader.test.js && node territory-borders.test.js && node component-gfx-mapping.test.js && node gfx-sprites.test.js && node gui-compiler.test.js && node fleet-gui-compiler.test.js && node outliner-gui-compiler.test.js && node planet-gui-compiler.test.js && node gui-runtime.test.js && node fleet-view-binding.test.js && node overview-panel-binding.test.js && node ship-view-binding.test.js && node planet-view-v2.smoke.test.js",
+    "test:e2e": "playwright test",
     "preview": "vite preview",
     "build:wasm": "cd ../parser && wasm-pack build --target web --out-dir ../web/pkg --release"
   },
@@ -14,6 +15,7 @@
     "d3-delaunay": "^6.0.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "vite": "^7.0.0"
   }
 }

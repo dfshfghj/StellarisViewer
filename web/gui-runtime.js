@@ -253,6 +253,78 @@ function webTexturePath(texture) {
     return String(texture).replace(/\\/g, '/').replace(/\.(?:dds|tga)$/i, '.webp');
 }
 
+const croppedFrameCache = new Map();
+
+function croppedFrameUrls(url, dimensions, frames) {
+    if (frames <= 1 || !dimensions || typeof Image === 'undefined') return null;
+    const absoluteUrl = typeof globalThis.document?.baseURI === 'string'
+        ? new URL(url, globalThis.document.baseURI).href
+        : url;
+    const cacheKey = `${absoluteUrl}|${dimensions.width}x${dimensions.height}|${frames}`;
+    if (croppedFrameCache.has(cacheKey)) return croppedFrameCache.get(cacheKey);
+    const promise = new Promise(resolve => {
+        const image = new Image();
+        image.onload = () => {
+            const canvas = document.createElement('canvas');
+            const frameWidth = dimensions.width / frames;
+            canvas.width = frameWidth;
+            canvas.height = dimensions.height;
+            const context = canvas.getContext?.('2d');
+            if (!context) {
+                resolve(null);
+                return;
+            }
+            const urls = [];
+            for (let frame = 0; frame < frames; frame += 1) {
+                context.clearRect(0, 0, frameWidth, dimensions.height);
+                context.drawImage(image, frame * frameWidth, 0, frameWidth, dimensions.height, 0, 0, frameWidth, dimensions.height);
+                urls.push(canvas.toDataURL('image/png'));
+            }
+            resolve(urls);
+        };
+        image.onerror = () => resolve(null);
+        image.src = absoluteUrl;
+    });
+    croppedFrameCache.set(cacheKey, promise);
+    return promise;
+}
+
+function applyCorneredSprite(element, node, resource, url, dimensions, frames, frame) {
+    const border = pair(resource.border);
+    element.style.backgroundImage = 'none';
+    element.style.borderStyle = 'solid';
+    element.style.borderColor = 'transparent';
+    element.style.borderWidth = `${border.y}px ${border.x}px`;
+
+    const applyFrame = source => {
+        element.style.borderImage = `url("${source}") ${border.y} ${border.x} fill`;
+    };
+    const cropped = croppedFrameUrls(url, dimensions, frames);
+    if (!cropped) {
+        applyFrame(url);
+        return;
+    }
+    cropped.then(urls => {
+        if (!urls) {
+            applyFrame(url);
+            return;
+        }
+        let currentFrame = Math.max(0, Math.min(frames - 1, frame));
+        const show = nextFrame => {
+            currentFrame = Math.max(0, Math.min(frames - 1, nextFrame));
+            applyFrame(urls[currentFrame]);
+            element.dataset.spriteFrame = String(currentFrame);
+        };
+        show(currentFrame);
+        if (frames === 3 && BUTTON_NODE_TYPES.has(node.type)) {
+            element.addEventListener('pointerenter', () => show(1));
+            element.addEventListener('pointerleave', () => show(0));
+            element.addEventListener('pointerdown', () => show(2));
+            element.addEventListener('pointerup', () => show(1));
+        }
+    });
+}
+
 function applySprite(element, node, resource, baseUrl) {
     if (!resource?.texture) return;
     const isProgress = resource.type === 'progressbartype' && resource.textures?.length > 1;
@@ -282,12 +354,7 @@ function applySprite(element, node, resource, baseUrl) {
     }
 
     if (resource.type === 'corneredtilespritetype' && resource.border) {
-        const border = pair(resource.border);
-        element.style.backgroundImage = 'none';
-        element.style.borderStyle = 'solid';
-        element.style.borderColor = 'transparent';
-        element.style.borderWidth = `${border.y}px ${border.x}px`;
-        element.style.borderImage = `url("${url}") ${border.y} ${border.x} fill`;
+        applyCorneredSprite(element, node, resource, url, dimensions, frames, frame);
     }
     if (resource.maskingTexture) {
         const mask = `url("${baseUrl}${resource.maskingTexture}")`;

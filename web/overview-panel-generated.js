@@ -14,6 +14,10 @@ function ensureStyle() {
         }
         [data-gui-name="outliner_tab_window"] { user-select:none; }
         [data-overview-kind="planet"], [data-overview-kind="fleet"], [data-overview-kind="station"] { cursor:pointer; }
+        .generated-overview-hit-target {
+            position:absolute; inset:0; z-index:10; width:100%; height:100%;
+            padding:0; border:0; background:transparent; opacity:0; cursor:pointer; pointer-events:auto;
+        }
         .generated-overview-close {
             position:absolute; z-index:5; top:4px; right:5px; width:24px; height:24px;
             padding:0; border:0; background:transparent url('/gfx/interface/buttons/button_close_24_animated.webp') 0 0 / 300% 100% no-repeat;

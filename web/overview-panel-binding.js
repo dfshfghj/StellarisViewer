@@ -68,6 +68,18 @@ function prepareRow(view, row, callback, id, kind) {
     row.dataset.overviewKind = kind;
     row.dataset.overviewId = String(id);
     row.onclick = () => callback?.(id);
+    if (typeof document !== 'undefined') {
+        const target = document.createElement('button');
+        target.className = 'generated-overview-hit-target';
+        target.type = 'button';
+        target.dataset.overviewAction = kind;
+        target.setAttribute('aria-label', `${kind} ${id}`);
+        target.onclick = event => {
+            event.stopPropagation();
+            callback?.(id);
+        };
+        row.appendChild(target);
+    }
 }
 
 function bindPlanetRow(view, list, planet, index, callbacks) {
@@ -141,10 +153,12 @@ function bindMetricRow(view, list, metric, index) {
 
 function addSection(view, rootList, title, items, bindRow, callbacks, index) {
     const section = view.instantiate('outliner_title_entry_window', rootList, { name: `section-${index}` });
+    section.style.pointerEvents = 'none';
     hide(scoped(view, section, 'selected_overlay', 'containerwindowtype'));
     setText(scoped(view, section, 'title', 'instanttextboxtype'), title);
     setText(scoped(view, section, 'amount', 'instanttextboxtype'), items.length);
     const list = scoped(view, section, 'list', 'smoothlistboxtype');
+    list.style.zIndex = '2';
     for (const [rowIndex, item] of items.entries()) bindRow(view, list, item, rowIndex, callbacks);
     const rowsHeight = items.length * ROW_HEIGHT;
     list.style.height = `${rowsHeight}px`;

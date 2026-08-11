@@ -31,6 +31,14 @@ pub struct Gamestate {
     pub zones: HashMap<u32, Zone>,
     #[jomini(default = "default_hashmap")]
     pub deposit: HashMap<u32, Deposit>,
+    #[jomini(default = "default_hashmap")]
+    pub species_db: HashMap<u32, Species>,
+    #[jomini(default = "default_hashmap")]
+    pub pop_groups: HashMap<u32, PopGroup>,
+    #[jomini(default = "default_hashmap")]
+    pub pop_jobs: HashMap<u32, PopJob>,
+    #[jomini(default = "default_hashmap")]
+    pub army: HashMap<u32, Army>,
 }
 
 fn default_hashmap<K, V>() -> HashMap<K, V> {
@@ -158,12 +166,33 @@ pub struct Planet {
     #[jomini(default)]
     pub pop_jobs: Vec<u32>,
     pub final_designation: Option<String>,
+    pub last_month_growth_data: Option<PlanetGrowthData>,
     pub entity_name: Option<String>,
     // timed_modifier={ items={ { modifier="X" days=N } ... } }（匿名对象序列，jomini 直接反序列化）
     pub timed_modifier: Option<TimedModifier>,
     // 重复键：planet_modifier="pm_X" planet_modifier="pm_Y"
     #[jomini(duplicated, default)]
     pub planet_modifier: Vec<String>,
+}
+
+#[derive(JominiDeserialize, Debug, Default, Clone, Serialize)]
+pub struct PlanetGrowthData {
+    pub growth_and_size: Option<GrowthAndSize>,
+    pub current_month_growth_details: Option<GrowthDetails>,
+}
+
+#[derive(JominiDeserialize, Debug, Default, Clone, Serialize)]
+pub struct GrowthAndSize {
+    pub month_start_size: Option<f64>,
+    pub growth: Option<f64>,
+}
+
+#[derive(JominiDeserialize, Debug, Default, Clone, Serialize)]
+pub struct GrowthDetails {
+    #[jomini(duplicated, default)]
+    pub key: Vec<String>,
+    #[jomini(duplicated, default)]
+    pub value: Vec<f64>,
 }
 
 #[derive(JominiDeserialize, Debug, Default, Clone, Serialize)]
@@ -196,12 +225,21 @@ pub struct Country {
     pub starbase_capacity: Option<u32>,
     pub budget: Option<CountryBudget>,
     pub num_sapient_pops: Option<u32>,
+    pub tech_status: Option<TechStatus>,
     // Block format: owned_planets={ 3 209 291 }
     #[jomini(default)]
     pub owned_planets: Vec<u32>,
     // fleets_manager.owned_fleets extracted via text scan (anonymous object pattern)
     pub modules: Option<CountryModules>,
     pub relations_manager: Option<RelationsManager>,
+}
+
+#[derive(JominiDeserialize, Debug, Default, Clone, Serialize)]
+pub struct TechStatus {
+    #[jomini(duplicated, default)]
+    pub technology: Vec<String>,
+    #[jomini(duplicated, default)]
+    pub level: Vec<u32>,
 }
 
 #[derive(JominiDeserialize, Debug, Default, Clone, Serialize)]
@@ -546,6 +584,63 @@ pub struct Zone {
 pub struct Deposit {
     #[jomini(alias = "type")]
     pub deposit_type: Option<String>,
+}
+
+// ============ Population / Species / Ground Armies ============
+
+#[derive(JominiDeserialize, Debug, Default, Clone, Serialize)]
+pub struct Species {
+    pub name: Option<Name>,
+    pub plural: Option<Name>,
+    pub class: Option<String>,
+    pub portrait: Option<String>,
+    pub sapient: Option<bool>,
+    pub home_planet: Option<u32>,
+}
+
+#[derive(JominiDeserialize, Debug, Default, Clone, Serialize)]
+pub struct PopGroupKey {
+    pub species: Option<u32>,
+    pub category: Option<String>,
+}
+
+#[derive(JominiDeserialize, Debug, Default, Clone, Serialize)]
+pub struct PopGroup {
+    pub key: Option<PopGroupKey>,
+    pub planet: Option<u32>,
+    pub size: Option<f64>,
+    pub habitability: Option<f64>,
+    pub happiness: Option<f64>,
+    pub crime: Option<f64>,
+    pub housing_usage: Option<f64>,
+}
+
+#[derive(JominiDeserialize, Debug, Default, Clone, Serialize)]
+pub struct PopJob {
+    #[jomini(alias = "type")]
+    pub job_type: Option<String>,
+    pub automated_workforce: Option<f64>,
+    pub workforce: Option<f64>,
+    pub max_workforce: Option<f64>,
+    pub bonus_workforce: Option<f64>,
+    pub workforce_limit: Option<f64>,
+    pub planet: Option<u32>,
+    pub pop_group: Option<u32>,
+}
+
+#[derive(JominiDeserialize, Debug, Default, Clone, Serialize)]
+pub struct Army {
+    pub name: Option<Name>,
+    #[jomini(alias = "type")]
+    pub army_type: Option<String>,
+    pub health: Option<f64>,
+    pub max_health: Option<f64>,
+    pub morale: Option<f64>,
+    pub owner: Option<u32>,
+    pub species: Option<u32>,
+    pub planet: Option<u32>,
+    pub spawning_planet: Option<u32>,
+    pub experience: Option<f64>,
 }
 
 // ============ Extracted Data (from text scan) ============
