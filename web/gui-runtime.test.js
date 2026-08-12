@@ -69,13 +69,20 @@ const rootNode = {
     children: [
         {
             type: 'buttontype', name: 'default_button', path: 'root/default_button[0]',
-            props: { buttontext: 'BUTTON' }, children: [],
+            props: { buttontext: 'BUTTON', buttonfont: 'malgun_goth_24' }, children: [],
         },
         {
             type: 'instanttextboxtype', name: 'default_text', path: 'root/default_text[0]',
-            props: { text: 'TEXT' }, children: [],
+            props: { text: 'TEXT', font: 'cg_16b', text_color_code: 'G' }, children: [],
         },
-        { type: 'editboxtype', name: 'name', path: 'root/name[0]', props: { size: { x: 120, y: 20 }, max_characters: 12 }, children: [] },
+        {
+            type: 'instanttextboxtype', name: 'muted_text', path: 'root/muted_text[0]',
+            props: { text: 'MUTED', text_color_code: 'g' }, children: [],
+        },
+        {
+            type: 'editboxtype', name: 'name', path: 'root/name[0]',
+            props: { size: { x: 120, y: 20 }, max_characters: 12, font: 'large_title_font' }, children: [],
+        },
         {
             type: 'smoothlistboxtype', name: 'list', path: 'root/list[0]',
             props: { background: 'GFX_masked', size: { x: 80, y: 40 } }, children: [{
@@ -182,7 +189,11 @@ const resources = {
         frames: 4, fps: 8, looping: true, playOnShow: true,
     },
 };
-const view = mountGui(container, { rootName: 'root', templates: { root: rootNode }, resources }, {
+const textColors = {
+    G: { red: 41, green: 225, blue: 38, alpha: 255 },
+    g: { red: 128, green: 128, blue: 128, alpha: 128 },
+};
+const view = mountGui(container, { rootName: 'root', templates: { root: rootNode }, resources, textColors }, {
     baseUrl: '/', resolution: physical, uiScale: 0.5, localize: key => key === 'TIP' ? 'loc:TIP' : key,
 });
 assert.equal(view.root.style.width, '100%');
@@ -196,9 +207,16 @@ assert.equal(view.find('conditional_text').style.backgroundImage, 'url("/gfx/int
 assert.equal(view.root.children[0].dataset.guiName, 'conditional_text');
 assert.equal(view.root.children[1].dataset.guiName, 'nested_text');
 assert.equal(view.find('default_button').style.textAlign, 'center');
+assert.equal(view.find('default_button').style.fontFamily, '"Malgun Gothic", "Noto Sans", Arial, sans-serif');
+assert.equal(view.find('default_button').style.fontWeight, undefined);
 assert.equal(view.find('default_text').style.textAlign, 'left');
+assert.equal(view.find('default_text').style.fontFamily, '"Century Gothic", "Noto Sans", Arial, sans-serif');
+assert.equal(view.find('default_text').style.fontWeight, '700');
+assert.equal(view.find('default_text').style.color, 'rgb(41, 225, 38)');
+assert.equal(view.find('muted_text').style.color, 'rgba(128, 128, 128, 0.502)');
 assert.equal(view.find('name').tagName, 'INPUT');
 assert.equal(view.find('name').maxLength, 12);
+assert.equal(view.find('name').style.fontFamily, 'Orbitron, "Noto Sans", Arial, sans-serif');
 assert.equal(view.find('list').dataset.guiSprite, 'GFX_masked');
 assert.equal(view.find('list').style.maskImage, 'url("/gfx/mask.webp")');
 assert.equal(view.find('list').style.pointerEvents, 'none');

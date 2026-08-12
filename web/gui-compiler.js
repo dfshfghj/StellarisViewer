@@ -345,6 +345,22 @@ function referencedTextureValues(value, key = '', textures = new Set()) {
     return textures;
 }
 
+export function compileTextColors(assetsDirectory) {
+    const fontsPath = resolve(assetsDirectory, 'interface/fonts.gfx');
+    if (!existsSync(fontsPath)) return {};
+    const ast = parseClausewitz(readFileSync(fontsPath, 'utf8'));
+    const bitmapFonts = first(ast, 'bitmapfonts');
+    const textColors = first(bitmapFonts, 'textcolors');
+    const colors = {};
+    for (const entry of textColors?.entries || []) {
+        const components = (entry.value?.values || []).map(Number);
+        if (components.length < 3 || components.some(value => !Number.isFinite(value))) continue;
+        const [red, green, blue, alpha = 255] = components;
+        colors[entry.key] = { red, green, blue, alpha };
+    }
+    return colors;
+}
+
 export function compileGfxRegistry(assetsDirectory) {
     const interfaceDirectory = resolve(assetsDirectory, 'interface');
     const registry = {};
@@ -435,6 +451,7 @@ export function compileGuiView({ guiPath, assetsDirectory, rootName, gfxRegistry
         variables: gui.variables,
         templates: gui.templates,
         resources,
+        textColors: compileTextColors(assetsDirectory),
         unresolvedSprites,
         diagnostics: { ...gui.diagnostics, missingTextures },
     };

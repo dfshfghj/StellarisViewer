@@ -42,6 +42,9 @@ assert.equal(definition.resources.GFX_standard_button_240_34_button.frames, 3);
 assert.equal(definition.resources.GFX_dummy_3d_ship_details.type, 'spritetype');
 assert.deepEqual(definition.unresolvedSprites, []);
 assert.deepEqual(definition.diagnostics.unresolvedVariables, []);
+assert.deepEqual(definition.textColors.E, { red: 135, green: 255, blue: 207, alpha: 255 });
+assert.deepEqual(definition.textColors.g, { red: 128, green: 128, blue: 128, alpha: 255 });
+assert.deepEqual(definition.textColors['0'], { red: 31, green: 224, blue: 202, alpha: 255 });
 
 const semantics = compileGui(`
     @global = 10

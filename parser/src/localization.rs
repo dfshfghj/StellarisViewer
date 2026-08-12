@@ -57,10 +57,21 @@ fn resolve_special_formatter(
             let format = resolve_variable(name, "fmt", strings, depth)?;
             let number = resolve_variable(name, "num", strings, depth)?;
             let ordinal = format_ordinal(&number, strings);
+            let cardinal_two = format_decimal(&number, 2, false);
+            let cardinal_three = format_decimal(&number, 3, false);
+            let cardinal_two_zero_based = format_decimal(&number, 2, true);
+            let roman = format_roman(&number);
+            let hexadecimal = format_hexadecimal(&number, true);
             Some(
                 format
                     .replace("$ORD0$", &ordinal)
                     .replace("$ORD$", &ordinal)
+                    .replace("$CC0$", &cardinal_two_zero_based)
+                    .replace("$CCC$", &cardinal_three)
+                    .replace("$CC$", &cardinal_two)
+                    .replace("$HEX$", &hexadecimal)
+                    .replace("$R$", &roman)
+                    .replace("$O$", &ordinal)
                     .replace("$CARD$", &number)
                     .replace("$C$", &number),
             )
@@ -90,6 +101,60 @@ fn resolve_special_formatter(
         "%ACRONYM%" => resolve_variable(name, "base", strings, depth),
         _ => None,
     }
+}
+
+fn format_decimal(number: &str, minimum_width: usize, zero_based: bool) -> String {
+    let Ok(mut value) = number.parse::<i64>() else {
+        return number.to_string();
+    };
+    if zero_based {
+        value -= 1;
+    }
+    format!("{value:0minimum_width$}")
+}
+
+fn format_hexadecimal(number: &str, zero_based: bool) -> String {
+    let Ok(mut value) = number.parse::<i64>() else {
+        return number.to_string();
+    };
+    if zero_based {
+        value -= 1;
+    }
+    if value < 0 {
+        return value.to_string();
+    }
+    format!("{value:03x}")
+}
+
+fn format_roman(number: &str) -> String {
+    let Ok(mut value) = number.parse::<u32>() else {
+        return number.to_string();
+    };
+    if value == 0 || value > 3999 {
+        return number.to_string();
+    }
+    let mut output = String::new();
+    for (unit, digits) in [
+        (1000, "M"),
+        (900, "CM"),
+        (500, "D"),
+        (400, "CD"),
+        (100, "C"),
+        (90, "XC"),
+        (50, "L"),
+        (40, "XL"),
+        (10, "X"),
+        (9, "IX"),
+        (5, "V"),
+        (4, "IV"),
+        (1, "I"),
+    ] {
+        while value >= unit {
+            output.push_str(digits);
+            value -= unit;
+        }
+    }
+    output
 }
 
 fn format_ordinal(number: &str, strings: &HashMap<String, String>) -> String {
@@ -160,7 +225,10 @@ fn expand_localization_references(
         let key = token.split('|').next().unwrap_or(token);
         // ORD/ORD0 are engine number-rule definitions, not display strings.
         // %SEQ% must consume these tokens together with its `num` variable.
-        if matches!(key, "ORD" | "ORD0" | "CARD" | "C" | "R") {
+        if matches!(
+            key,
+            "ORD" | "ORD0" | "CARD" | "C" | "CC" | "CCC" | "CC0" | "R" | "HEX" | "O"
+        ) {
             output.push('$');
             output.push_str(token);
             output.push('$');
@@ -275,17 +343,92 @@ mod tests {
     #[test]
     fn resolves_cardinal_sequence_placeholder_without_expanding_number_rules() {
         let strings = HashMap::from([
-            ("HUMAN1_PLANETARYGUARD".to_string(), "$C$行星护卫".to_string()),
+            (
+                "HUMAN1_PLANETARYGUARD".to_string(),
+                "$C$行星护卫".to_string(),
+            ),
             ("C".to_string(), "(100?:(0 1 2 3)):1".to_string()),
         ]);
         let name = Name {
             key: Some("%SEQ%".to_string()),
             variables: vec![
-                NameVariable { key: Some("fmt".to_string()), value: Some(Box::new(keyed("HUMAN1_PLANETARYGUARD"))) },
-                NameVariable { key: Some("num".to_string()), value: Some(Box::new(keyed("1"))) },
+                NameVariable {
+                    key: Some("fmt".to_string()),
+                    value: Some(Box::new(keyed("HUMAN1_PLANETARYGUARD"))),
+                },
+                NameVariable {
+                    key: Some("num".to_string()),
+                    value: Some(Box::new(keyed("1"))),
+                },
             ],
         };
         assert_eq!(resolve_name_inner(&name, &strings, 0), "1行星护卫");
+    }
+
+    #[test]
+    fn resolves_all_sequence_number_placeholders() {
+        let strings = HashMap::from([
+            (
+                "SEQUENCE_FORMAT".to_string(),
+                "$CC$|$CCC$|$CC0$|$R$|$HEX$|$O$".to_string(),
+            ),
+            ("CC".to_string(), "(number rule)".to_string()),
+            ("CCC".to_string(), "(number rule)".to_string()),
+            ("CC0".to_string(), "-1, (number rule)".to_string()),
+            ("R".to_string(), "(roman rule)".to_string()),
+            ("HEX".to_string(), "-1, (hex rule)".to_string()),
+        ]);
+        let name = Name {
+            key: Some("%SEQ%".to_string()),
+            variables: vec![
+                NameVariable {
+                    key: Some("fmt".to_string()),
+                    value: Some(Box::new(keyed("SEQUENCE_FORMAT"))),
+                },
+                NameVariable {
+                    key: Some("num".to_string()),
+                    value: Some(Box::new(keyed("3"))),
+                },
+            ],
+        };
+
+        assert_eq!(
+            resolve_name_inner(&name, &strings, 0),
+            "03|003|02|III|002|3rd"
+        );
+    }
+
+    #[test]
+    fn resolves_security_echelon_sequence() {
+        let strings = HashMap::from([
+            (
+                "MACHINE3_SECURITYECHELON".to_string(),
+                "Security Echelon $CCC$".to_string(),
+            ),
+            (
+                "CCC".to_string(),
+                "(100:(0 1 2 3 4 5 6 7 8 9); 10:(0 1 2 3 4 5 6 7 8 9); 1:(0 1 2 3 4 5 6 7 8 9))"
+                    .to_string(),
+            ),
+        ]);
+        let name = Name {
+            key: Some("%SEQ%".to_string()),
+            variables: vec![
+                NameVariable {
+                    key: Some("fmt".to_string()),
+                    value: Some(Box::new(keyed("MACHINE3_SECURITYECHELON"))),
+                },
+                NameVariable {
+                    key: Some("num".to_string()),
+                    value: Some(Box::new(keyed("3"))),
+                },
+            ],
+        };
+
+        assert_eq!(
+            resolve_name_inner(&name, &strings, 0),
+            "Security Echelon 003"
+        );
     }
 
     #[test]

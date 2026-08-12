@@ -3,6 +3,25 @@ const FONT_SIZES = {
     malgun_goth_24: 20,
 };
 
+const FONT_FAMILIES = {
+    standard_font: '"Book Antiqua", Palatino, Georgia, serif',
+    null_font: '"Book Antiqua", Palatino, Georgia, serif',
+    large_title_font: 'Orbitron, "Noto Sans", Arial, sans-serif',
+    large_title_font_28: 'Orbitron, "Noto Sans", Arial, sans-serif',
+    cg_16b: '"Century Gothic", "Noto Sans", Arial, sans-serif',
+    hoi_16mbs: 'Ubuntu, "Noto Sans", Arial, sans-serif',
+    jura: 'Jura, "Noto Sans", Arial, sans-serif',
+    malgun_goth_24: '"Malgun Gothic", "Noto Sans", Arial, sans-serif',
+    map_name_border: 'Orbitron, "Noto Sans", Arial, sans-serif',
+    map_name_nebula: 'Orbitron, "Noto Sans", Arial, sans-serif',
+    map_name_sector: 'Orbitron, "Noto Sans", Arial, sans-serif',
+};
+
+const FONT_WEIGHTS = {
+    cg_16b: 700,
+    hoi_16mbs: 700,
+};
+
 const TYPE_CLASSES = {
     containerwindowtype: 'cw-container',
     windowtype: 'cw-container',
@@ -383,13 +402,31 @@ function textValue(node, localize) {
     return append == null ? text : `${text}${localize?.(String(append)) ?? String(append)}`;
 }
 
-function applyText(element, node, localize) {
+function applyFont(element, fontName) {
+    const name = String(fontName || '').toLowerCase();
+    const family = FONT_FAMILIES[name];
+    if (family) element.style.fontFamily = family;
+    const weight = FONT_WEIGHTS[name];
+    if (weight) element.style.fontWeight = String(weight);
+}
+
+function applyTextColor(element, colorCode, textColors = {}) {
+    const color = textColors[String(colorCode ?? '')];
+    if (!color) return;
+    const { red, green, blue, alpha = 255 } = color;
+    element.style.color = alpha >= 255
+        ? `rgb(${red}, ${green}, ${blue})`
+        : `rgba(${red}, ${green}, ${blue}, ${(alpha / 255).toFixed(3)})`;
+}
+
+function applyText(element, node, localize, textColors) {
     const props = node.props;
     element.dataset.guiText = String(props.text ?? props.buttontext ?? '');
     if (props.appendtext != null) element.dataset.guiAppendText = String(props.appendtext);
     element.textContent = textValue(node, localize);
     const fontSize = FONT_SIZES[String(props.buttonfont || props.font || '').toLowerCase()] || 14;
     element.style.fontSize = px(fontSize);
+    applyFont(element, props.buttonfont || props.font);
     // element.style.lineHeight = px(Number(props.maxheight) || fontSize + 4);
     if (props.maxwidth != null && !props.size) element.style.width = px(props.maxwidth);
     if (props.maxheight != null && !props.size) element.style.height = px(props.maxheight);
@@ -415,7 +452,7 @@ function applyText(element, node, localize) {
         element.style.width = 'max-content';
         element.style.height = 'auto';
     }
-    if (String(props.text_color_code || '').toUpperCase() === 'E') element.style.color = '#a8d4e6';
+    applyTextColor(element, props.text_color_code, textColors);
 
     const position = pair(props.position);
     if (String(props.format).toLowerCase() === 'right' && position.x < 0 && !props.orientation) {
@@ -593,6 +630,8 @@ function createNode(node, context, isRoot = false, parentNode = null) {
         const fontSize = FONT_SIZES[String(node.props.font || '').toLowerCase()] || 14;
         element.style.fontSize = px(fontSize);
         element.style.lineHeight = px(fontSize + 4);
+        applyFont(element, node.props.font);
+        applyTextColor(element, node.props.text_color_code, context.definition.textColors);
     }
     applyGeometry(element, node, isRoot, context.applyRootPosition, parentNode);
 
@@ -631,7 +670,7 @@ function createNode(node, context, isRoot = false, parentNode = null) {
         element.style.backgroundSize = '100% 100%';
     }
     if (node.type === 'instanttextboxtype' || node.type === 'textboxtype' || isButton && (node.props.text || node.props.buttontext)) {
-        applyText(element, node, context.localize);
+        applyText(element, node, context.localize, context.definition.textColors);
     }
     if (node.type === 'gridboxtype') {
         const slot = pair(node.props.slotsize);
@@ -685,6 +724,10 @@ function installStyles() {
     const style = document.createElement('style');
     style.id = 'clausewitz-gui-runtime-style';
     style.textContent = `
+        @font-face { font-family:"Noto Sans"; src:url("/gfx/fonts/NotoSans-Regular.ttf") format("truetype"); font-style:normal; font-weight:400; font-display:swap; }
+        @font-face { font-family:Orbitron; src:url("/gfx/fonts/Orbitron-Regular.ttf") format("truetype"); font-style:normal; font-weight:400; font-display:swap; }
+        @font-face { font-family:Jura; src:url("/gfx/fonts/Jura-VariableFont_wght.ttf") format("truetype"); font-style:normal; font-weight:300 700; font-display:swap; }
+        @font-face { font-family:"Malgun Gothic"; src:url("/gfx/fonts/malgun.ttf") format("truetype"); font-style:normal; font-weight:400; font-display:swap; }
         .cw-node { position:absolute; box-sizing:border-box; margin:0; padding:0; color:#d5e8e5; font-family:Arial,"Microsoft YaHei",sans-serif; }
         .cw-container, .cw-grid, .cw-list { background:transparent; }
         .cw-button { border:0; background-color:transparent; color:#d5e8e5; cursor:pointer; }
