@@ -652,7 +652,7 @@ function createNode(node, context, isRoot = false, parentNode = null) {
         || node.props.quadtexturesprite
         || (typeof node.props.background === 'string' ? node.props.background : null);
     let resource = null;
-    if (typeof spriteName === 'string' && spriteName.startsWith('GFX_')) {
+    if (typeof spriteName === 'string' && context.definition.resources[spriteName]) {
         element.dataset.guiSprite = spriteName;
         resource = context.definition.resources[spriteName];
         applySprite(element, node, resource, context.baseUrl);

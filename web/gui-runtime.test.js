@@ -80,6 +80,10 @@ const rootNode = {
             props: { text: 'MUTED', text_color_code: 'g' }, children: [],
         },
         {
+            type: 'icontype', name: 'plain_named_sprite', path: 'root/plain_named_sprite[0]',
+            props: { spritetype: 'plain_named_sprite' }, children: [],
+        },
+        {
             type: 'editboxtype', name: 'name', path: 'root/name[0]',
             props: { size: { x: 120, y: 20 }, max_characters: 12, font: 'large_title_font' }, children: [],
         },
@@ -211,6 +215,10 @@ const resources = {
         type: 'spritetype', texture: 'gfx/horizontal-line.webp', textures: ['gfx/horizontal-line.webp'],
         frames: 1, dimensions: { width: 30, height: 1 },
     },
+    plain_named_sprite: {
+        type: 'spritetype', texture: 'gfx/plain.webp', textures: ['gfx/plain.webp'],
+        frames: 1, dimensions: { width: 12, height: 12 },
+    },
 };
 const textColors = {
     G: { red: 41, green: 225, blue: 38, alpha: 255 },
@@ -237,6 +245,8 @@ assert.equal(view.find('default_text').style.fontFamily, '"Century Gothic", "Not
 assert.equal(view.find('default_text').style.fontWeight, '700');
 assert.equal(view.find('default_text').style.color, 'rgb(41, 225, 38)');
 assert.equal(view.find('muted_text').style.color, 'rgba(128, 128, 128, 0.502)');
+assert.equal(view.find('plain_named_sprite').dataset.guiSprite, 'plain_named_sprite');
+assert.equal(view.find('plain_named_sprite').style.backgroundImage, 'url("/gfx/plain.webp")');
 assert.equal(view.find('vertical_line_background').style.backgroundSize, '');
 assert.equal(view.find('vertical_line_background').style.backgroundPosition, undefined);
 assert.equal(view.find('horizontal_line_background').style.backgroundSize, '');

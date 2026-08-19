@@ -1,8 +1,15 @@
 import { SHIP_SIZE_FRAME_COUNT, shipSizeFrame } from './gfx-sprites.js';
 import { t } from './app-i18n.js';
+import { resolveGameLocalization } from './game-localization.js';
 
-const SECTION_HEADER_HEIGHT = 36;
+const SECTION_HEADER_HEIGHT = 38;
+const SECTOR_ROW_HEIGHT = 40;
 const ROW_HEIGHT = 41;
+
+function localizedGameText(key, fallback) {
+    const value = resolveGameLocalization(key);
+    return value === key ? fallback : value.replace(/§./g, '');
+}
 
 export function planetClassShort(value) {
     const key = `planet.${value}`;
@@ -142,6 +149,18 @@ function bindStationRow(view, list, fleet, index, callbacks) {
     return row;
 }
 
+function bindSectorRow(view, list, sector, index) {
+    const row = view.instantiate('outliner_member_sector_entry_window', list, { name: `sector-${index}` });
+    row.dataset.overviewKind = 'sector';
+    row.dataset.overviewId = String(sector.id ?? 'frontier');
+    setText(scoped(view, row, 'name', 'instanttextboxtype'), sector.name);
+    setText(scoped(view, row, 'colony_count', 'instanttextboxtype'), sector.planets.length);
+    hide(scoped(view, row, 'selected_overlay', 'containerwindowtype'));
+    hide(scoped(view, row, 'disconnected_icon', 'icontype'));
+    hide(scoped(view, row, 'missing_resource_icon', 'icontype'));
+    return row;
+}
+
 function bindMetricRow(view, list, metric, index) {
     const row = view.instantiate('outliner_member_fleet_civilian_entry_window', list, { name: `metric-${index}` });
     prepareRow(view, row, null, index, 'metric');
@@ -167,36 +186,76 @@ function addSection(view, rootList, title, items, bindRow, callbacks, index) {
     return section;
 }
 
+export function normalizeOverviewSectors(playerInfo = {}) {
+    const planets = playerInfo.planets || [];
+    const sectors = (playerInfo.sectors || []).map(sector => ({
+        ...sector,
+        planets: sector.planets || [],
+    }));
+    const assigned = new Set(sectors.flatMap(sector => sector.planets.map(planet => planet.id)));
+    const unassigned = [
+        ...(playerInfo.unassigned_planets || []),
+        ...planets.filter(planet => !assigned.has(planet.id)),
+    ].filter((planet, index, values) => values.findIndex(candidate => candidate.id === planet.id) === index);
+    if (unassigned.length) sectors.push({
+        id: null,
+        name: localizedGameText('FRONTIER_SECTOR', t('overview.frontierSector')),
+        planets: unassigned,
+    });
+    return sectors;
+}
+
+function addSectorsSection(view, rootList, sectors, callbacks, index) {
+    const section = view.instantiate('outliner_sector_title_entry_window', rootList, { name: `section-${index}` });
+    section.style.pointerEvents = 'none';
+    hide(scoped(view, section, 'selected_overlay', 'containerwindowtype'));
+    setText(
+        scoped(view, section, 'title', 'instanttextboxtype'),
+        localizedGameText('OUTLINER_SECTORS', t('overview.sectors')),
+    );
+    setText(scoped(view, section, 'amount', 'instanttextboxtype'), sectors.length);
+    const list = scoped(view, section, 'list', 'smoothlistboxtype');
+    list.style.zIndex = '2';
+    let contentHeight = 0;
+    sectors.forEach((sector, sectorIndex) => {
+        bindSectorRow(view, list, sector, sectorIndex);
+        contentHeight += SECTOR_ROW_HEIGHT;
+        sector.planets.forEach((planet, planetIndex) => {
+            bindPlanetRow(view, list, planet, `${sectorIndex}-${planetIndex}`, callbacks);
+            contentHeight += ROW_HEIGHT;
+        });
+    });
+    list.style.height = `${contentHeight}px`;
+    list.style.overflow = 'hidden';
+    section.style.height = `${SECTION_HEADER_HEIGHT + contentHeight}px`;
+    return section;
+}
+
 export function bindOverviewPanelData(view, playerInfo = {}, callbacks = {}) {
-    setText(view.find('tab_name'), t('overview.title'));
-    hide(view.find('options'));
-    hide(view.find('rearrange'));
+    setText(view.find('tab_name'), localizedGameText('outliner_government', t('overview.title')));
     const rootList = view.find('list');
     if (!rootList) throw new Error('outliner_tab_window is missing its root list');
 
+    const sectors = normalizeOverviewSectors(playerInfo);
     const fleets = playerInfo.fleets || [];
     const military = fleets.filter(fleet => !fleet.civilian && !fleet.station);
     const civilian = fleets.filter(fleet => fleet.civilian && !fleet.station);
     const stations = fleets.filter(fleet => fleet.station);
-    const sections = [
-        [t('overview.sectors'), playerInfo.planets || [], bindPlanetRow],
+    const sectionDefinitions = [
         [t('overview.militaryFleets'), military, bindMilitaryFleetRow],
         [t('overview.civilianShips'), civilian, bindCivilianFleetRow],
     ];
-    if (stations.length) sections.push([t('overview.shipyards'), stations, bindStationRow]);
-    sections.push([t('overview.empire'), [
+    if (stations.length) sectionDefinitions.push([t('overview.shipyards'), stations, bindStationRow]);
+    sectionDefinitions.push([t('overview.empire'), [
         { label: t('overview.militaryPower'), value: Number(playerInfo.military_power || 0).toFixed(0) },
         { label: t('overview.empireSize'), value: String(playerInfo.empire_size ?? '—') },
         { label: t('common.population'), value: String(playerInfo.num_pops ?? '—') },
     ], bindMetricRow]);
 
-    const instances = sections.map(([title, items, binder], index) =>
-        addSection(view, rootList, title, items, binder, callbacks, index));
-    rootList.style.width = '320px';
-    rootList.style.height = 'calc(100% - 40px)';
+    const instances = [addSectorsSection(view, rootList, sectors, callbacks, 0)];
+    instances.push(...sectionDefinitions.map(([title, items, binder], index) =>
+        addSection(view, rootList, title, items, binder, callbacks, index + 1)));
     rootList.style.overflowX = 'hidden';
     rootList.style.overflowY = 'auto';
-    view.root.style.width = '320px';
-    view.root.style.height = '100%';
-    return { sections: instances, military, civilian, stations };
+    return { sections: instances, sectors, military, civilian, stations };
 }

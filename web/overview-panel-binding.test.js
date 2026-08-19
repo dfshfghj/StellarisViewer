@@ -2,7 +2,12 @@ import assert from 'node:assert/strict';
 import { resolve } from 'node:path';
 import { compileGuiView } from './gui-compiler.js';
 import { mountGui } from './gui-runtime.js';
-import { bindOverviewPanelData, civilianFleetType, planetClassShort } from './overview-panel-binding.js';
+import {
+    bindOverviewPanelData,
+    civilianFleetType,
+    normalizeOverviewSectors,
+    planetClassShort,
+} from './overview-panel-binding.js';
 
 assert.equal(planetClassShort('pc_continental'), 'Continental');
 assert.equal(planetClassShort('pc_custom'), 'custom');
@@ -46,6 +51,13 @@ let openedFleet = null;
 let openedPlanet = null;
 const result = bindOverviewPanelData(view, {
     planets: [{ id: 3, name: '新地球', planet_class: 'pc_continental', num_pops: 42 }],
+    sectors: [{
+        id: 1,
+        name: '太阳星域',
+        local_capital: 3,
+        sector_type: 'core_sector',
+        planets: [{ id: 3, name: '新地球', planet_class: 'pc_continental', num_pops: 42 }],
+    }],
     fleets: [
         { id: 7, name: '第一舰队', military_power: 1234, ship_count: 5, civilian: false, station: false },
         { id: 8, name: 'Science Explorer', military_power: 0, ship_count: 1, civilian: true, station: false },
@@ -59,16 +71,20 @@ const result = bindOverviewPanelData(view, {
     onPlanetClick: id => { openedPlanet = id; },
 });
 
-assert.equal(view.find('tab_name').textContent, 'Outliner');
-assert.equal(view.find('options').style.display, 'none');
+assert.equal(view.find('tab_name').textContent, 'Overview');
+assert.equal(view.find('options').style.display, undefined);
 assert.equal(result.sections.length, 5);
+assert.equal(result.sectors.length, 1);
 assert.equal(result.military.length, 1);
 assert.equal(result.civilian.length, 1);
 assert.equal(result.stations.length, 1);
 assert.equal(result.sections[0].style.left, 'auto');
-assert.equal(result.sections[0].style.height, '77px');
+assert.equal(result.sections[0].style.height, '119px');
 
 const planetList = view.findIn(result.sections[0], 'list', 'smoothlistboxtype');
+const sectorRow = view.findAll('outliner_member_sector_entry_window', planetList, 'containerwindowtype')[0];
+assert.equal(view.findIn(sectorRow, 'name', 'instanttextboxtype').textContent, '太阳星域');
+assert.equal(view.findIn(sectorRow, 'colony_count', 'instanttextboxtype').textContent, '1');
 const planetRow = view.findAll('outliner_member_planet_entry_window', planetList, 'containerwindowtype')[0];
 assert.equal(view.findIn(planetRow, 'name', 'instanttextboxtype').textContent, '新地球');
 assert.equal(view.findIn(planetRow, 'colony_type', 'instanttextboxtype').textContent, 'Continental · 42 Population');
@@ -93,7 +109,12 @@ const stationRow = view.findAll('outliner_member_starbase_entry_window', station
 assert.equal(view.findIn(stationRow, 'name', 'instanttextboxtype').textContent, '太阳星港');
 assert.equal(view.findIn(stationRow, 'military_power', 'instanttextboxtype').children[1].textContent, '800');
 
-assert.equal(view.root.style.width, '320px');
-assert.equal(view.root.style.height, '100%');
+assert.equal(view.root.style.width, '260px');
+assert.equal(view.root.style.height, '20px');
+
+assert.equal(normalizeOverviewSectors({
+    planets: [{ id: 5, name: '边境星' }],
+    sectors: [],
+})[0].name, 'Frontier Sector');
 
 console.log('overview panel binding tests passed');

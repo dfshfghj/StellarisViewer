@@ -5,11 +5,13 @@ assert.equal(DEFAULT_LANGUAGE, 'en');
 assert.equal(getLanguage(), 'en');
 assert.equal(t('app.title'), 'Stellaris Save Viewer');
 assert.equal(t('loading.reading', { file: 'gamestate' }), 'Reading gamestate...');
+assert.equal(t('overview.title'), 'Overview');
 
 setLanguage('zh');
 assert.equal(getLanguage(), 'zh');
 assert.equal(t('app.title'), 'Stellaris 存档查看器');
 assert.equal(t('loading.reading', { file: 'gamestate' }), '正在读取 gamestate...');
+assert.equal(t('overview.title'), '概览');
 
 setLanguage('unsupported');
 assert.equal(getLanguage(), 'en', 'unsupported languages fall back to English');

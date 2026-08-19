@@ -369,7 +369,7 @@ export function compileGfxRegistry(assetsDirectory) {
         walkBlocks(ast, (type, block) => {
             if (!RESOURCE_TYPES.has(type)) return;
             const props = blockToObject(block);
-            if (typeof props.name !== 'string' || !props.name.startsWith('GFX_')) return;
+            if (typeof props.name !== 'string') return;
             const textures = textureValues(props);
             const referencedTextures = [...referencedTextureValues(props)];
             const webTexture = textures[0] || null;
@@ -422,8 +422,8 @@ export function compileGuiView({ guiPath, assetsDirectory, rootName, gfxRegistry
     const usedSprites = new Set();
     for (const template of Object.values(gui.templates)) {
         walkGui(template, node => {
-            collectGfxReferences(node.props, usedSprites);
-            collectConditionGfxReferences(node.conditions, usedSprites);
+            collectGfxReferences(node.props, usedSprites, '', gfx);
+            collectConditionGfxReferences(node.conditions, usedSprites, gfx);
         });
     }
     const resources = {};
@@ -437,7 +437,7 @@ export function compileGuiView({ guiPath, assetsDirectory, rootName, gfxRegistry
         }
         resources[name] = gfx[name];
         const dependencies = new Set();
-        collectGfxReferences(gfx[name].properties, dependencies);
+        collectGfxReferences(gfx[name].properties, dependencies, '', gfx);
         for (const dependency of dependencies) {
             if (usedSprites.has(dependency)) continue;
             usedSprites.add(dependency);
@@ -457,25 +457,25 @@ export function compileGuiView({ guiPath, assetsDirectory, rootName, gfxRegistry
     };
 }
 
-function collectGfxReferences(value, references, key = '') {
+function collectGfxReferences(value, references, key = '', registry = {}) {
     if (typeof value === 'string') {
-        if (key !== 'name' && value.startsWith('GFX_')) references.add(value);
+        if (key !== 'name' && (value.startsWith('GFX_') || registry[value])) references.add(value);
         return;
     }
     if (Array.isArray(value)) {
-        for (const item of value) collectGfxReferences(item, references, key);
+        for (const item of value) collectGfxReferences(item, references, key, registry);
         return;
     }
     if (!value || typeof value !== 'object') return;
     for (const [childKey, childValue] of Object.entries(value)) {
-        collectGfxReferences(childValue, references, childKey);
+        collectGfxReferences(childValue, references, childKey, registry);
     }
 }
 
-function collectConditionGfxReferences(conditions = [], references) {
+function collectConditionGfxReferences(conditions = [], references, registry = {}) {
     for (const condition of conditions) {
-        collectGfxReferences(condition.props, references);
-        collectConditionGfxReferences(condition.conditions, references);
+        collectGfxReferences(condition.props, references, '', registry);
+        collectConditionGfxReferences(condition.conditions, references, registry);
     }
 }
 

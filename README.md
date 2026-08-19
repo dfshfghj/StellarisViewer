@@ -27,7 +27,7 @@ stellaris/
 │   ├── system-view.js       # 恒星系轨道视图（缩放/拖动/行星/舰队）
 │   ├── fleet-window-generated.js   # fleet_view UI 与真实舰队数据适配
 │   ├── fleet-view-binding.js       # 舰队、司令、舰船行及状态绑定
-│   ├── overview-panel-generated.js # outliner UI 挂载与关闭交互
+│   ├── overview-panel-generated.js # outliner tabs/content/controller 外壳与原生弹窗
 │   ├── overview-panel-binding.js   # 行星、舰队、空间站及帝国指标绑定
 │   ├── ship-window.js       # 舰船详情弹窗
 │   ├── planet-window.js     # 行星详情全屏窗口
@@ -222,7 +222,7 @@ export function renderFooWindow(container, _data = {}, callbacks = {}) {
 
 #### Outliner 数据边界
 
-`overview-panel-binding.js` 使用 `outliner_tab_window`，按“根列表 → 分类标题模板 → 分类内列表 → 成员模板”动态实例化行星、军用舰队、民用舰船和空间站。当前 `PlayerInfo` 只提供名称、数量、战斗力、行星类型和人口等摘要字段，因此以下信息不能从 `.gui/.gfx` 自动恢复，相关节点会被 adapter 隐藏：
+`overview-panel-generated.js` 组合 `tabs_outliner_window`、`outliner_tab_window` 和 `outliner_controller_window`；`overview-panel-binding.js` 按“根列表 → 分类标题 → 星域成员行 → 该星域殖民地”实例化星域层级，并同样绑定军用舰队、民用舰船和空间站。`PlayerInfo` 保留扁平 `planets` 以兼容旧调用，同时导出 `sectors[].planets` 和 `unassigned_planets`。当前仍只提供名称、数量、战斗力、行星类型和人口等摘要字段，因此以下信息不能从 `.gui/.gfx` 自动恢复，相关节点会被 adapter 隐藏：
 
 - 舰队/空间站所在星系、状态、领袖、任务和建造进度；
 - 舰队实际舰种与船体尺寸（当前军用舰队使用通用护卫舰帧）；

@@ -304,6 +304,11 @@ pub struct PlayerInfo {
     pub resources: ResourceInfo,
     pub monthly_resources: ResourceInfo,
     pub fleets: Vec<FleetBrief>,
+    /// Player sectors with their owned colonies, preserving the outliner hierarchy.
+    pub sectors: Vec<SectorBrief>,
+    /// Owned colonies which cannot be associated with a valid player sector.
+    pub unassigned_planets: Vec<PlanetBrief>,
+    /// Flat colony list retained for backwards compatibility.
     pub planets: Vec<PlanetBrief>,
     pub military_power: f64,
     pub empire_size: u32,
@@ -371,13 +376,90 @@ pub struct FleetBrief {
     pub station: bool,
 }
 
-#[derive(Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct PlanetBrief {
     pub id: u32,
     pub name: String,
     pub planet_class: String,
     pub size: u32,
     pub num_pops: u32,
+}
+
+#[derive(Debug, PartialEq, Serialize)]
+pub struct SectorBrief {
+    pub id: u32,
+    pub name: String,
+    pub local_capital: Option<u32>,
+    pub sector_type: String,
+    pub planets: Vec<PlanetBrief>,
+}
+
+fn group_player_planets_by_sector(
+    gs: &Gamestate,
+    player_id: u32,
+    planets: &[PlanetBrief],
+) -> (Vec<SectorBrief>, Vec<PlanetBrief>) {
+    let mut player_sector_ids: Vec<u32> = gs
+        .sectors
+        .iter()
+        .filter_map(|(&id, sector)| (sector.owner == Some(player_id)).then_some(id))
+        .collect();
+    player_sector_ids.sort_unstable();
+
+    let mut system_to_sector = HashMap::new();
+    for &sector_id in &player_sector_ids {
+        if let Some(sector) = gs.sectors.get(&sector_id) {
+            for &system_id in &sector.systems {
+                system_to_sector.entry(system_id).or_insert(sector_id);
+            }
+        }
+    }
+
+    let mut planet_to_sector = HashMap::new();
+    for (&system_id, system) in &gs.galactic_object {
+        let sector_id = system
+            .sector
+            .filter(|id| {
+                gs.sectors
+                    .get(id)
+                    .is_some_and(|sector| sector.owner == Some(player_id))
+            })
+            .or_else(|| system_to_sector.get(&system_id).copied());
+        if let Some(sector_id) = sector_id {
+            for &planet_id in &system.planet {
+                planet_to_sector.entry(planet_id).or_insert(sector_id);
+            }
+        }
+    }
+
+    let mut grouped_planets: HashMap<u32, Vec<PlanetBrief>> = HashMap::new();
+    let mut unassigned_planets = Vec::new();
+    for planet in planets {
+        if let Some(&sector_id) = planet_to_sector.get(&planet.id) {
+            grouped_planets
+                .entry(sector_id)
+                .or_default()
+                .push(planet.clone());
+        } else {
+            unassigned_planets.push(planet.clone());
+        }
+    }
+
+    let sectors = player_sector_ids
+        .into_iter()
+        .filter_map(|id| {
+            let sector = gs.sectors.get(&id)?;
+            Some(SectorBrief {
+                id,
+                name: resolve_name(&sector.name),
+                local_capital: sector.local_capital,
+                sector_type: sector.sector_type.clone().unwrap_or_default(),
+                planets: grouped_planets.remove(&id).unwrap_or_default(),
+            })
+        })
+        .collect();
+
+    (sectors, unassigned_planets)
 }
 
 // ============ Extraction Functions ============
@@ -1541,6 +1623,7 @@ pub fn extract_player_info(
             }
         }
     }
+    let (sectors, unassigned_planets) = group_player_planets_by_sector(gs, player_id, &planets);
 
     let gov_type = country
         .government
@@ -1556,6 +1639,8 @@ pub fn extract_player_info(
         resources: res,
         monthly_resources,
         fleets,
+        sectors,
+        unassigned_planets,
         planets,
         military_power: country.military_power.unwrap_or(0.0),
         empire_size: country.empire_size.unwrap_or(0),
@@ -1565,4 +1650,128 @@ pub fn extract_player_info(
         starbase_capacity: country.starbase_capacity.unwrap_or(0),
         used_naval_capacity: country.used_naval_capacity.unwrap_or(0.0),
     })
+}
+
+#[cfg(test)]
+mod player_sector_tests {
+    use super::*;
+
+    fn planet(id: u32) -> PlanetBrief {
+        PlanetBrief {
+            id,
+            name: format!("Planet {id}"),
+            planet_class: "pc_continental".to_string(),
+            size: 16,
+            num_pops: 10,
+        }
+    }
+
+    #[test]
+    fn groups_owned_planets_under_player_sectors_and_keeps_unassigned() {
+        let mut gs = Gamestate::default();
+        gs.sectors.insert(
+            20,
+            Sector {
+                owner: Some(0),
+                local_capital: Some(2),
+                sector_type: Some("core_sector".to_string()),
+                ..Sector::default()
+            },
+        );
+        gs.sectors.insert(
+            10,
+            Sector {
+                owner: Some(0),
+                systems: vec![100, 500],
+                local_capital: Some(1),
+                ..Sector::default()
+            },
+        );
+        gs.sectors.insert(
+            30,
+            Sector {
+                owner: Some(7),
+                systems: vec![300],
+                ..Sector::default()
+            },
+        );
+
+        gs.galactic_object.insert(
+            100,
+            GalacticObject {
+                planet: vec![1],
+                ..GalacticObject::default()
+            },
+        );
+        gs.galactic_object.insert(
+            200,
+            GalacticObject {
+                planet: vec![2],
+                sector: Some(20),
+                ..GalacticObject::default()
+            },
+        );
+        gs.galactic_object.insert(
+            300,
+            GalacticObject {
+                planet: vec![3],
+                sector: Some(30),
+                ..GalacticObject::default()
+            },
+        );
+        gs.galactic_object.insert(
+            400,
+            GalacticObject {
+                planet: vec![4],
+                sector: Some(u32::MAX),
+                ..GalacticObject::default()
+            },
+        );
+        gs.galactic_object.insert(
+            500,
+            GalacticObject {
+                planet: vec![5],
+                sector: Some(20),
+                ..GalacticObject::default()
+            },
+        );
+
+        let planets = vec![planet(1), planet(2), planet(3), planet(4), planet(5)];
+        let (sectors, unassigned) = group_player_planets_by_sector(&gs, 0, &planets);
+
+        assert_eq!(
+            sectors.iter().map(|sector| sector.id).collect::<Vec<_>>(),
+            vec![10, 20]
+        );
+        assert_eq!(
+            sectors[0]
+                .planets
+                .iter()
+                .map(|planet| planet.id)
+                .collect::<Vec<_>>(),
+            vec![1]
+        );
+        assert_eq!(
+            sectors[1]
+                .planets
+                .iter()
+                .map(|planet| planet.id)
+                .collect::<Vec<_>>(),
+            vec![2, 5]
+        );
+        assert_eq!(
+            unassigned
+                .iter()
+                .map(|planet| planet.id)
+                .collect::<Vec<_>>(),
+            vec![3, 4]
+        );
+        assert_eq!(sectors[1].local_capital, Some(2));
+        assert_eq!(sectors[1].sector_type, "core_sector");
+        assert_eq!(
+            planets.len(),
+            5,
+            "the backwards-compatible flat list remains intact"
+        );
+    }
 }
