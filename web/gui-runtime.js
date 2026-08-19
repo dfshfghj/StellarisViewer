@@ -367,6 +367,11 @@ function applySprite(element, node, resource, baseUrl) {
     const dimensions = declaredSize
         ? { width: pair(declaredSize).x, height: pair(declaredSize).y }
         : resource.dimensions;
+    if (node.type === 'background' && resource.type === 'spritetype' && frames === 1 && dimensions) {
+        // One-pixel line sprites keep their natural dimensions instead of
+        // inheriting the generic background stretch above.
+        if (dimensions.width === 1 || dimensions.height === 1) element.style.backgroundSize = '';
+    }
     if (!node.props.size && node.type !== 'background' && dimensions) {
         element.style.width = px(dimensions.width / frames);
         element.style.height = px(dimensions.height);

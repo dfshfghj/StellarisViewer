@@ -20,6 +20,25 @@ test('uploads a real save and opens fleet and planet views from the outliner', a
     expect(localizationRequests).toHaveLength(1);
     expect(localizationRequests[0]).toContain('/@stellaris-localization/en');
 
+    const generatedMainGui = page.locator('#resource-bar > [data-gui-name="maingui"]');
+    await expect(generatedMainGui).toBeVisible();
+    await expect(generatedMainGui.locator('[data-gui-name="tb_biomass_group"]')).toHaveCount(0);
+    for (const divider of [
+        'basic_resources_divider',
+        'advanced_resources_divider',
+        'intangible_resources_divider',
+    ]) {
+        await expect(generatedMainGui.locator(
+            `[data-gui-name="${divider}"] > [data-gui-name="green_vertical_delimiters"]`,
+        )).toHaveCSS('background-size', 'auto');
+    }
+    const researchGroup = generatedMainGui.locator('[data-gui-name="tb_research_group"]');
+    await researchGroup.click();
+    await expect(researchGroup).toHaveAttribute('aria-expanded', 'true');
+    await expect(researchGroup.locator('[data-gui-name="single_resource_entry"]')).toHaveCount(3);
+    await page.locator('#main-canvas').click({ position: { x: 640, y: 360 } });
+    await expect(researchGroup).toHaveAttribute('aria-expanded', 'false');
+
     const fleet = page.locator('[data-overview-kind="fleet"]').first();
     await expect(fleet).toBeVisible();
     await fleet.click({ timeout: 10_000 });

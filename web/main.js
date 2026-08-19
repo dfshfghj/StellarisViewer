@@ -8,7 +8,7 @@ import { renderFleetWindow } from './fleet-window-generated.js';
 import { renderShipWindow } from './ship-window-generated.js';
 import { renderPlanetWindow } from './planet-window-generated.js';
 import { renderOverviewPanel } from './overview-panel-generated.js';
-import { renderResourceBar } from './resource-bar-v2.js'; // 旧实现仍在 ui-components.js，可回滚
+import { renderMainGui } from './main-gui-generated.js';
 import { renderStatusBar } from './ui-components.js';
 import { showDialog } from './ui-dialogs.js';
 
@@ -173,7 +173,7 @@ async function handleLanguageToggle() {
 function refreshLocalizedView() {
     state.playerInfo = get_player_info();
     state.galaxyData = get_galaxy_data();
-    renderResourceBar(els.resourceBar, state.playerInfo);
+    renderMainGui(els.resourceBar, state.playerInfo);
     renderStatusBar(els.statusDate, els.statusEmpire, state.playerInfo);
     renderOverviewPanel(els.overviewPanel, state.playerInfo, {
         onFleetClick: openFleetWindow,
@@ -195,7 +195,7 @@ function startApp() {
     els.loadingScreen.classList.add('hidden');
     els.app.classList.remove('hidden');
 
-    renderResourceBar(els.resourceBar, state.playerInfo);
+    renderMainGui(els.resourceBar, state.playerInfo);
     renderStatusBar(els.statusDate, els.statusEmpire, state.playerInfo);
     renderOverviewPanel(els.overviewPanel, state.playerInfo, {
         onFleetClick: openFleetWindow,

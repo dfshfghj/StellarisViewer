@@ -154,7 +154,7 @@ assets/interface/*.gui + assets/interface/*.gfx
     -> *-window-generated.js
 ```
 
-当前已接入 `fleet_view.gui`、`ship_view.gui`、`planet_view.gui` 和 `outliner.gui`。该流程主要用于还原窗口层级、位置、尺寸、图片、文字和基础控件；游戏引擎通过控件名完成的动态赋值、可见性判断和事件绑定不会由 `.gui/.gfx` 自动推导。
+当前已接入 `main.gui`、`fleet_view.gui`、`ship_view.gui`、`planet_view.gui` 和 `outliner.gui`。`main.gui` 由 `main-gui-generated.js` 保留资源栏子树，`main-gui-binding.js` 负责存档资源、指标与下拉明细。该流程主要用于还原窗口层级、位置、尺寸、图片、文字和基础控件；游戏引擎通过控件名完成的动态赋值、可见性判断和事件绑定不会由 `.gui/.gfx` 自动推导。
 
 #### 接入一个新页面
 

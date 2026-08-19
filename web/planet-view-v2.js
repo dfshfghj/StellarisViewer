@@ -74,7 +74,7 @@ function bigIconStyle(frame) {
     return `background:url('${ICON}planet_type_big_icons.webp') ${(frame / (BIG_ICON_FRAMES - 1)) * 100}% 0 / ${BIG_ICON_FRAMES * 100}% 100% no-repeat;`;
 }
 
-// ---- 资源图标映射（ResourceInfo 字段 → resources/ 下贴图；sr_ 前缀特例见 resource-panel-v2.js）----
+// ---- 资源图标映射（ResourceInfo 字段 → resources/ 下贴图；sr_ 前缀特例见 main-gui-binding.js）----
 const RESOURCE_META = [
     ['energy', 'energy', '能量币'], ['minerals', 'minerals', '矿物'], ['food', 'food', '食物'],
     ['physics_research', 'physics_research', '物理学研究'], ['society_research', 'society_research', '社会学研究'],

@@ -130,6 +130,21 @@ const rootNode = {
             }],
         },
         {
+            type: 'containerwindowtype', name: 'line_parent', path: 'root/line_parent[0]',
+            props: { size: { width: 8, height: 30 } }, children: [
+                {
+                    type: 'background', name: 'vertical_line_background',
+                    path: 'root/line_parent[0]/vertical_line_background[0]',
+                    props: { spritetype: 'GFX_vertical_line' }, children: [],
+                },
+                {
+                    type: 'background', name: 'horizontal_line_background',
+                    path: 'root/line_parent[0]/horizontal_line_background[0]',
+                    props: { spritetype: 'GFX_horizontal_line' }, children: [],
+                },
+            ],
+        },
+        {
             type: 'gridboxtype', name: 'vertical_grid', path: 'root/vertical_grid[0]',
             props: { slotsize: { width: 20, height: 10 }, max_slots_vertical: 3 }, children: [],
         },
@@ -188,6 +203,14 @@ const resources = {
         type: 'frameanimatedspritetype', texture: 'gfx/animated.webp', textures: ['gfx/animated.webp'],
         frames: 4, fps: 8, looping: true, playOnShow: true,
     },
+    GFX_vertical_line: {
+        type: 'spritetype', texture: 'gfx/vertical-line.webp', textures: ['gfx/vertical-line.webp'],
+        frames: 1, dimensions: { width: 1, height: 30 },
+    },
+    GFX_horizontal_line: {
+        type: 'spritetype', texture: 'gfx/horizontal-line.webp', textures: ['gfx/horizontal-line.webp'],
+        frames: 1, dimensions: { width: 30, height: 1 },
+    },
 };
 const textColors = {
     G: { red: 41, green: 225, blue: 38, alpha: 255 },
@@ -214,6 +237,10 @@ assert.equal(view.find('default_text').style.fontFamily, '"Century Gothic", "Not
 assert.equal(view.find('default_text').style.fontWeight, '700');
 assert.equal(view.find('default_text').style.color, 'rgb(41, 225, 38)');
 assert.equal(view.find('muted_text').style.color, 'rgba(128, 128, 128, 0.502)');
+assert.equal(view.find('vertical_line_background').style.backgroundSize, '');
+assert.equal(view.find('vertical_line_background').style.backgroundPosition, undefined);
+assert.equal(view.find('horizontal_line_background').style.backgroundSize, '');
+assert.equal(view.find('horizontal_line_background').style.backgroundPosition, undefined);
 assert.equal(view.find('name').tagName, 'INPUT');
 assert.equal(view.find('name').maxLength, 12);
 assert.equal(view.find('name').style.fontFamily, 'Orbitron, "Noto Sans", Arial, sans-serif');

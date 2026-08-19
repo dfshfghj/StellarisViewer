@@ -12,6 +12,11 @@ const LOCALIZATION_DIRECTORIES = { en: 'english', zh: 'simp_chinese' };
 
 const GUI_VIEWS = [
     {
+        id: 'virtual:stellaris-main-gui-ui',
+        gui: 'main.gui',
+        rootName: 'maingui',
+    },
+    {
         id: 'virtual:stellaris-outliner-ui',
         gui: 'outliner.gui',
         rootName: 'outliner_tab_window',
