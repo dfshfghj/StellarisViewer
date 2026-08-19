@@ -91,6 +91,22 @@ npm run preview
 
 产物输出到 `web/dist/`。根目录的 `build.bat` 会依次构建 WASM 和前端生产包。
 
+### 部署到 GitHub Pages
+
+仓库自带 `.github/workflows/deploy-pages.yml`。它会在 `master` 推送时构建并发布到 GitHub Pages，首次使用时请在仓库的 **Settings → Pages → Build and deployment** 中将来源设为 **GitHub Actions**。
+
+游戏资源不需要把原始提取目录全部提交。发布构建只使用 `web/assets/gfx/**/*.webp`；PNG、DDS、字体源文件、`.gui`、`.gfx` 和原始本地化 YAML 都会被忽略。GUI、组件映射和中英文界面本地化会先生成到 `web/generated/`：
+
+```bash
+cd web
+# 本机存在完整的 Stellaris assets 时执行一次
+npm run generate:pages-data
+# 生成 Pages 产物；Actions 直接使用已提交的 web/generated 数据
+PAGES_BASE_PATH=/StellarisViewer/ npm run build:pages
+```
+
+提交 `web/generated/` 和需要的 `web/assets/gfx/**/*.webp` 后，Actions 不再依赖 `.gui/.gfx` 文件即可完成构建。仓库名如果不是 `StellarisViewer`，本地构建时将 `PAGES_BASE_PATH` 改成 `/<仓库名>/`；工作流会自动使用当前仓库名。
+
 ### 本地测试解析器（不需要 WASM）
 
 ```bash

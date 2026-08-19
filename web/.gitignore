@@ -1,4 +1,8 @@
-assets/
+assets/*
+!assets/gfx/
+assets/gfx/**/*
+!assets/gfx/**/
+!assets/gfx/**/*.webp
 node_modules/
 dist/
 playwright-report/

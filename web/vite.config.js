@@ -1,4 +1,4 @@
-import { cpSync, readFileSync, readdirSync } from 'node:fs';
+import { cpSync, existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { extname, join, resolve } from 'node:path';
 import { defineConfig } from 'vite';
 import { buildComponentIconMap } from './component-gfx-mapping.js';
@@ -91,9 +91,12 @@ function localizationPlugin() {
     const serializedStrings = new Map();
     function serialize(root, language) {
         if (!serializedStrings.has(language)) {
-            serializedStrings.set(language, JSON.stringify(
-                parseLocalization(resolve(root, 'assets/localisation', LOCALIZATION_DIRECTORIES[language])),
-            ));
+            const sourceDirectory = resolve(root, 'assets/localisation', LOCALIZATION_DIRECTORIES[language]);
+            const generatedPath = resolve(root, 'generated/localization', `${language}.json`);
+            const strings = existsSync(sourceDirectory)
+                ? parseLocalization(sourceDirectory)
+                : JSON.parse(readFileSync(generatedPath, 'utf8'));
+            serializedStrings.set(language, JSON.stringify(strings));
         }
         return serializedStrings.get(language);
     }
@@ -149,7 +152,12 @@ function copyImagesPlugin() {
             outDir = resolve(root, config.build.outDir);
         },
         closeBundle() {
-            cpSync(resolve(root, 'assets/gfx'), resolve(outDir, 'gfx'), { recursive: true });
+            const source = resolve(root, 'assets/gfx');
+            if (!existsSync(source)) return;
+            cpSync(source, resolve(outDir, 'gfx'), {
+                recursive: true,
+                filter: path => statSync(path).isDirectory() || extname(path).toLowerCase() === '.webp',
+            });
         },
     };
 }
@@ -167,7 +175,11 @@ function componentIconsPlugin() {
         },
         load(id) {
             if (id !== RESOLVED_COMPONENT_ICONS_MODULE_ID) return null;
-            icons ??= buildComponentIconMap(resolve(root, 'assets')).icons;
+            const assets = resolve(root, 'assets');
+            const generatedPath = resolve(root, 'generated/component-icons.json');
+            icons ??= existsSync(resolve(assets, 'interface'))
+                ? buildComponentIconMap(assets).icons
+                : JSON.parse(readFileSync(generatedPath, 'utf8'));
             return `export default ${JSON.stringify(icons)};`;
         },
     };
@@ -190,10 +202,15 @@ function guiViewsPlugin(viewConfigs) {
         load(id) {
             const config = resolvedIds.get(id);
             if (!config) return null;
-            gfxRegistry ??= compileGfxRegistry(resolve(root, 'assets'));
+            const assets = resolve(root, 'assets');
+            const generatedPath = resolve(root, 'generated/gui', `${config.rootName}.json`);
+            if (!existsSync(resolve(assets, 'interface'))) {
+                return `export default ${readFileSync(generatedPath, 'utf8')};`;
+            }
+            gfxRegistry ??= compileGfxRegistry(assets);
             if (!definitions.has(config.id)) definitions.set(config.id, compileGuiView({
-                guiPath: resolve(root, 'assets/interface', config.gui),
-                assetsDirectory: resolve(root, 'assets'),
+                guiPath: resolve(assets, 'interface', config.gui),
+                assetsDirectory: assets,
                 rootName: config.rootName,
                 gfxRegistry,
             }));
@@ -203,9 +220,42 @@ function guiViewsPlugin(viewConfigs) {
     };
 }
 
+function rewritePagesAssetPathsPlugin() {
+    let outDir;
+    return {
+        name: 'rewrite-pages-asset-paths',
+        configResolved(config) {
+            outDir = resolve(config.root, config.build.outDir);
+        },
+        closeBundle() {
+            for (const file of collectOutputFiles(outDir)) {
+                const path = resolve(outDir, file);
+                const extension = extname(path).toLowerCase();
+                if (extension !== '.js') continue;
+                const source = readFileSync(path, 'utf8');
+                const replacement = source.replace(/(["'])\/gfx\//g, '$1gfx/');
+                if (replacement !== source) {
+                    writeFileSync(path, replacement);
+                }
+            }
+        },
+    };
+}
+
+function collectOutputFiles(directory, relative = '') {
+    const files = [];
+    for (const entry of readdirSync(resolve(directory, relative), { withFileTypes: true })) {
+        const child = join(relative, entry.name);
+        if (entry.isDirectory()) files.push(...collectOutputFiles(directory, child));
+        else files.push(child);
+    }
+    return files;
+}
+
 export default defineConfig({
+    base: process.env.PAGES_BASE_PATH || '/',
     publicDir: 'assets',
-    plugins: [localizationPlugin(), componentIconsPlugin(), guiViewsPlugin(GUI_VIEWS), copyImagesPlugin()],
+    plugins: [localizationPlugin(), componentIconsPlugin(), guiViewsPlugin(GUI_VIEWS), copyImagesPlugin(), rewritePagesAssetPathsPlugin()],
     server: {
         // Game assets are read by the virtual-module plugins and served as static files.
         // Watching the full extracted asset tree exhausts Linux inotify limits during E2E.

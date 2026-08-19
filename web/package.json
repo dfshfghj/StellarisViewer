@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "generate:pages-data": "node scripts/generate-pages-data.js",
+    "build:pages": "vite build",
     "test": "node app-i18n.test.js && node localization-loader.test.js && node territory-borders.test.js && node component-gfx-mapping.test.js && node gfx-sprites.test.js && node gui-compiler.test.js && node main-gui-compiler.test.js && node fleet-gui-compiler.test.js && node outliner-gui-compiler.test.js && node planet-gui-compiler.test.js && node gui-runtime.test.js && node ui-scale.test.js && node main-gui-binding.test.js && node fleet-view-binding.test.js && node overview-panel-binding.test.js && node ship-view-binding.test.js && node planet-view-v2.smoke.test.js",
     "test:e2e": "playwright test",
     "preview": "vite preview",
