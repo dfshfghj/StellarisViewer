@@ -432,9 +432,11 @@ function applyText(element, node, localize, textColors) {
     const fontSize = FONT_SIZES[String(props.buttonfont || props.font || '').toLowerCase()] || 14;
     element.style.fontSize = px(fontSize);
     applyFont(element, props.buttonfont || props.font);
-    // element.style.lineHeight = px(Number(props.maxheight) || fontSize + 4);
+    const maxHeight = number(props.maxheight);
+    const lineHeight = fontSize + 4;
+    element.style.lineHeight = px(lineHeight);
     if (props.maxwidth != null && !props.size) element.style.width = px(props.maxwidth);
-    if (props.maxheight != null && !props.size) element.style.height = px(props.maxheight);
+    if (props.maxheight != null && !props.size) element.style.height = px(Math.max(maxHeight, lineHeight));
     if (props.bordersize && typeof props.bordersize === 'object') {
         const border = pair(props.bordersize);
         element.style.padding = `${px(border.y)} ${px(border.x)}`;

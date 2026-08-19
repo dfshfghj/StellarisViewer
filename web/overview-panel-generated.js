@@ -110,9 +110,9 @@ function bindShellControls(view, options, rearrange) {
 function sizeOutlinerContent(view) {
     // outliner.gui leaves these two heights at 20/0 for game code to size.
     // Preserve its y=186 origin and reserve the viewer's 35px status bar.
-    view.root.style.height = 'calc(100vh - 221px)';
+    view.root.style.height = 'calc(100% - 221px)';
     const list = view.findIn(view.root, 'list', 'smoothlistboxtype');
-    if (list) list.style.height = 'calc(100vh - 261px)';
+    if (list) list.style.height = 'calc(100% - 261px)';
 }
 
 export function renderOverviewPanel(container, playerInfo = {}, callbacks = {}) {

@@ -27,6 +27,10 @@
 
     <!-- Main App -->
     <div id="app" class="hidden">
+        <!-- Main Canvas Area (intentionally outside the scaled game UI) -->
+        <canvas id="main-canvas"></canvas>
+
+        <div id="game-ui-layer">
         <!-- Top Resource Bar -->
         <header id="resource-bar" data-i18n-title="nav.resources" aria-label="Empire resources"></header>
 
@@ -40,9 +44,6 @@
             <span class="sidebar-divider" aria-hidden="true"></span>
             <button class="sidebar-icon" data-action="ship-designer" data-i18n-title="nav.shipDesigner" title="Ship designer" aria-label="Ship designer"><span class="gfx-frame nav-sprite" style="--sprite:url('/gfx/interface/icons/navbar_icons_ship_designer.webp');--frames:3"></span></button>
         </div>
-
-        <!-- Main Canvas Area -->
-        <canvas id="main-canvas"></canvas>
 
         <!-- Right Overview Panel -->
         <div id="overview-panel" class="hidden"></div>
@@ -72,6 +73,7 @@
 
         <!-- Standard popup.gui / standard_dialog.gui inspired modal host -->
         <div id="modal-layer" class="modal-layer hidden" aria-hidden="true"></div>
+        </div>
     </div>
 
     <script type="module" src="/main.js"></script>

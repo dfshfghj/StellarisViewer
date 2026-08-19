@@ -21,17 +21,24 @@ test('mounts the complete outliner shell at its native coordinates', async ({ pa
     await expect(tabs.locator('[data-gui-instance^="outliner-tab-"]')).toHaveCount(4);
     await expect(tabs).toHaveCSS('width', '260px');
     await expect(outliner).toHaveCSS('width', '260px');
-    await expect(outliner).toHaveCSS('height', '499px');
     await expect(list).toHaveCSS('width', '240px');
-    await expect(list).toHaveCSS('height', '459px');
 
     const tabsBox = await tabs.boundingBox();
     const outlinerBox = await outliner.boundingBox();
     const controllerBox = await controller.boundingBox();
-    expect(tabsBox).toMatchObject({ x: 1020, y: 159 });
-    expect(outlinerBox).toMatchObject({ x: 1020, y: 186 });
-    expect(controllerBox).toMatchObject({ x: 1020, y: 150 });
-    await expect(outliner.locator('[data-gui-name="tab_name"]')).toHaveText('Overview');
+    expect(tabsBox.x).toBeCloseTo(1105.8, 0);
+    expect(tabsBox.y).toBeCloseTo(106.5, 0);
+    expect(tabsBox.width).toBeCloseTo(174.2, 0);
+    expect(outlinerBox.x).toBeCloseTo(1105.8, 0);
+    expect(outlinerBox.y).toBeCloseTo(124.6, 0);
+    expect(outlinerBox.width).toBeCloseTo(174.2, 0);
+    expect(outlinerBox.height).toBeCloseTo(571.9, 0);
+    expect(controllerBox.y).toBeCloseTo(100.5, 0);
+    const title = outliner.locator('[data-gui-name="tab_name"]');
+    await expect(title).toHaveText('Overview');
+    await expect(title).toHaveCSS('line-height', '24px');
+    expect(await title.evaluate(element =>
+        element.clientHeight >= Number.parseFloat(getComputedStyle(element).lineHeight))).toBe(true);
     await expect(host.locator('.generated-overview-close')).toHaveCount(0);
     const sectors = outliner.locator('[data-gui-name="outliner_sector_title_entry_window"]');
     await expect(sectors.locator(':scope > [data-gui-name="amount"]')).toHaveText('1');

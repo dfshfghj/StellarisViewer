@@ -11,6 +11,7 @@ import { renderOverviewPanel } from './overview-panel-generated.js';
 import { renderMainGui } from './main-gui-generated.js';
 import { renderStatusBar } from './ui-components.js';
 import { showDialog } from './ui-dialogs.js';
+import { configureGameUiScale, screenToUi } from './ui-scale.js';
 
 import init, {
     parse_save,
@@ -41,6 +42,7 @@ const els = {
     loadingProgress: document.getElementById('loading-progress'),
     loadingText: document.getElementById('loading-text'),
     app: document.getElementById('app'),
+    gameUiLayer: document.getElementById('game-ui-layer'),
     canvas: document.getElementById('main-canvas'),
     resourceBar: document.getElementById('resource-bar'),
     overviewPanel: document.getElementById('overview-panel'),
@@ -54,6 +56,8 @@ const els = {
     modalLayer: document.getElementById('modal-layer'),
     languageToggle: document.getElementById('language-toggle'),
 };
+
+configureGameUiScale(els.gameUiLayer);
 
 // ============ Renderers ============
 let galaxyMap = null;
@@ -317,8 +321,8 @@ function closePopups() {
 
 function positionPopup(el, offsetX = 0) {
     const rect = els.canvas.getBoundingClientRect();
-    el.style.left = `${rect.width / 2 - el.offsetWidth / 2 + offsetX}px`;
-    el.style.top = `${rect.height / 2 - el.offsetHeight / 2}px`;
+    el.style.left = `${screenToUi(rect.width) / 2 - el.offsetWidth / 2 + offsetX}px`;
+    el.style.top = `${screenToUi(rect.height) / 2 - el.offsetHeight / 2}px`;
 }
 
 function enablePopupDragging(popup) {
@@ -336,10 +340,10 @@ function enablePopupDragging(popup) {
         event.preventDefault();
 
         const move = (moveEvent) => {
-            const maxLeft = Math.max(0, window.innerWidth - popup.offsetWidth);
-            const maxTop = Math.max(0, window.innerHeight - popup.offsetHeight);
-            popup.style.left = `${Math.min(maxLeft, Math.max(0, moveEvent.clientX - pointerOffsetX))}px`;
-            popup.style.top = `${Math.min(maxTop, Math.max(0, moveEvent.clientY - pointerOffsetY))}px`;
+            const maxLeft = Math.max(0, screenToUi(window.innerWidth) - popup.offsetWidth);
+            const maxTop = Math.max(0, screenToUi(window.innerHeight) - popup.offsetHeight);
+            popup.style.left = `${Math.min(maxLeft, Math.max(0, screenToUi(moveEvent.clientX - pointerOffsetX)))}px`;
+            popup.style.top = `${Math.min(maxTop, Math.max(0, screenToUi(moveEvent.clientY - pointerOffsetY)))}px`;
         };
         const end = () => {
             popup.classList.remove('dragging');

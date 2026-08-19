@@ -94,6 +94,19 @@ body {
 /* App Layout */
 #app { position: relative; width: 100vw; height: 100vh; }
 #main-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+#game-ui-layer {
+    --ui-scale: 1;
+    --ui-coordinate-size: 100%;
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: var(--ui-coordinate-size);
+    height: var(--ui-coordinate-size);
+    transform: scale(var(--ui-scale));
+    transform-origin: top right;
+    pointer-events: none;
+}
+#game-ui-layer > * { pointer-events: auto; }
 
 /* Ship Detail */
 #ship-window {

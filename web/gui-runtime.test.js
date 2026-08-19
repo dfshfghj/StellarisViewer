@@ -80,6 +80,10 @@ const rootNode = {
             props: { text: 'MUTED', text_color_code: 'g' }, children: [],
         },
         {
+            type: 'instanttextboxtype', name: 'bounded_title', path: 'root/bounded_title[0]',
+            props: { text: 'Overview', font: 'malgun_goth_24', maxheight: 20 }, children: [],
+        },
+        {
             type: 'icontype', name: 'plain_named_sprite', path: 'root/plain_named_sprite[0]',
             props: { spritetype: 'plain_named_sprite' }, children: [],
         },
@@ -243,8 +247,11 @@ assert.equal(view.find('default_button').style.fontWeight, undefined);
 assert.equal(view.find('default_text').style.textAlign, 'left');
 assert.equal(view.find('default_text').style.fontFamily, '"Century Gothic", "Noto Sans", Arial, sans-serif');
 assert.equal(view.find('default_text').style.fontWeight, '700');
+assert.equal(view.find('default_text').style.lineHeight, '18px');
 assert.equal(view.find('default_text').style.color, 'rgb(41, 225, 38)');
 assert.equal(view.find('muted_text').style.color, 'rgba(128, 128, 128, 0.502)');
+assert.equal(view.find('bounded_title').style.height, '24px');
+assert.equal(view.find('bounded_title').style.lineHeight, '24px');
 assert.equal(view.find('plain_named_sprite').dataset.guiSprite, 'plain_named_sprite');
 assert.equal(view.find('plain_named_sprite').style.backgroundImage, 'url("/gfx/plain.webp")');
 assert.equal(view.find('vertical_line_background').style.backgroundSize, '');
