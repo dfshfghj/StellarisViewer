@@ -1,5 +1,6 @@
 import shipViewDefinition from 'virtual:stellaris-ship-view-ui';
 import componentIcons from 'virtual:stellaris-component-icons';
+import { assetUrl } from './asset-url.js';
 import { mountGui } from './gui-runtime.js';
 import { localizeGameText as localize, resolveGameLocalization } from './game-localization.js';
 import { bindShipViewData, bindShipViewTextData } from './ship-view-binding.js';
@@ -41,7 +42,7 @@ function renderStatLabels(view) {
             if (file) {
                 const icon = document.createElement('img');
                 icon.className = 'generated-ship-stat-icon';
-                icon.src = `/gfx/interface/icons/ship_stats/${file}.webp`;
+                icon.src = assetUrl(`/gfx/interface/icons/ship_stats/${file}.webp`);
                 icon.alt = '';
                 element.appendChild(icon);
             } else if (part) {

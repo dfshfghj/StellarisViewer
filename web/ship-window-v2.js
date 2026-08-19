@@ -1,3 +1,5 @@
+import { assetUrl } from './asset-url.js';
+
 // ship-window-v2.js
 // 严格依照 web/assets/interface/ship_view.gui + 相关 .gfx 定义实现的舰船详情窗口。
 // 实验目的：验证 gui/gfx 是否已完全确定 UI。
@@ -53,7 +55,7 @@ function loc(key, fallback) {
     let s = t(key, fallback);
     return s.replace(/£([a-z0-9_]+)£/g, (_, name) => {
         const file = TEXT_ICON_FILES[name];
-        return file ? `<img class="sv2-texticon" src="/gfx/interface/icons/ship_stats/${file}.webp" alt="">` : '';
+        return file ? `<img class="sv2-texticon" src="${assetUrl(`/gfx/interface/icons/ship_stats/${file}.webp`)}" alt="">` : '';
     });
 }
 
@@ -203,20 +205,20 @@ export function renderShipWindow(container, data, callbacks) {
     container.innerHTML = `
         <div class="sv2-root">
             <div class="sv2-bg"></div>
-            <img class="sv2-hex" src="/gfx/interface/planetview/planet_view_hex_bg.webp" alt="">
-            <img class="sv2-line" src="/gfx/interface/planetview/line_long.webp" alt="">
+            <img class="sv2-hex" src="${assetUrl('/gfx/interface/planetview/planet_view_hex_bg.webp')}" alt="">
+            <img class="sv2-line" src="${assetUrl('/gfx/interface/planetview/line_long.webp')}" alt="">
             <div class="sv2-name">${esc(data.name)}</div>
             <div class="sv2-type">${esc(data.design_name || data.ship_size)}</div>
             <div class="popup-header"></div>
             <button class="sv2-close" id="sv2-close" title="${esc(closeTooltip)}" aria-label="${esc(closeTooltip)}"></button>
-            <div class="sv2-model"><img src="/gfx/interface/ship_designer/ship_design_entry_bg.webp" alt=""></div>
+            <div class="sv2-model"><img src="${assetUrl('/gfx/interface/ship_designer/ship_design_entry_bg.webp')}" alt=""></div>
             <div class="sv2-stats">
                 <div class="sv2-stats-bg"></div>
                 ${statRows.map(row => `
                     <div class="sv2-stat-label" style="top:${row.y}px">${loc(row.key, row.fb)}</div>
                     <div class="sv2-stat-value" style="top:${row.y}px">${row.value}</div>`).join('')}
                 <div class="sv2-stat-label" style="top:145px">${loc('SHIP_STAT_CLOAKING_INLINE', '£ship_stats_cloaking_strength£隐身强度')}</div>
-                <img class="sv2-cloak-icon" src="/gfx/interface/icons/ship_stats/cloaking_level_0.webp" alt="">
+            <img class="sv2-cloak-icon" src="${assetUrl('/gfx/interface/icons/ship_stats/cloaking_level_0.webp')}" alt="">
             </div>
             <div class="sv2-core">
                 <div class="sv2-label">${esc(t('FLEET_VIEW_COMPONENTS_LABEL', '核心部件'))}</div>
@@ -256,7 +258,7 @@ function coreCell(template) {
     return `
         <div class="sv2-core-cell" title="${esc(template)}">
             <div class="sv2-cell-frame"></div>
-            <img class="sv2-cell-img" src="/gfx/interface/icons/ship_parts/ship_part_background.webp" alt="">
+            <img class="sv2-cell-img" src="${assetUrl('/gfx/interface/icons/ship_parts/ship_part_background.webp')}" alt="">
             <img class="sv2-cell-img" data-ph src="${componentIcon(template)}" alt="${esc(template)}">
         </div>`;
 }
@@ -282,7 +284,7 @@ function setCell(component, kind) {
     return `
         <div class="sv2-set-cell" title="${esc(template)}${component.slot ? ` (${esc(component.slot)})` : ''}">
             <div class="sv2-slotframe" style="--slot-pos:${(frame / 15) * 100}%"></div>
-            <img class="sv2-cell-img" src="/gfx/interface/icons/ship_parts/ship_part_background.webp" alt="">
+            <img class="sv2-cell-img" src="${assetUrl('/gfx/interface/icons/ship_parts/ship_part_background.webp')}" alt="">
             <img class="sv2-cell-img" data-ph src="${componentIcon(template)}" alt="${esc(template)}">
         </div>`;
 }

@@ -1,3 +1,5 @@
+import { assetUrl } from './asset-url.js';
+
 // planet-view-v2.js
 // 严格依照 web/assets/interface/planet_view.gui + 相关 .gfx 定义转写的行星视图窗口（P0：顶栏 + 信息条 + 摘要页）。
 // 与 ship-window-v2.js 同一模式：根容器 1162x680（gui planet_view size），clipping=no，moveable=yes。
@@ -620,7 +622,7 @@ function districtRows(districts, data) {
 
 function districtTypeCard(type, list, data) {
     const name = typeName(type, 'district_');
-    const icon = `/gfx/interface/icons/districts/${type}.webp`;
+    const icon = assetUrl(`/gfx/interface/icons/districts/${type}.webp`);
     const cap = districtCap(districtCategory(type), data);
     // 存档中每种区划类型只有一个 District 对象，已建数量存在 level 字段里
     const built = list.reduce((s, d) => s + (d.level || 0), 0);
@@ -697,7 +699,7 @@ function zoneSlots(zone) {
         if (b) {
             const bname = typeName(b.building_type, 'building_');
             html += `<div class="pv2-slot filled" title="${esc(bname)}">` +
-                `<img data-ph src="/gfx/interface/icons/buildings/${b.building_type}.webp" alt=""></div>`;
+                `<img data-ph src="${assetUrl(`/gfx/interface/icons/buildings/${b.building_type}.webp`)}" alt=""></div>`;
         } else {
             html += `<div class="pv2-slot empty">+</div>`;
         }

@@ -2,6 +2,7 @@ import planetViewDefinition from 'virtual:stellaris-planet-view-ui';
 import { mountGui } from './gui-runtime.js';
 import { localizeGameText as localize, resolveGameLocalization } from './game-localization.js';
 import { t } from './app-i18n.js';
+import { assetUrl } from './asset-url.js';
 
 const PAGE_DEFINITIONS = {
     summary: ['summary_window', 'summary_tab', 'summary_tab_active'],
@@ -176,7 +177,7 @@ function addGeneratedBackdrop(root, data) {
     }
     const orb = backdrop.lastElementChild;
     const frame = PLANET_CLASS_FRAMES[data.planet_class] ?? 0;
-    orb.style.background = `url('/gfx/interface/icons/planet_type_big_icons.webp') ${(frame / 35) * 100}% 0 / 3600% 100% no-repeat`;
+    orb.style.background = `url('${assetUrl('/gfx/interface/icons/planet_type_big_icons.webp')}') ${(frame / 35) * 100}% 0 / 3600% 100% no-repeat`;
     root.prepend(backdrop);
 }
 
@@ -260,7 +261,7 @@ function bindResourceOutput(view, name, resources, sign, scope) {
         entry.title = label;
         entry.setAttribute('aria-label', `${label} ${sign}${amount}`);
         const icon = document.createElement('img');
-        icon.src = `/gfx/interface/icons/resources/${RESOURCE_ICON_KEYS[key] || key}.webp`;
+        icon.src = assetUrl(`/gfx/interface/icons/resources/${RESOURCE_ICON_KEYS[key] || key}.webp`);
         icon.alt = '';
         const number = document.createElement('span');
         number.textContent = `${sign}${amount}`;
@@ -351,7 +352,7 @@ function configureBuildingSlot(view, box, building, index) {
     if (building) {
         slot.dataset.planetBuildingType = building.building_type;
         slot.title = typeName(building.building_type, 'building_');
-        setElementIcon(icon, `/gfx/interface/icons/buildings/${building.building_type}.webp`);
+        setElementIcon(icon, assetUrl(`/gfx/interface/icons/buildings/${building.building_type}.webp`));
         hide(empty);
     } else {
         hide(icon);
@@ -404,7 +405,7 @@ function configureZone(view, zoneElement, zone) {
         info.classList.add('generated-planet-disabled');
     }
     if (title) title.textContent = typeName(zone.zone_type, 'zone_');
-    setElementIcon(icon, `/gfx/interface/icons/zones/${zone.zone_type}.webp`);
+        setElementIcon(icon, assetUrl(`/gfx/interface/icons/zones/${zone.zone_type}.webp`));
     populateBuildings(view, buildings, zone);
 }
 
@@ -435,7 +436,7 @@ function populateDistrictCubes(view, entry, districtType, built, cap, blocked) {
         return;
     }
     if (capContainer) capContainer.style.display = '';
-    const path = `/gfx/interface/icons/districts/grid_box/${districtType}_rectangle.webp`;
+    const path = assetUrl(`/gfx/interface/icons/districts/grid_box/${districtType}_rectangle.webp`);
     const states = [
         ['built', built, 0],
         ['available', available, 1],
@@ -480,10 +481,10 @@ function bindDistricts(view, colonizable, data) {
         hide(view.findIn(entry, 'not_surveyed'));
         setText(view, 'num_districts_text', cap == null ? String(built) : `${built}/${cap}`, entry);
         const icon = view.findIn(entry, 'district_icon');
-        setElementIcon(icon, `/gfx/interface/icons/districts/${districtType}.webp`);
+        setElementIcon(icon, assetUrl(`/gfx/interface/icons/districts/${districtType}.webp`));
         setElementIcon(
             view.findIn(entry, 'districts_window_background'),
-            `/gfx/interface/planetview/district_backgrounds/${districtType}_bg.webp`,
+            assetUrl(`/gfx/interface/planetview/district_backgrounds/${districtType}_bg.webp`),
         );
         hide(view.findIn(entry, 'district_overlay_icon'));
         populateDistrictCubes(view, entry, districtType, built, cap, blocked);
@@ -639,7 +640,7 @@ function bindManagementPage(view, page, data) {
     const features = dataList(page, 'generated-feature-list', 'left:15px;top:98px;width:270px;height:329px');
     for (const feature of data.features || []) {
         const row = dataRow({
-            icon: `/gfx/interface/icons/deposits/${feature.icon_key}.webp`,
+            icon: assetUrl(`/gfx/interface/icons/deposits/${feature.icon_key}.webp`),
             name: typeName(feature.feature_type),
             value: '',
         });
@@ -651,7 +652,7 @@ function bindManagementPage(view, page, data) {
     for (const species of data.species || []) {
         const groups = (data.pop_groups || []).filter(group => group.species_id === species.id);
         const row = dataRow({
-            icon: '/gfx/interface/icons/pop.webp',
+            icon: assetUrl('/gfx/interface/icons/pop.webp'),
             name: species.name,
             detail: `${typeName(species.class)} · ${groups.length} ${gameText('POP_GROUPS', 'population groups')}`,
             value: formatNumber(species.pops),
@@ -687,7 +688,7 @@ function bindPopulationPage(view, page, data) {
         grid.className = 'generated-job-grid';
         for (const job of jobs) {
             const row = dataRow({
-                icon: `/gfx/interface/icons/jobs/job_${job.job_type}.webp`,
+                icon: assetUrl(`/gfx/interface/icons/jobs/job_${job.job_type}.webp`),
                 name: typeName(`job_${job.job_type}`),
                 value: formatNumber(job.workforce),
                 className: 'generated-job',
@@ -709,8 +710,8 @@ function bindArmiesPage(view, page, data) {
         const pct = army.max_health > 0 ? Math.round(army.health / army.max_health * 100) : 0;
         const row = dataRow({
             icon: army.army_type === 'defense_army'
-                ? '/gfx/interface/icons/text_icons/text_icon_defense_army.webp'
-                : '/gfx/interface/planetview/army_icon.webp',
+                ? assetUrl('/gfx/interface/icons/text_icons/text_icon_defense_army.webp')
+                : assetUrl('/gfx/interface/planetview/army_icon.webp'),
             name: army.name,
             detail: `${army.species_name} · ${typeName(army.army_type)}`,
             value: `${formatNumber(army.power)} · ${pct}%`,
@@ -726,7 +727,7 @@ function bindArmiesPage(view, page, data) {
     const recruitment = dataList(page, 'generated-recruitment-list', 'left:524px;top:105px;width:310px;height:312px');
     for (const option of data.recruitable_armies || []) {
         const row = dataRow({
-            icon: '/gfx/interface/planetview/army_icon.webp',
+            icon: assetUrl('/gfx/interface/planetview/army_icon.webp'),
             name: typeName(option.army_type),
             detail: `${option.species_name} · ${option.build_time} ${gameText('DAYS', 'days')}`,
             value: `${formatNumber(option.mineral_cost)}`,

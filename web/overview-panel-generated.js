@@ -2,6 +2,7 @@ import outlinerDefinition from 'virtual:stellaris-outliner-ui';
 import { mountGui } from './gui-runtime.js';
 import { bindOverviewPanelData } from './overview-panel-binding.js';
 import { localizeGameText } from './game-localization.js';
+import { assetUrl } from './asset-url.js';
 
 const OUTLINER_TABS = [
     ['government', 'outliner_government'],
@@ -55,7 +56,7 @@ function buildTabs(view, container) {
     OUTLINER_TABS.forEach(([name, labelKey], index) => {
         const entry = view.instantiate('tabs_gridbox_entry', grid, { name: `outliner-tab-${name}` });
         const icon = entry.querySelector('[data-gui-name="tab_button_background_icon"]');
-        setFramedSprite(icon, `/gfx/interface/outliner/outliner_${name}_tab_button.webp`, 2, index === 0 ? 1 : 0);
+        setFramedSprite(icon, assetUrl(`/gfx/interface/outliner/outliner_${name}_tab_button.webp`), 2, index === 0 ? 1 : 0);
         const button = entry.querySelector('[data-gui-name="button_overlay"]');
         button?.setAttribute('aria-label', localizeGameText(labelKey));
         button?.setAttribute('aria-selected', String(index === 0));
