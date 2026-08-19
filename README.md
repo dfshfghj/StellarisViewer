@@ -93,7 +93,7 @@ npm run preview
 
 ### 部署到 GitHub Pages
 
-仓库自带 `.github/workflows/deploy-pages.yml`。它会在 `master` 推送时构建并发布到 GitHub Pages，首次使用时请在仓库的 **Settings → Pages → Build and deployment** 中将来源设为 **GitHub Actions**。
+仓库自带 `.github/workflows/deploy-pages.yml`。它会在 `master` 推送时先编译 Rust/WASM 解析器，再构建并发布到 GitHub Pages；首次使用时请在仓库的 **Settings → Pages → Build and deployment** 中将来源设为 **GitHub Actions**。
 
 游戏资源不需要把原始提取目录全部提交。发布构建只使用 `web/assets/gfx/**/*.webp`；PNG、DDS、字体源文件、`.gui`、`.gfx` 和原始本地化 YAML 都会被忽略。GUI、组件映射和中英文界面本地化会先生成到 `web/generated/`：
 
